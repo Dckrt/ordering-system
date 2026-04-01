@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders Management - Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">
+            <i><!-- Logo icon --></i>
+          </div>
+          <div>
+            <div class="logo-text" style="color: white;">Batangas Premium</div>
+            <div class="logo-subtext" style="color: rgba(255,255,255,0.7);">Admin Panel</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="admin-sidebar-nav">
+        <a href="dashboard.html" class="admin-nav-item">
+          <i><!-- Dashboard icon --></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="products.html" class="admin-nav-item">
+          <i><!-- Package icon --></i>
+          <span>Products</span>
+        </a>
+        <a href="orders.html" class="admin-nav-item active">
+          <i><!-- Shopping bag icon --></i>
+          <span>Orders</span>
+        </a>
+        <a href="categories.html" class="admin-nav-item">
+          <i><!-- Tag icon --></i>
+          <span>Categories</span>
+        </a>
+        <a href="customers.html" class="admin-nav-item">
+          <i><!-- Users icon --></i>
+          <span>Customers</span>
+        </a>
+        <a href="reports.html" class="admin-nav-item">
+          <i><!-- Bar chart icon --></i>
+          <span>Reports</span>
+        </a>
+        <a href="../index.html" class="admin-nav-item" style="margin-top: auto; opacity: 0.8;">
+          <i><!-- Home icon --></i>
+          <span>Back to Website</span>
+        </a>
+        <a href="#" onclick="logout()" class="admin-nav-item" style="opacity: 0.8;">
+          <i><!-- Logout icon --></i>
+          <span>Logout</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Admin Content -->
+    <main class="admin-content">
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h1 style="font-size: 2rem; margin-bottom: var(--space-2);">Orders Management</h1>
+          <p style="color: var(--gray-600);">Manage and process customer orders</p>
+        </div>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="category-filter mb-6">
+        <button class="category-btn active" onclick="filterOrders('All')">All Orders</button>
+        <button class="category-btn" onclick="filterOrders('Pending')">Pending</button>
+        <button class="category-btn" onclick="filterOrders('Preparing')">Preparing</button>
+        <button class="category-btn" onclick="filterOrders('Ready')">Ready</button>
+        <button class="category-btn" onclick="filterOrders('Delivered')">Delivered</button>
+        <button class="category-btn" onclick="filterOrders('Cancelled')">Cancelled</button>
+      </div>
+
+      <!-- Orders Table -->
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Total</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="orders-table">
+            <!-- Orders loaded by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Order Details Modal -->
+  <div id="order-modal" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 700px;">
+      <h2 class="modal-header">Order Details</h2>
+      
+      <div id="order-details">
+        <!-- Order details loaded by JavaScript -->
+      </div>
+
+      <div style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--gray-200);">
+        <h3 class="mb-4">Update Order Status</h3>
+        <div class="flex gap-4">
+          <select id="order-status-select" class="form-select" style="flex: 1;">
+            <option value="Pending">Pending</option>
+            <option value="Preparing">Preparing</option>
+            <option value="Ready">Ready for Pick-up/Delivery</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+          <button onclick="updateOrderStatus()" class="btn btn-primary">
+            <i><!-- Save icon --></i>
+            Update Status
+          </button>
+        </div>
+      </div>
+
+      <div class="flex gap-4 mt-6">
+        <select id="payment-status-select" class="form-select" style="flex: 1;">
+          <option value="Pending">Payment Pending</option>
+          <option value="Paid">Paid</option>
+        </select>
+        <button onclick="updatePaymentStatus()" class="btn btn-primary">
+          <i><!-- Dollar icon --></i>
+          Update Payment
+        </button>
+      </div>
+
+      <div class="modal-actions mt-6">
+        <button onclick="closeOrderModal()" class="btn btn-outline">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/cart.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    // Check admin access
+    if (!Auth.isAdmin()) {
+      alert('Access denied. Admin only.');
+      window.location.href = '../login.html';
+    }
+
+    let currentOrderId = null;
+    let currentFilter = 'All';
+
+    // Load orders
+    function loadOrders(filter = 'All') {
+      currentFilter = filter;
+      let orders = DB.getOrders();
+      
+      if (filter !== 'All') {
+        orders = orders.filter(o => o.orderStatus === filter);
+      }
+
+      const tbody = document.getElementById('orders-table');
+
+      if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding: var(--space-8); color: var(--gray-500);">No orders found</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = orders.map(order => `
+        <tr>
+          <td style="font-weight: 500;">${order.orderNumber}</td>
+          <td>
+            <div>${order.customerName}</div>
+            <div style="font-size: 0.75rem; color: var(--gray-500);">${order.customerPhone}</div>
+          </td>
+          <td>${Utils.formatDate(order.orderDate)}</td>
+          <td>
+            <span class="badge badge-info">${order.orderType}</span>
+          </td>
+          <td style="font-weight: 500;">${Utils.formatCurrency(order.totalAmount)}</td>
+          <td>
+            <span class="badge badge-${order.paymentStatus === 'Paid' ? 'success' : 'yellow'}">
+              ${order.paymentStatus}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-${
+              order.orderStatus === 'Pending' ? 'warning' : 
+              order.orderStatus === 'Delivered' ? 'success' : 
+              order.orderStatus === 'Cancelled' ? 'danger' : 'info'
+            }">
+              ${order.orderStatus}
+            </span>
+          </td>
+          <td>
+            <button onclick="viewOrder('${order.id}')" class="btn btn-outline btn-sm">
+              <i><!-- Eye icon --></i>
+              View
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Update filter buttons
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    // Filter orders
+    function filterOrders(status) {
+      loadOrders(status);
+    }
+
+    // View order details
+    function viewOrder(id) {
+      const order = DB.getOrder(id);
+      if (!order) return;
+
+      currentOrderId = id;
+      
+      const detailsHtml = `
+        <div class="grid grid-cols-2 mb-4">
+          <div>
+            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: var(--space-1);">Order Number</p>
+            <p style="font-weight: 600; font-size: 1.25rem;">${order.orderNumber}</p>
+          </div>
+          <div>
+            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: var(--space-1);">Order Date</p>
+            <p style="font-weight: 500;">${Utils.formatDateTime(order.orderDate)}</p>
+          </div>
+        </div>
+
+        <div style="padding: var(--space-4); background-color: var(--gray-50); border-radius: var(--radius-lg); margin-bottom: var(--space-4);">
+          <h4 style="margin-bottom: var(--space-3);">Customer Information</h4>
+          <div class="grid grid-cols-2">
+            <div>
+              <p style="font-size: 0.875rem; color: var(--gray-600);">Name</p>
+              <p style="font-weight: 500;">${order.customerName}</p>
+            </div>
+            <div>
+              <p style="font-size: 0.875rem; color: var(--gray-600);">Phone</p>
+              <p style="font-weight: 500;">${order.customerPhone}</p>
+            </div>
+            <div>
+              <p style="font-size: 0.875rem; color: var(--gray-600);">Email</p>
+              <p style="font-weight: 500;">${order.customerEmail}</p>
+            </div>
+            <div>
+              <p style="font-size: 0.875rem; color: var(--gray-600);">Order Type</p>
+              <p style="font-weight: 500;">${order.orderType}</p>
+            </div>
+          </div>
+          ${order.address ? `
+            <div style="margin-top: var(--space-3);">
+              <p style="font-size: 0.875rem; color: var(--gray-600);">Delivery Address</p>
+              <p style="font-weight: 500;">${order.address}, ${order.city}</p>
+            </div>
+          ` : ''}
+        </div>
+
+        <h4 style="margin-bottom: var(--space-3);">Order Items</h4>
+        <div style="margin-bottom: var(--space-4);">
+          ${order.items.map(item => `
+            <div class="flex justify-between" style="padding: var(--space-2) 0; border-bottom: 1px solid var(--gray-200);">
+              <span>${item.productName} × ${item.quantity}</span>
+              <span style="font-weight: 500;">${Utils.formatCurrency(item.price * item.quantity)}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <div style="text-align: right;">
+          <p style="font-size: 1.25rem; font-weight: 600; color: var(--primary-red);">
+            Total: ${Utils.formatCurrency(order.totalAmount)}
+          </p>
+        </div>
+
+        ${order.notes ? `
+          <div style="margin-top: var(--space-4); padding: var(--space-3); background-color: var(--yellow-light); border-radius: var(--radius-lg);">
+            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: var(--space-1);">Order Notes:</p>
+            <p>${order.notes}</p>
+          </div>
+        ` : ''}
+      `;
+
+      document.getElementById('order-details').innerHTML = detailsHtml;
+      document.getElementById('order-status-select').value = order.orderStatus;
+      document.getElementById('payment-status-select').value = order.paymentStatus;
+      document.getElementById('order-modal').classList.remove('hidden');
+    }
+
+    // Close order modal
+    function closeOrderModal() {
+      document.getElementById('order-modal').classList.add('hidden');
+    }
+
+    // Update order status
+    function updateOrderStatus() {
+      const newStatus = document.getElementById('order-status-select').value;
+      DB.updateOrder(currentOrderId, { orderStatus: newStatus });
+      Utils.showNotification('Order status updated successfully');
+      closeOrderModal();
+      loadOrders(currentFilter);
+    }
+
+    // Update payment status
+    function updatePaymentStatus() {
+      const newStatus = document.getElementById('payment-status-select').value;
+      DB.updateOrder(currentOrderId, { paymentStatus: newStatus });
+      Utils.showNotification('Payment status updated successfully');
+      closeOrderModal();
+      loadOrders(currentFilter);
+    }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        Auth.logout();
+      }
+    }
+
+    // Initial load
+    loadOrders();
+  </script>
+</body>
+</html>

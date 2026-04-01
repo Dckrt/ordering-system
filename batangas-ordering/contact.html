@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Batangas Premium Naga</title>
+  <title>Contact Us - Batangas Premium Naga</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
 </head>
 <body>
+  <!-- Header -->
   <header class="header">
     <div class="container header-content">
       <a href="index.html" class="logo">
         <div class="logo-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M3 2v7c0 2.21 2.69 4 6 4 3.31 0 6-1.79 6-4V2M3 9c0 2.21 2.69 4 6 4 3.31 0 6-1.79 6-4M9 13l3 8c2.5 0 5.41-.9 7-2M6 13l-3 8c-1.5-1-2.5-2-3-3M9 22H15M11 7h2"/>
-          </svg>
+          <i class="fas fa-utensils"></i>
         </div>
         <div>
           <div class="logo-text">Batangas Premium Naga</div>
@@ -43,74 +43,125 @@
       </nav>
     </div>
   </header>
-  
+
+  <!-- Hero Section -->
   <section class="hero">
     <div class="container">
       <h1>Contact Us</h1>
-      <p>Get in touch with us for any questions or concerns</p>
+      <p>We'd love to hear from you</p>
     </div>
   </section>
 
-  <main>
-    <section class="contact-section">
-  <div class="container">
-    <div class="contact-grid">
+  <!-- Contact Content -->
+  <main style="padding: var(--space-16) 0;">
+    <div class="container">
+      <div class="grid grid-cols-3">
+        <!-- Contact Form -->
+        <div style="grid-column: span 2;">
+          <div class="card">
+            <div class="card-content">
+              <h2 class="mb-4">Send us a Message</h2>
+              <form id="contact-form">
+                <div class="grid grid-cols-2">
+                  <div class="form-group">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" name="name" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" name="phone" class="form-input">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email Address *</label>
+                  <input type="email" name="email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Subject *</label>
+                  <input type="text" name="subject" class="form-input" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Message *</label>
+                  <textarea name="message" class="form-textarea" rows="6" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                  Send Message
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
 
-      <!-- LEFT SIDE (FORM) -->
-      <div class="card">
-        <div class="card-content">
-          <h2 class="mb-4">Send us a Message</h2>
-
-          <div class="form-group">
-            <label class="form-label">Full Name</label>
-            <input type="text" class="form-input">
+        <!-- Contact Information -->
+        <div>
+          <div class="card mb-4">
+            <div class="card-content">
+              <h3 class="card-title">
+                <i style="color: var(--primary-red);"><i class="fa-solid fa-location-dot"></i></i>
+                Location
+              </h3>
+              <p style="color: var(--gray-600);">
+                112 Penafrancia Avenue<br>
+                Naga City<br>
+                Philippines
+              </p>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-input">
+          <div class="card mb-4">
+            <div class="card-content">
+              <h3 class="card-title">
+                <i style="color: var(--primary-red);"><i class="fa-solid fa-phone"></i></i>
+                Phone
+              </h3>
+              <p style="color: var(--gray-600);">
+                +961 9 898 155
+              </p>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Phone Number</label>
-            <input type="text" class="form-input">
+          <div class="card mb-4">
+            <div class="card-content">
+              <h3 class="card-title">
+                <i style="color: var(--primary-red);"><i class="fa-regular fa-envelope"></i></i>
+                Email
+              </h3>
+              <p style="color: var(--gray-600);">
+                toledonetski8@gmail.com
+              </p>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Message</label>
-            <textarea class="form-textarea"></textarea>
+          <div class="card">
+            <div class="card-content">
+              <h3 class="card-title">
+                <i style="color: var(--primary-red);"><i class="fa-regular fa-clock"></i></i>
+                Business Hours
+              </h3>
+              <p style="color: var(--gray-600); line-height: 1.8;">
+                Monday - Saturday: 8:00 AM - 8:00 PM<br>
+                Sunday: 9:00 AM - 6:00 PM
+              </p>
+            </div>
           </div>
-
-          <button class="btn btn-primary">Send Message</button>
         </div>
       </div>
 
-      <!-- RIGHT SIDE (INFO) -->
-      <div class="contact-info">
-        <div class="card">
-          <div class="card-content">
-            <h3 class="mb-4">Contact Information</h3>
-            <p class="mb-2">📍 Naga City, Camarines Sur</p>
-            <p class="mb-2">📞 +63 XXX XXX XXXX</p>
-            <p>✉ info@batangaspremium.com</p>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-content">
-            <h3 class="mb-4">Business Hours</h3>
-            <p class="mb-2">Monday - Friday: 8AM - 8PM</p>
-            <p>Saturday - Sunday: 8AM - 8PM</p>
+      <!-- Map Section (Placeholder) -->
+      <div class="card mt-8">
+        <div style="height: 400px; background-color: var(--gray-200); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg);">
+          <div class="text-center">
+            <i style="font-size: 64px; color: var(--gray-400);"><i class="fa-solid fa-location-dot"></i></i>
+            <p style="color: var(--gray-600); margin-top: var(--space-4);">Map Location</p>
+            <p style="color: var(--gray-500); font-size: 0.875rem;">Embed your Google Maps location here</p>
           </div>
         </div>
       </div>
-
     </div>
-  </div>
-</section>
-
   </main>
 
+  <!-- Footer -->
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
@@ -120,17 +171,11 @@
             Your trusted partner for premium frozen goods and delicious Filipino meals in Naga City.
           </p>
           <div class="social-links">
-            <a href="#" class="social-link">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-              </svg>
+            <a href="" class="social-link">
+              <i class="fab fa-facebook-f"></i>
             </a>
             <a href="#" class="social-link">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-              </svg>
+              <i class="fab fa-instagram"></i>
             </a>
           </div>
         </div>
@@ -150,7 +195,6 @@
           <ul class="footer-links">
             <li><a href="orders.html">Track Order</a></li>
             <li><a href="login.html">My Account</a></li>
-            <li><a href="#">FAQs</a></li>
           </ul>
         </div>
 
@@ -159,7 +203,7 @@
           <p style="margin-bottom: var(--space-2);">Naga City, Camarines Sur</p>
           <p style="margin-bottom: var(--space-2);">+63 XXX XXX XXXX</p>
           <p>info@batangaspremium.com</p>
-        </div>  
+        </div>
       </div>
 
       <div class="footer-bottom">
@@ -171,5 +215,13 @@
   <script src="js/data.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    // Contact form handler
+    document.getElementById('contact-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('Thank you for your message! We will get back to you soon.');
+      e.target.reset();
+    });
+  </script>
 </body>
 </html>

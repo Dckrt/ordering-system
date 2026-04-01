@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Batangas Premium Naga</title>
+  <title>Checkout - Batangas Premium Naga</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
 </head>
 <body>
+  <!-- Header -->
   <header class="header">
     <div class="container header-content">
       <a href="index.html" class="logo">
         <div class="logo-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M3 2v7c0 2.21 2.69 4 6 4 3.31 0 6-1.79 6-4V2M3 9c0 2.21 2.69 4 6 4 3.31 0 6-1.79 6-4M9 13l3 8c2.5 0 5.41-.9 7-2M6 13l-3 8c-1.5-1-2.5-2-3-3M9 22H15M11 7h2"/>
-          </svg>
+          <i class="fas fa-utensils"></i>
         </div>
         <div>
           <div class="logo-text">Batangas Premium Naga</div>
@@ -43,129 +43,116 @@
       </nav>
     </div>
   </header>
-  
-  <main>
-    <div class="hero">
-      <div class="container">
-        <h1>Checkout</h1>
-        <p>Complete your order</p>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1>Checkout</h1>
+      <p>Complete your order</p>
+    </div>
+  </section>
+
+  <!-- Checkout Content -->
+  <main style="padding: var(--space-8) 0;">
+    <div class="container">
+      <div class="grid grid-cols-3">
+        <!-- Checkout Form -->
+        <div style="grid-column: span 2;">
+          <div class="card">
+            <div class="card-content">
+              <form id="checkout-form" >
+                <!-- Customer Information -->
+                <h2 class="mb-4">Customer Information</h2>
+                <div class="grid grid-cols-2">
+                  <div class="form-group">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" name="fullName" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Phone Number *</label>
+                    <input type="tel" name="phone" class="form-input" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email Address *</label>
+                  <input type="email" name="email" class="form-input" required>
+                </div>
+
+                <!-- Order Type -->
+                <h2 class="mb-4 mt-6">Order Type</h2>
+                <div class="flex gap-4 mb-4">
+                  <button type="button" class="btn btn-outline order-type-btn active" data-type="Delivery">
+                    <i class="fa-regular fa-truck"></i>
+                    Delivery
+                  </button>
+                  <button type="button" class="btn btn-outline order-type-btn" data-type="Pick-up">
+                    <i class="fa-solid fa-store"></i>
+                    Pick-up
+                  </button>
+                </div>
+
+                <!-- Delivery Address -->
+                <div id="address-fields">
+                  <div class="form-group">
+                    <label class="form-label">Delivery Address *</label>
+                    <input type="text" name="address" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">City</label>
+                    <input type="text" name="city" class="form-input" value="Naga City" readonly>
+                  </div>
+                </div>
+
+                <!-- Payment Method -->
+                <h2 class="mb-4 mt-6">Payment Method</h2>
+                <div class="form-group">
+                  <select name="paymentMethod" class="form-select" required>
+                    <option value="Cash">Cash on Delivery / Pick-up</option>
+                    <option value="Online Transfer">Online Transfer (GCash/PayMaya)</option>
+                  </select>
+                </div>
+
+                <!-- Additional Notes -->
+                <div class="form-group">
+                  <label class="form-label">Order Notes (Optional)</label>
+                  <textarea name="notes" class="form-textarea" placeholder="Any special instructions?"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: var(--space-4);">
+                  <i><!-- Check icon --></i>
+                  Place Order
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div>
+          <div class="order-summary">
+            <h2 class="summary-title">Order Summary</h2>
+            <div id="checkout-items" style="margin-bottom: var(--space-4);">
+              <!-- Order items loaded by JavaScript -->
+            </div>
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span id="checkout-subtotal">₱0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Delivery Fee</span>
+              <span id="checkout-delivery">₱50.00</span>
+            </div>
+            <div class="summary-total">
+              <span>Total</span>
+              <span id="checkout-total" class="amount">₱0.00</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="container" style="padding: var(--space-8) 0;">
-      <div class="category-filter" id="category-filter">
-        <!-- Categories loaded by JS -->
-      </div>
-
-      <div class="grid grid-cols-4" id="products-grid">
-        <!-- Products loaded by JS -->
-      </div>
-    </div>
-
-    <div class="checkout-page">
-    <div class="checkout-container">
-
-        <!-- LEFT SIDE -->
-        <div class="checkout-left">
-
-        <!-- Order Type -->
-        <div class="card">
-            <h3>Order Type</h3>
-            <div class="order-type">
-            <button class="type-btn active">
-                Pick-up <span>Free</span>
-            </button>
-            <button class="type-btn delivery">
-                Delivery <span>₱50.00</span>
-            </button>
-            </div>
-        </div>
-
-        <!-- Customer Information -->
-        <div class="card">
-            <h3>Customer Information</h3>
-
-            <label>Full Name *</label>
-            <input type="text">
-
-            <div class="row">
-            <div class="col">
-                <label>Email *</label>
-                <input type="email">
-            </div>
-            <div class="col">
-                <label>Phone Number *</label>
-                <input type="text" placeholder="09XXXXXXXXX">
-            </div>
-            </div>
-
-            <label>Delivery Address *</label>
-            <input type="text" placeholder="Street, Barangay">
-
-            <label>City *</label>
-            <input type="text" value="Naga City">
-
-            <label>Order Notes (Optional)</label>
-            <textarea placeholder="Any special instructions..."></textarea>
-        </div>
-
-        <!-- Payment Method -->
-        <div class="card">
-            <h3>Payment Method</h3>
-
-            <label class="radio-box">
-            <input type="radio" name="payment" checked>
-            <div>
-                <strong>Cash on Delivery</strong>
-                <p>Pay when you receive your order</p>
-            </div>
-            </label>
-
-            <label class="radio-box">
-            <input type="radio" name="payment">
-            <div>
-                <strong>Online Bank Transfer</strong>
-                <p>Pay via GCash, bank transfer, or online payment</p>
-            </div>
-            </label>
-        </div>
-
-        <button class="place-order">Place Order</button>
-
-        </div>
-
-        <!-- RIGHT SIDE -->
-        <div class="checkout-right">
-        <div class="card summary">
-            <h3>Order Summary</h3>
-
-            <div class="summary-row">
-            <span>Frozen Chicken Wings × 1</span>
-            <span>₱250.00</span>
-            </div>
-
-            <div class="summary-row">
-            <span>Subtotal</span>
-            <span>₱250.00</span>
-            </div>
-
-            <div class="summary-row">
-            <span>Delivery Fee</span>
-            <span>₱50.00</span>
-            </div>
-
-            <div class="summary-row total">
-            <strong>Total</strong>
-            <strong>₱300.00</strong>
-            </div>
-        </div>
-    </div>
-
-  </div>
-</div>
-
   </main>
 
+  <!-- Footer -->
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
@@ -175,17 +162,11 @@
             Your trusted partner for premium frozen goods and delicious Filipino meals in Naga City.
           </p>
           <div class="social-links">
-            <a href="#" class="social-link">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-              </svg>
+            <a href="" class="social-link">
+              <i class="fab fa-facebook-f"></i>
             </a>
             <a href="#" class="social-link">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-              </svg>
+              <i class="fab fa-instagram"></i>
             </a>
           </div>
         </div>
@@ -205,7 +186,6 @@
           <ul class="footer-links">
             <li><a href="orders.html">Track Order</a></li>
             <li><a href="login.html">My Account</a></li>
-            <li><a href="#">FAQs</a></li>
           </ul>
         </div>
 
@@ -214,7 +194,7 @@
           <p style="margin-bottom: var(--space-2);">Naga City, Camarines Sur</p>
           <p style="margin-bottom: var(--space-2);">+63 XXX XXX XXXX</p>
           <p>info@batangaspremium.com</p>
-        </div>  
+        </div>
       </div>
 
       <div class="footer-bottom">

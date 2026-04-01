@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Batangas Premium Naga</title>
+  <title>Order Confirmation - Batangas Premium Naga</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
 </head>
 <body>
+  <!-- Header -->
   <header class="header">
     <div class="container header-content">
       <a href="index.html" class="logo">
         <div class="logo-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M3 2v7c0 2.21 2.69 4 6 4 3.31 0 6-1.79 6-4V2M3 9c0 2.21 2.69 4 6 4 3.31 0 6-1.79 6-4M9 13l3 8c2.5 0 5.41-.9 7-2M6 13l-3 8c-1.5-1-2.5-2-3-3M9 22H15M11 7h2"/>
-          </svg>
+          <i class="fas fa-utensils"></i>
         </div>
         <div>
           <div class="logo-text">Batangas Premium Naga</div>
@@ -43,10 +43,111 @@
       </nav>
     </div>
   </header>
-  
 
+  <!-- Confirmation Content -->
+  <main style="padding: var(--space-16) 0; min-height: 60vh;">
+    <div class="container">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <!-- Success Message -->
+        <div class="text-center mb-8">
+          <div style="width: 80px; height: 80px; margin: 0 auto var(--space-4); background: linear-gradient(135deg, var(--primary-red), var(--primary-orange)); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center;">
+            <i style="font-size: 40px; color: white;"><i class="fa-solid fa-check"></i></i>
+          </div>
+          <h1 style="font-size: 2rem; margin-bottom: var(--space-2);">Order Confirmed!</h1>
+          <p style="color: var(--gray-600); font-size: 1.125rem;">Thank you for your order. We'll prepare it right away.</p>
+        </div>
+
+        <!-- Order Details Card -->
+        <div class="card">
+          <div style="background: linear-gradient(135deg, var(--primary-red), var(--primary-orange)); color: white; padding: var(--space-6);">
+            <div class="flex justify-between items-center">
+              <div>
+                <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: var(--space-1);">Order Number</p>
+                <h2 style="font-size: 1.75rem;" id="order-number">ORD-001</h2>
+              </div>
+              <div class="text-right">
+                <span class="badge" style="background-color: white; color: var(--primary-red);" id="order-status">Pending</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-content">
+            <!-- Customer Information -->
+            <h3 class="mb-4">Customer Information</h3>
+            <div class="grid grid-cols-2 mb-6">
+              <div>
+                <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: var(--space-1);">Name</p>
+                <p style="font-weight: 500;" id="customer-name">-</p>
+              </div>
+              <div>
+                <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: var(--space-1);">Phone</p>
+                <p style="font-weight: 500;" id="customer-phone">-</p>
+              </div>
+              <div>
+                <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: var(--space-1);">Email</p>
+                <p style="font-weight: 500;" id="customer-email">-</p>
+              </div>
+              <div>
+                <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: var(--space-1);">Order Type</p>
+                <p style="font-weight: 500;" id="order-type">-</p>
+              </div>
+            </div>
+
+            <div id="address-row" class="mb-6">
+              <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: var(--space-1);">Delivery Address</p>
+              <p style="font-weight: 500;" id="delivery-address">-</p>
+            </div>
+
+            <!-- Order Items -->
+            <h3 class="mb-4">Order Items</h3>
+            <div id="confirmation-items" class="mb-4">
+              <!-- Items loaded by JavaScript -->
+            </div>
+
+            <!-- Payment Information -->
+            <div style="padding-top: var(--space-4); border-top: 1px solid var(--gray-200);">
+              <div class="flex justify-between mb-2">
+                <span style="color: var(--gray-600);">Payment Method</span>
+                <span style="font-weight: 500;" id="payment-method">-</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span style="font-size: 1.125rem; font-weight: 600;">Total Amount</span>
+                <span style="font-size: 1.75rem; color: var(--primary-red); font-weight: 600;" id="order-total">₱0.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="alert alert-info mt-6">
+          <h4 style="margin-bottom: var(--space-2);">
+            <i class="fa-regular fa-circle-question"></i>
+            What's Next?
+          </h4>
+          <ul style="margin-left: var(--space-6); line-height: 1.8;">
+            <li>You will receive a confirmation email shortly</li>
+            <li>We'll prepare your order and contact you when it's ready</li>
+            <li>Track your order status on the "My Orders" page</li>
+            <li>For any questions, contact us at +63 XXX XXX XXXX</li>
+          </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-4 justify-center mt-8">
+          <a href="orders.html" class="btn btn-primary">
+            <i class="fa-solid fa-list"></i>
+            View My Orders
+          </a>
+          <a href="menu.html" class="btn btn-outline">
+            <i class="fa-solid fa-bag-shopping"></i>
+            Continue Shopping
+          </a>
+        </div>
+      </div>
+    </div>
   </main>
 
+  <!-- Footer -->
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
@@ -56,17 +157,11 @@
             Your trusted partner for premium frozen goods and delicious Filipino meals in Naga City.
           </p>
           <div class="social-links">
-            <a href="#" class="social-link">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-              </svg>
+            <a href="" class="social-link">
+              <i class="fab fa-facebook-f"></i>
             </a>
             <a href="#" class="social-link">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-              </svg>
+              <i class="fab fa-instagram"></i>
             </a>
           </div>
         </div>
@@ -86,7 +181,6 @@
           <ul class="footer-links">
             <li><a href="orders.html">Track Order</a></li>
             <li><a href="login.html">My Account</a></li>
-            <li><a href="#">FAQs</a></li>
           </ul>
         </div>
 
@@ -95,7 +189,7 @@
           <p style="margin-bottom: var(--space-2);">Naga City, Camarines Sur</p>
           <p style="margin-bottom: var(--space-2);">+63 XXX XXX XXXX</p>
           <p>info@batangaspremium.com</p>
-        </div>  
+        </div>
       </div>
 
       <div class="footer-bottom">

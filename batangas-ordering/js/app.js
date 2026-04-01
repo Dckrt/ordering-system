@@ -305,87 +305,96 @@ const PageInit = {
   },
 
   // Checkout page
-  checkout: () => {
-    const cart = Cart.getCart();
-    if (cart.length === 0) {
-      window.location.href = '/index.html';
-      return;
-    }
+checkout: () => {
+  const cart = Cart.getCart();
 
-    let orderType = 'Delivery';
-    let deliveryFee = 50;
+  // Redirect if cart empty
+  if (cart.length === 0) {
+    window.location.href = 'index.html';
+    return;
+  }
 
-    const updateSummary = () => {
-      const itemsList = document.getElementById('checkout-items');
-      const subtotalEl = document.getElementById('checkout-subtotal');
-      const deliveryFeeEl = document.getElementById('checkout-delivery');
-      const totalEl = document.getElementById('checkout-total');
+  let orderType = 'Delivery';
+  let deliveryFee = 50;
 
-      itemsList.innerHTML = cart.map(item => `
-        <div class="summary-row" style="font-size: 0.875rem;">
-          <span>${item.name} × ${item.quantity}</span>
-          <span>${Utils.formatCurrency(item.price * item.quantity)}</span>
-        </div>
-      `).join('');
+  const updateSummary = () => {
+    const itemsList = document.getElementById('checkout-items');
+    const subtotalEl = document.getElementById('checkout-subtotal');
+    const deliveryFeeEl = document.getElementById('checkout-delivery');
+    const totalEl = document.getElementById('checkout-total');
 
-      const subtotal = Cart.getTotalPrice();
-      deliveryFee = orderType === 'Delivery' ? 50 : 0;
-      const total = subtotal + deliveryFee;
+    itemsList.innerHTML = cart.map(item => `
+      <div class="summary-row" style="font-size: 0.875rem;">
+        <span>${item.name} × ${item.quantity}</span>
+        <span>${Utils.formatCurrency(item.price * item.quantity)}</span>
+      </div>
+    `).join('');
 
-      subtotalEl.textContent = Utils.formatCurrency(subtotal);
-      deliveryFeeEl.textContent = Utils.formatCurrency(deliveryFee);
-      totalEl.textContent = Utils.formatCurrency(total);
-    };
+    const subtotal = Cart.getTotalPrice();
+    deliveryFee = orderType === 'Delivery' ? 50 : 0;
+    const total = subtotal + deliveryFee;
 
-    window.selectOrderType = (type) => {
-      orderType = type;
-      document.querySelectorAll('.order-type-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      event.target.closest('.order-type-btn').classList.add('active');
+    subtotalEl.textContent = Utils.formatCurrency(subtotal);
+    deliveryFeeEl.textContent = Utils.formatCurrency(deliveryFee);
+    totalEl.textContent = Utils.formatCurrency(total);
+  };
 
-      const addressFields = document.getElementById('address-fields');
-      if (type === 'Delivery') {
-        addressFields.classList.remove('hidden');
-      } else {
-        addressFields.classList.add('hidden');
-      }
+  // selectOrderType 
+  document.querySelectorAll('.order-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.order-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
 
-      updateSummary();
-    };
+    const type = btn.dataset.type;
+    orderType = type;
 
-    const form = document.getElementById('checkout-form');
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-
-      const formData = new FormData(form);
-      const order = {
-        customerName: formData.get('fullName'),
-        customerEmail: formData.get('email'),
-        customerPhone: formData.get('phone'),
-        address: formData.get('address') || '',
-        city: formData.get('city') || 'Naga City',
-        notes: formData.get('notes') || '',
-        orderType: orderType,
-        paymentMethod: formData.get('paymentMethod'),
-        paymentStatus: 'Pending',
-        orderStatus: 'Pending',
-        items: cart.map(item => ({
-          productName: item.name,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        totalAmount: Cart.getTotalPrice() + deliveryFee,
-      };
-
-      const savedOrder = DB.addOrder(order);
-      localStorage.setItem('lastOrder', JSON.stringify(savedOrder));
-      Cart.clearCart();
-      window.location.href = '/confirmation.html';
-    });
+    document.getElementById('address-fields').classList.toggle('hidden', type !== 'Delivery');
 
     updateSummary();
-  },
+  });
+});
+
+  // Handle form submission
+  const form = document.getElementById('checkout-form');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    const order = {
+      orderNumber: Utils.generateOrderNumber(),
+      orderDate: new Date().toISOString(),
+      customerName: formData.get('fullName'),
+      customerEmail: formData.get('email'),
+      customerPhone: formData.get('phone'),
+      address: formData.get('address') || '',
+      city: formData.get('city') || 'Naga City',
+      notes: formData.get('notes') || '',
+      orderType: orderType,
+      paymentMethod: formData.get('paymentMethod'),
+      paymentStatus: 'Pending',
+      orderStatus: 'Pending',
+      items: cart.map(item => ({
+        productName: item.name,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      totalAmount: Cart.getTotalPrice() + deliveryFee,
+    };
+
+    const savedOrder = DB.addOrder(order);
+
+    localStorage.setItem('lastOrder', JSON.stringify(savedOrder));
+
+    Cart.clearCart();
+
+    window.location.href = 'confirmation.html';
+  });
+
+  updateSummary();
+},
+
 
   // Confirmation page
   confirmation: () => {
