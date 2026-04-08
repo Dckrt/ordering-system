@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const oracledb = require('oracledb');
 const { getConnection } = require('../db');
 
 // GET all products (optionally filter by category)
