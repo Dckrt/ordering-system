@@ -10,13 +10,13 @@ router.get('/', async (req, res) => {
     conn = await getConnection();
     const category = req.query.category;
 
-    let sql = `SELECT p.product_id AS "id",
-                      p.name,
-                      p.description,
-                      p.price,
-                      p.image_url AS "image",
-                      p.in_stock,
-                      c.name AS "category"
+    let sql = `SELECT p.product_id  AS "id",
+                      p.name        AS "name",
+                      p.description AS "description",
+                      p.price       AS "price",
+                      p.image_url   AS "image",
+                      p.in_stock    AS "in_stock",
+                      c.name        AS "category"
                FROM products p
                JOIN categories c ON p.category_id = c.category_id`;
     const binds = {};
@@ -43,11 +43,11 @@ router.get('/categories', async (req, res) => {
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT name FROM categories ORDER BY category_id`,
+      `SELECT name AS "name" FROM categories ORDER BY category_id`,
       {},
       { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
-    const names = result.rows.map(r => r.NAME);
+    const names = result.rows.map(r => r.name);
     res.json(names);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -62,13 +62,13 @@ router.get('/:id', async (req, res) => {
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT p.product_id AS "id",
-              p.name,
-              p.description,
-              p.price,
-              p.image_url AS "image",
-              p.in_stock,
-              c.name AS "category"
+      `SELECT p.product_id  AS "id",
+              p.name        AS "name",
+              p.description AS "description",
+              p.price       AS "price",
+              p.image_url   AS "image",
+              p.in_stock    AS "in_stock",
+              c.name        AS "category"
        FROM products p
        JOIN categories c ON p.category_id = c.category_id
        WHERE p.product_id = :id`,

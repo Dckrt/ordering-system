@@ -1216,3 +1216,114 @@ textarea {
   }
 }
 
+/* ==================== CART DRAWER ADDITIONS ==================== */
+
+/* Order type button active state */
+.order-type-btn.active {
+  background: linear-gradient(135deg, var(--primary-red), var(--primary-orange)) !important;
+  color: white !important;
+  border-color: var(--primary-red) !important;
+}
+
+/* Cart drawer smooth animation support */
+#cart-drawer {
+  will-change: transform;
+}
+
+/* Prevent body scroll when drawer is open (handled by JS) */
+body.drawer-open {
+  overflow: hidden;
+}
+
+/* Product card - ensure overlay covers properly */
+.product-card {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Spinner animation */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==================== USER DROPDOWN ==================== */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Ensure dropdown sits above everything except the drawer */
+#user-dropdown {
+  z-index: 1001;
+}
+
+/* ==================== TOAST NOTIFICATION ==================== */
+#toast-notification {
+  pointer-events: none;
+}
+
+/* ==================== FORM ENHANCEMENTS ==================== */
+.form-input:read-only {
+  background-color: var(--gray-100);
+  color: var(--gray-500);
+  cursor: not-allowed;
+}
+
+/* Order type buttons */
+.order-type-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: var(--space-3) var(--space-4);
+  transition: all 0.2s;
+}
+
+/* ==================== RESPONSIVE CART ==================== */
+@media (max-width: 480px) {
+  #cart-drawer {
+    width: 100% !important;
+  }
+}
+
+/* ==================== CHECKOUT ORDER SUMMARY ITEMS ==================== */
+#checkout-items {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+#checkout-items::-webkit-scrollbar {
+  width: 4px;
+}
+
+#checkout-items::-webkit-scrollbar-track {
+  background: var(--gray-100);
+  border-radius: 2px;
+}
+
+#checkout-items::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 2px;
+}
+
+/* Drawer scrollbar */
+#drawer-items::-webkit-scrollbar {
+  width: 4px;
+}
+
+#drawer-items::-webkit-scrollbar-track {
+  background: #f9fafb;
+}
+
+#drawer-items::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 2px;
+}
+
+/* ==================== CONFIRMATION PAGE ==================== */
+.alert h4 {
+  font-size: 1rem;
+  font-weight: 600;
+}
