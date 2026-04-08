@@ -11,86 +11,92 @@
   <header class="header">
     <div class="container header-content">
       <a href="index.html" class="logo">
-        <div class="logo-icon">
-          <i class="fas fa-utensils"></i>
-        </div>
+        <div class="logo-icon"><i class="fas fa-utensils"></i></div>
         <div>
           <div class="logo-text">Batangas Premium Naga</div>
           <div class="logo-subtext">Noona's Food Station</div>
         </div>
       </a>
-      
       <nav class="nav">
-        <a href="index.html" class="nav-link active">Home</a>
+        <a href="index.html" class="nav-link">Home</a>
         <a href="menu.html" class="nav-link">Menu</a>
         <a href="about.html" class="nav-link">About</a>
         <a href="contact.html" class="nav-link">Contact</a>
-        <a href="login.html" class="nav-link">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-        </a>
         <a href="cart.html" class="nav-link cart-icon-wrapper">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
           </svg>
           <span class="cart-badge">0</span>
         </a>
       </nav>
     </div>
   </header>
-  
-  <main style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: var(--space-8);">
-    <div class="card" style="max-width: 400px; width: 100%; padding: var(--space-8);">
-      <h1 id="page-title" class="text-center mb-2">Welcome Back</h1>
-      <p id="page-subtitle" class="text-center mb-6" style="color: var(--gray-600);">Sign in to your account</p>
 
+  <main style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:var(--space-8);background:var(--gray-50);">
+    <div class="card" style="max-width:420px;width:100%;padding:var(--space-8);">
+
+      <!-- Logo inside card -->
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="width:56px;height:56px;background:linear-gradient(135deg,#dc2626,#f97316);
+          border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+          <i class="fas fa-utensils" style="color:white;font-size:24px;"></i>
+        </div>
+        <h1 id="page-title" style="font-size:1.5rem;margin-bottom:4px;">Welcome Back</h1>
+        <p id="page-subtitle" style="color:var(--gray-500);font-size:0.875rem;">Sign in to your account</p>
+      </div>
+
+      <!-- Login Form -->
       <form id="login-form">
         <div class="form-group">
           <label class="form-label">Email</label>
-          <input type="email" name="email" class="form-input" required>
+          <input type="email" name="email" class="form-input" required placeholder="you@email.com">
         </div>
         <div class="form-group">
           <label class="form-label">Password</label>
-          <input type="password" name="password" class="form-input" required>
+          <input type="password" name="password" class="form-input" required placeholder="Your password">
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">
+          <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>Sign In
+        </button>
       </form>
 
+      <!-- Register Form -->
       <form id="register-form" class="hidden">
         <div class="form-group">
           <label class="form-label">Full Name</label>
-          <input type="text" name="fullName" class="form-input" required>
+          <input type="text" name="fullName" class="form-input" required placeholder="Juan dela Cruz">
         </div>
         <div class="form-group">
           <label class="form-label">Phone</label>
-          <input type="tel" name="phone" class="form-input" required>
+          <input type="tel" name="phone" class="form-input" placeholder="+63 9XX XXX XXXX">
         </div>
         <div class="form-group">
           <label class="form-label">Email</label>
-          <input type="email" name="email" class="form-input" required>
+          <input type="email" name="email" class="form-input" required placeholder="you@email.com">
         </div>
         <div class="form-group">
           <label class="form-label">Password</label>
-          <input type="password" name="password" class="form-input" required>
+          <input type="password" name="password" class="form-input" required placeholder="Min. 6 characters">
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">
+          <i class="fas fa-user-plus" style="margin-right:8px;"></i>Create Account
+        </button>
       </form>
 
       <div class="text-center mt-4">
-        <button onclick="toggleMode()" class="btn btn-outline" style="width: 100%;">
+        <button onclick="toggleMode()" class="btn btn-outline" style="width:100%;">
           <span id="toggle-text">Don't have an account? Register</span>
         </button>
       </div>
 
-      <div class="alert alert-info mt-4">
+      <!-- Demo hint (remove in production) -->
+      <div class="alert alert-info mt-4" style="font-size:13px;">
         <strong>Demo Login:</strong><br>
         Email: admin@batangas.com<br>
         Password: admin
       </div>
+
     </div>
   </main>
 
@@ -99,19 +105,12 @@
       <div class="footer-grid">
         <div>
           <h3>Batangas Premium Naga</h3>
-          <p style="margin-bottom: var(--space-4);">
-            Your trusted partner for premium frozen goods and delicious Filipino meals in Naga City.
-          </p>
+          <p style="margin-bottom:var(--space-4);">Your trusted partner for premium frozen goods and delicious Filipino meals in Naga City.</p>
           <div class="social-links">
-            <a href="" class="social-link">
-              <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="#" class="social-link">
-              <i class="fab fa-instagram"></i>
-            </a>
+            <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
           </div>
         </div>
-
         <div>
           <h4>Quick Links</h4>
           <ul class="footer-links">
@@ -121,23 +120,19 @@
             <li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
-
         <div>
           <h4>Customer Service</h4>
           <ul class="footer-links">
             <li><a href="orders.html">Track Order</a></li>
-            <li><a href="login.html">My Account</a></li>
           </ul>
         </div>
-
         <div>
           <h4>Contact Us</h4>
-          <p style="margin-bottom: var(--space-2);">Naga City, Camarines Sur</p>
-          <p style="margin-bottom: var(--space-2);">+63 XXX XXX XXXX</p>
+          <p style="margin-bottom:var(--space-2);">Naga City, Camarines Sur</p>
+          <p style="margin-bottom:var(--space-2);">+63 XXX XXX XXXX</p>
           <p>info@batangaspremium.com</p>
         </div>
       </div>
-
       <div class="footer-bottom">
         <p>© 2026 Batangas Premium Naga - Noona's Food Station. All rights reserved.</p>
       </div>
