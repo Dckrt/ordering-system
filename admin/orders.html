@@ -3,331 +3,569 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orders Management - Admin</title>
+  <title>Orders - Admin | Batangas Premium Naga</title>
   <link rel="stylesheet" href="../css/style.css">
+  <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
+  <style>
+    /* ---- NEW ORDER FLASH ---- */
+    @keyframes newOrderPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.5); }
+      50%      { box-shadow: 0 0 0 10px rgba(220,38,38,0); }
+    }
+    .new-order-row {
+      animation: newOrderPulse 1.2s ease-in-out 3;
+      background: #fff7ed !important;
+    }
+
+    /* ---- ALERT BANNER ---- */
+    #new-order-alert {
+      display: none;
+      position: fixed;
+      top: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 9999;
+      background: linear-gradient(135deg,#dc2626,#f97316);
+      color: white;
+      padding: 14px 28px;
+      border-radius: 50px;
+      font-size: 15px;
+      font-weight: 600;
+      box-shadow: 0 6px 24px rgba(220,38,38,0.4);
+      display: none;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    /* ---- STATUS SELECTOR ---- */
+    .status-select {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--gray-300);
+      font-size: 13px;
+      cursor: pointer;
+      background: white;
+    }
+
+    /* ---- NOTIFICATION DOT ---- */
+    #notif-dot {
+      display: none;
+      position: absolute;
+      top: -4px; right: -4px;
+      width: 10px; height: 10px;
+      background: #dc2626;
+      border-radius: 50%;
+      border: 2px solid white;
+    }
+
+    /* ---- POLLING INDICATOR ---- */
+    #poll-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--gray-500);
+    }
+    #poll-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #16a34a;
+      animation: pollBlink 2s ease-in-out infinite;
+    }
+    @keyframes pollBlink {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.3; }
+    }
+
+    /* ---- TABLE IMPROVEMENTS ---- */
+    .table td { vertical-align: middle; }
+    .order-items-list { font-size: 12px; color: var(--gray-600); line-height: 1.6; }
+  </style>
 </head>
 <body>
-  <div class="admin-layout">
-    <!-- Admin Sidebar -->
-    <aside class="admin-sidebar">
-      <div class="admin-sidebar-header">
-        <div class="logo">
-          <div class="logo-icon">
-            <i><!-- Logo icon --></i>
-          </div>
-          <div>
-            <div class="logo-text" style="color: white;">Batangas Premium</div>
-            <div class="logo-subtext" style="color: rgba(255,255,255,0.7);">Admin Panel</div>
-          </div>
+
+<!-- New order alert banner -->
+<div id="new-order-alert">
+  <i class="fas fa-bell"></i>
+  <span id="alert-text">New order received!</span>
+  <span style="font-size:12px;opacity:.8;">(click to dismiss)</span>
+</div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-header">
+      <div class="logo-text" style="color:white;font-size:1rem;">Batangas Premium</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;">Admin Panel</div>
+    </div>
+    <nav class="admin-sidebar-nav">
+      <a href="dashboard.html" class="admin-nav-item">
+        <i class="fas fa-chart-line"></i> Dashboard
+      </a>
+      <a href="orders.html" class="admin-nav-item active" style="position:relative;">
+        <i class="fas fa-list-check"></i> Orders
+        <span id="notif-dot"></span>
+      </a>
+      <a href="products.html" class="admin-nav-item">
+        <i class="fas fa-box"></i> Products
+      </a>
+      <a href="categories.html" class="admin-nav-item">
+        <i class="fas fa-tags"></i> Categories
+      </a>
+      <a href="customers.html" class="admin-nav-item">
+        <i class="fas fa-users"></i> Customers
+      </a>
+      <a href="reports.html" class="admin-nav-item">
+        <i class="fas fa-chart-bar"></i> Reports
+      </a>
+      <a href="../index.html" class="admin-nav-item" style="margin-top:auto;">
+        <i class="fas fa-arrow-left"></i> Back to Site
+      </a>
+      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <main class="admin-content">
+
+    <!-- Header row -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:4px;">Orders</h1>
+        <div id="poll-indicator">
+          <span id="poll-dot"></span>
+          <span id="poll-label">Checking for new orders every 30s</span>
         </div>
       </div>
-
-      <nav class="admin-sidebar-nav">
-        <a href="dashboard.html" class="admin-nav-item">
-          <i><!-- Dashboard icon --></i>
-          <span>Dashboard</span>
-        </a>
-        <a href="products.html" class="admin-nav-item">
-          <i><!-- Package icon --></i>
-          <span>Products</span>
-        </a>
-        <a href="orders.html" class="admin-nav-item active">
-          <i><!-- Shopping bag icon --></i>
-          <span>Orders</span>
-        </a>
-        <a href="categories.html" class="admin-nav-item">
-          <i><!-- Tag icon --></i>
-          <span>Categories</span>
-        </a>
-        <a href="customers.html" class="admin-nav-item">
-          <i><!-- Users icon --></i>
-          <span>Customers</span>
-        </a>
-        <a href="reports.html" class="admin-nav-item">
-          <i><!-- Bar chart icon --></i>
-          <span>Reports</span>
-        </a>
-        <a href="../index.html" class="admin-nav-item" style="margin-top: auto; opacity: 0.8;">
-          <i><!-- Home icon --></i>
-          <span>Back to Website</span>
-        </a>
-        <a href="#" onclick="logout()" class="admin-nav-item" style="opacity: 0.8;">
-          <i><!-- Logout icon --></i>
-          <span>Logout</span>
-        </a>
-      </nav>
-    </aside>
-
-    <!-- Admin Content -->
-    <main class="admin-content">
-      <div class="flex justify-between items-center mb-8">
-        <div>
-          <h1 style="font-size: 2rem; margin-bottom: var(--space-2);">Orders Management</h1>
-          <p style="color: var(--gray-600);">Manage and process customer orders</p>
-        </div>
-      </div>
-
-      <!-- Filter Tabs -->
-      <div class="category-filter mb-6">
-        <button class="category-btn active" onclick="filterOrders('All')">All Orders</button>
-        <button class="category-btn" onclick="filterOrders('Pending')">Pending</button>
-        <button class="category-btn" onclick="filterOrders('Preparing')">Preparing</button>
-        <button class="category-btn" onclick="filterOrders('Ready')">Ready</button>
-        <button class="category-btn" onclick="filterOrders('Delivered')">Delivered</button>
-        <button class="category-btn" onclick="filterOrders('Cancelled')">Cancelled</button>
-      </div>
-
-      <!-- Orders Table -->
-      <div class="table-container">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Order #</th>
-              <th>Customer</th>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Total</th>
-              <th>Payment</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="orders-table">
-            <!-- Orders loaded by JavaScript -->
-          </tbody>
-        </table>
-      </div>
-    </main>
-  </div>
-
-  <!-- Order Details Modal -->
-  <div id="order-modal" class="modal-overlay hidden">
-    <div class="modal" style="max-width: 700px;">
-      <h2 class="modal-header">Order Details</h2>
-      
-      <div id="order-details">
-        <!-- Order details loaded by JavaScript -->
-      </div>
-
-      <div style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--gray-200);">
-        <h3 class="mb-4">Update Order Status</h3>
-        <div class="flex gap-4">
-          <select id="order-status-select" class="form-select" style="flex: 1;">
-            <option value="Pending">Pending</option>
-            <option value="Preparing">Preparing</option>
-            <option value="Ready">Ready for Pick-up/Delivery</option>
-            <option value="Delivered">Delivered</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-          <button onclick="updateOrderStatus()" class="btn btn-primary">
-            <i><!-- Save icon --></i>
-            Update Status
-          </button>
-        </div>
-      </div>
-
-      <div class="flex gap-4 mt-6">
-        <select id="payment-status-select" class="form-select" style="flex: 1;">
-          <option value="Pending">Payment Pending</option>
-          <option value="Paid">Paid</option>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <!-- Filter -->
+        <select id="status-filter" class="status-select" style="padding:8px 14px;" onchange="filterOrders()">
+          <option value="all">All Orders</option>
+          <option value="Pending">Pending</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Preparing">Preparing</option>
+          <option value="Ready">Ready</option>
+          <option value="Delivered">Delivered</option>
+          <option value="Cancelled">Cancelled</option>
         </select>
-        <button onclick="updatePaymentStatus()" class="btn btn-primary">
-          <i><!-- Dollar icon --></i>
-          Update Payment
+        <button onclick="loadOrders(true)" class="btn btn-outline btn-sm">
+          <i class="fas fa-rotate-right"></i> Refresh
+        </button>
+        <button onclick="testSound()" class="btn btn-outline btn-sm" title="Test notification sound">
+          <i class="fas fa-volume-high"></i> Test Sound
         </button>
       </div>
+    </div>
 
-      <div class="modal-actions mt-6">
-        <button onclick="closeOrderModal()" class="btn btn-outline">Close</button>
+    <!-- Stats row -->
+    <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:24px;">
+      <div class="stats-card">
+        <div class="stats-header">
+          <div>
+            <div class="stats-value" id="stat-pending" style="font-size:1.5rem;">0</div>
+            <div class="stats-label">Pending</div>
+          </div>
+          <div class="stats-icon orange"><i class="fas fa-clock"></i></div>
+        </div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-header">
+          <div>
+            <div class="stats-value" id="stat-confirmed" style="font-size:1.5rem;">0</div>
+            <div class="stats-label">Confirmed</div>
+          </div>
+          <div class="stats-icon blue"><i class="fas fa-thumbs-up"></i></div>
+        </div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-header">
+          <div>
+            <div class="stats-value" id="stat-preparing" style="font-size:1.5rem;">0</div>
+            <div class="stats-label">Preparing</div>
+          </div>
+          <div class="stats-icon red"><i class="fas fa-fire-burner"></i></div>
+        </div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-header">
+          <div>
+            <div class="stats-value" id="stat-ready" style="font-size:1.5rem;">0</div>
+            <div class="stats-label">Ready</div>
+          </div>
+          <div class="stats-icon green"><i class="fas fa-check-circle"></i></div>
+        </div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-header">
+          <div>
+            <div class="stats-value" id="stat-today" style="font-size:1.5rem;">0</div>
+            <div class="stats-label">Today</div>
+          </div>
+          <div class="stats-icon blue"><i class="fas fa-calendar-day"></i></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <script src="../js/data.js"></script>
-  <script src="../js/cart.js"></script>
-  <script src="../js/app.js"></script>
-  <script src="../js/admin.js"></script>
-  <script>
-    // Check admin access
-    if (!Auth.isAdmin()) {
-      alert('Access denied. Admin only.');
-      window.location.href = '../login.html';
-    }
+    <!-- Orders table -->
+    <div class="table-container">
+      <div id="table-loading" style="text-align:center;padding:48px;color:var(--gray-500);">
+        <div style="width:32px;height:32px;border:3px solid #dc2626;border-top-color:transparent;
+          border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>
+        Loading orders...
+      </div>
+      <table class="table" id="orders-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Type</th>
+            <th>Total</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Update</th>
+          </tr>
+        </thead>
+        <tbody id="orders-tbody"></tbody>
+      </table>
+      <div id="no-orders" style="display:none;text-align:center;padding:48px;color:var(--gray-500);">
+        <i class="fas fa-inbox" style="font-size:40px;margin-bottom:12px;opacity:.3;display:block;"></i>
+        No orders found
+      </div>
+    </div>
 
-    let currentOrderId = null;
-    let currentFilter = 'All';
+  </main>
+</div>
 
-    // Load orders
-    function loadOrders(filter = 'All') {
-      currentFilter = filter;
-      let orders = DB.getOrders();
-      
-      if (filter !== 'All') {
-        orders = orders.filter(o => o.orderStatus === filter);
+<script src="../js/data.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/cart.js"></script>
+<script src="../js/app.js"></script>
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let allOrders = [];
+let knownOrderIds = new Set();
+let pollTimer = null;
+let isFirstLoad = true;
+let audioCtx = null;
+
+// ============================================================
+// SOUND — generated via Web Audio API (no external file needed)
+// ============================================================
+function playNewOrderSound() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = audioCtx;
+
+    // Three-note chime: D5, F#5, A5
+    [[587, 0], [740, 0.18], [880, 0.36]].forEach(([freq, delay]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = ctx.currentTime + delay;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.4, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      osc.start(t); osc.stop(t + 0.5);
+    });
+  } catch(e) { console.warn('Audio not available:', e); }
+}
+
+function testSound() { playNewOrderSound(); }
+
+// ============================================================
+// BROWSER NOTIFICATION
+// ============================================================
+function requestNotifPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function showBrowserNotif(count) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('🛒 New Order — Batangas Premium', {
+      body: `${count} new order${count > 1 ? 's' : ''} received!`,
+      icon: '../images/logoosbpn-modified.png',
+    });
+  }
+}
+
+// ============================================================
+// ALERT BANNER
+// ============================================================
+function showAlertBanner(count) {
+  const el = document.getElementById('new-order-alert');
+  document.getElementById('alert-text').textContent =
+    `${count} new order${count > 1 ? 's' : ''} received!`;
+  el.style.display = 'flex';
+  el.onclick = () => { el.style.display = 'none'; };
+  setTimeout(() => { if (el) el.style.display = 'none'; }, 8000);
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function updateStats(orders) {
+  const today = new Date().toDateString();
+  const count = (status) => orders.filter(o => (o.STATUS||o.status) === status).length;
+  const todayCount = orders.filter(o => {
+    const d = new Date(o.CREATED_AT || o.created_at);
+    return d.toDateString() === today;
+  }).length;
+
+  document.getElementById('stat-pending').textContent   = count('Pending');
+  document.getElementById('stat-confirmed').textContent = count('Confirmed');
+  document.getElementById('stat-preparing').textContent = count('Preparing');
+  document.getElementById('stat-ready').textContent     = count('Ready');
+  document.getElementById('stat-today').textContent     = todayCount;
+}
+
+// ============================================================
+// RENDER TABLE
+// ============================================================
+function filterOrders() {
+  const filter = document.getElementById('status-filter').value;
+  const filtered = filter === 'all' ? allOrders
+    : allOrders.filter(o => (o.STATUS||o.status) === filter);
+  renderTable(filtered);
+}
+
+function renderTable(orders) {
+  const tbody = document.getElementById('orders-tbody');
+  const table = document.getElementById('orders-table');
+  const noOrders = document.getElementById('no-orders');
+  const loading = document.getElementById('table-loading');
+
+  loading.style.display = 'none';
+
+  if (!orders.length) {
+    table.style.display = 'none';
+    noOrders.style.display = 'block';
+    return;
+  }
+
+  noOrders.style.display = 'none';
+  table.style.display = 'table';
+
+  const statusColors = {
+    Pending:   'badge-warning',
+    Confirmed: 'badge-info',
+    Preparing: 'badge-info',
+    Ready:     'badge-success',
+    Delivered: 'badge-success',
+    Cancelled: 'badge-danger',
+  };
+
+  tbody.innerHTML = orders.map(order => {
+    const id       = order.ORDER_ID || order.order_id;
+    const status   = order.STATUS   || order.status;
+    const items    = order.items    || [];
+    const isNew    = knownOrderIds.has(id) && order._isNew;
+    const dateStr  = order.CREATED_AT || order.created_at;
+    const date     = new Date(dateStr);
+    const timeAgo  = formatTimeAgo(date);
+
+    const itemsList = items.map(i =>
+      `${i.NAME||i.name} x${i.QUANTITY||i.quantity}`).join('<br>');
+
+    return `
+      <tr id="row-${id}" class="${order._isNew ? 'new-order-row' : ''}">
+        <td>
+          <span style="font-weight:700;color:var(--primary-red);">
+            #${String(id).padStart(4,'0')}</span>
+          ${order._isNew ? '<span class="badge badge-danger" style="margin-left:6px;font-size:10px;">NEW</span>' : ''}
+        </td>
+        <td>
+          <div style="font-weight:600;font-size:14px;">${order.FULL_NAME||order.full_name||'—'}</div>
+          <div style="font-size:12px;color:var(--gray-500);">${order.PHONE||order.phone||''}</div>
+          <div style="font-size:12px;color:var(--gray-500);">${order.EMAIL||order.email||''}</div>
+        </td>
+        <td>
+          <div class="order-items-list">${itemsList || '—'}</div>
+          <div style="font-size:11px;color:var(--gray-400);margin-top:2px;">
+            ${order.ORDER_TYPE||order.order_type}
+            ${(order.ADDRESS||order.address) ? ' · ' + (order.ADDRESS||order.address) : ''}
+          </div>
+        </td>
+        <td>
+          <span class="badge ${(order.ORDER_TYPE||order.order_type)==='Delivery' ? 'badge-info' : 'badge-warning'}">
+            ${order.ORDER_TYPE||order.order_type}
+          </span>
+        </td>
+        <td>
+          <div style="font-weight:700;color:var(--primary-red);font-size:15px;">
+            ₱${parseFloat(order.TOTAL||order.total||0).toFixed(2)}</div>
+          <div style="font-size:12px;color:var(--gray-500);">
+            ${order.PAYMENT_METHOD||order.payment_method||''}</div>
+        </td>
+        <td>
+          <div style="font-size:13px;font-weight:500;">${timeAgo}</div>
+          <div style="font-size:11px;color:var(--gray-400);">
+            ${date.toLocaleDateString('en-PH',{month:'short',day:'numeric'})}
+            ${date.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'})}</div>
+        </td>
+        <td><span class="badge ${statusColors[status]||'badge-info'}">${status}</span></td>
+        <td>
+          <select class="status-select" onchange="updateStatus(${id}, this.value, this)"
+            ${status === 'Delivered' || status === 'Cancelled' ? 'disabled' : ''}>
+            <option value="Pending"   ${status==='Pending'   ?'selected':''}>Pending</option>
+            <option value="Confirmed" ${status==='Confirmed' ?'selected':''}>Confirmed</option>
+            <option value="Preparing" ${status==='Preparing' ?'selected':''}>Preparing</option>
+            <option value="Ready"     ${status==='Ready'     ?'selected':''}>Ready</option>
+            <option value="Delivered" ${status==='Delivered' ?'selected':''}>Delivered</option>
+            <option value="Cancelled" ${status==='Cancelled' ?'selected':''}>Cancelled</option>
+          </select>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// UPDATE STATUS
+// ============================================================
+async function updateStatus(orderId, newStatus, selectEl) {
+  const original = selectEl.dataset.prev || selectEl.value;
+  selectEl.dataset.prev = newStatus;
+  selectEl.disabled = true;
+
+  try {
+    const result = await api.updateOrderStatus(orderId, newStatus);
+    if (result.success) {
+      // Update local state
+      const order = allOrders.find(o => (o.ORDER_ID||o.order_id) === orderId);
+      if (order) { order.STATUS = newStatus; order.status = newStatus; }
+      updateStats(allOrders);
+
+      // Flash the row green briefly
+      const row = document.getElementById(`row-${orderId}`);
+      if (row) {
+        row.style.background = '#dcfce7';
+        setTimeout(() => { row.style.background = ''; }, 1000);
       }
+      showToastAdmin(`Order #${String(orderId).padStart(4,'0')} → ${newStatus}`, 'success');
+    } else {
+      selectEl.value = original;
+      showToastAdmin('Failed to update status', 'error');
+    }
+  } catch {
+    selectEl.value = original;
+    showToastAdmin('Server error', 'error');
+  }
 
-      const tbody = document.getElementById('orders-table');
+  if (newStatus !== 'Delivered' && newStatus !== 'Cancelled') selectEl.disabled = false;
+}
 
-      if (orders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding: var(--space-8); color: var(--gray-500);">No orders found</td></tr>';
-        return;
+// ============================================================
+// LOAD & POLL
+// ============================================================
+async function loadOrders(manual = false) {
+  if (manual) {
+    document.getElementById('table-loading').style.display = 'block';
+    document.getElementById('orders-table').style.display  = 'none';
+    document.getElementById('no-orders').style.display     = 'none';
+  }
+
+  try {
+    const orders = await api.getAllOrders();
+    const newOrders = [];
+
+    orders.forEach(o => {
+      const id = o.ORDER_ID || o.order_id;
+      o._isNew = false;
+      if (!isFirstLoad && !knownOrderIds.has(id)) {
+        o._isNew = true;
+        newOrders.push(o);
       }
+      knownOrderIds.add(id);
+    });
 
-      tbody.innerHTML = orders.map(order => `
-        <tr>
-          <td style="font-weight: 500;">${order.orderNumber}</td>
-          <td>
-            <div>${order.customerName}</div>
-            <div style="font-size: 0.75rem; color: var(--gray-500);">${order.customerPhone}</div>
-          </td>
-          <td>${Utils.formatDate(order.orderDate)}</td>
-          <td>
-            <span class="badge badge-info">${order.orderType}</span>
-          </td>
-          <td style="font-weight: 500;">${Utils.formatCurrency(order.totalAmount)}</td>
-          <td>
-            <span class="badge badge-${order.paymentStatus === 'Paid' ? 'success' : 'yellow'}">
-              ${order.paymentStatus}
-            </span>
-          </td>
-          <td>
-            <span class="badge badge-${
-              order.orderStatus === 'Pending' ? 'warning' : 
-              order.orderStatus === 'Delivered' ? 'success' : 
-              order.orderStatus === 'Cancelled' ? 'danger' : 'info'
-            }">
-              ${order.orderStatus}
-            </span>
-          </td>
-          <td>
-            <button onclick="viewOrder('${order.id}')" class="btn btn-outline btn-sm">
-              <i><!-- Eye icon --></i>
-              View
-            </button>
-          </td>
-        </tr>
-      `).join('');
+    allOrders = orders;
+    updateStats(orders);
 
-      // Update filter buttons
-      document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      event.target.classList.add('active');
+    // New order notifications
+    if (newOrders.length > 0) {
+      playNewOrderSound();
+      showAlertBanner(newOrders.length);
+      showBrowserNotif(newOrders.length);
+
+      // Red dot on sidebar
+      document.getElementById('notif-dot').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('notif-dot').style.display = 'none';
+      }, 10000);
     }
 
-    // Filter orders
-    function filterOrders(status) {
-      loadOrders(status);
-    }
+    isFirstLoad = false;
+    filterOrders();
 
-    // View order details
-    function viewOrder(id) {
-      const order = DB.getOrder(id);
-      if (!order) return;
+    // Update poll label
+    const now = new Date();
+    document.getElementById('poll-label').textContent =
+      `Last checked: ${now.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
 
-      currentOrderId = id;
-      
-      const detailsHtml = `
-        <div class="grid grid-cols-2 mb-4">
-          <div>
-            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: var(--space-1);">Order Number</p>
-            <p style="font-weight: 600; font-size: 1.25rem;">${order.orderNumber}</p>
-          </div>
-          <div>
-            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: var(--space-1);">Order Date</p>
-            <p style="font-weight: 500;">${Utils.formatDateTime(order.orderDate)}</p>
-          </div>
-        </div>
+  } catch(err) {
+    console.error('Load orders error:', err);
+    showToastAdmin('Could not load orders. Retrying...', 'error');
+  }
+}
 
-        <div style="padding: var(--space-4); background-color: var(--gray-50); border-radius: var(--radius-lg); margin-bottom: var(--space-4);">
-          <h4 style="margin-bottom: var(--space-3);">Customer Information</h4>
-          <div class="grid grid-cols-2">
-            <div>
-              <p style="font-size: 0.875rem; color: var(--gray-600);">Name</p>
-              <p style="font-weight: 500;">${order.customerName}</p>
-            </div>
-            <div>
-              <p style="font-size: 0.875rem; color: var(--gray-600);">Phone</p>
-              <p style="font-weight: 500;">${order.customerPhone}</p>
-            </div>
-            <div>
-              <p style="font-size: 0.875rem; color: var(--gray-600);">Email</p>
-              <p style="font-weight: 500;">${order.customerEmail}</p>
-            </div>
-            <div>
-              <p style="font-size: 0.875rem; color: var(--gray-600);">Order Type</p>
-              <p style="font-weight: 500;">${order.orderType}</p>
-            </div>
-          </div>
-          ${order.address ? `
-            <div style="margin-top: var(--space-3);">
-              <p style="font-size: 0.875rem; color: var(--gray-600);">Delivery Address</p>
-              <p style="font-weight: 500;">${order.address}, ${order.city}</p>
-            </div>
-          ` : ''}
-        </div>
+function startPolling() {
+  loadOrders(true);
+  pollTimer = setInterval(() => loadOrders(), 30000);
+}
 
-        <h4 style="margin-bottom: var(--space-3);">Order Items</h4>
-        <div style="margin-bottom: var(--space-4);">
-          ${order.items.map(item => `
-            <div class="flex justify-between" style="padding: var(--space-2) 0; border-bottom: 1px solid var(--gray-200);">
-              <span>${item.productName} × ${item.quantity}</span>
-              <span style="font-weight: 500;">${Utils.formatCurrency(item.price * item.quantity)}</span>
-            </div>
-          `).join('')}
-        </div>
+// ============================================================
+// HELPERS
+// ============================================================
+function formatTimeAgo(date) {
+  const diff = Math.floor((Date.now() - date) / 1000);
+  if (diff < 60)   return 'Just now';
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400)return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
 
-        <div style="text-align: right;">
-          <p style="font-size: 1.25rem; font-weight: 600; color: var(--primary-red);">
-            Total: ${Utils.formatCurrency(order.totalAmount)}
-          </p>
-        </div>
+function showToastAdmin(msg, type = 'success') {
+  const existing = document.getElementById('admin-toast');
+  if (existing) existing.remove();
+  const c = type === 'success'
+    ? { bg:'#dcfce7', border:'#16a34a', color:'#15803d' }
+    : { bg:'#fee2e2', border:'#dc2626', color:'#b91c1c' };
+  const el = document.createElement('div');
+  el.id = 'admin-toast';
+  el.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9998;
+    background:${c.bg};border:1.5px solid ${c.border};color:${c.color};
+    padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;
+    box-shadow:0 4px 16px rgba(0,0,0,0.1);
+    transform:translateY(12px);opacity:0;transition:all .25s ease;`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => { el.style.transform='translateY(0)'; el.style.opacity='1'; });
+  setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(),250); }, 3000);
+}
 
-        ${order.notes ? `
-          <div style="margin-top: var(--space-4); padding: var(--space-3); background-color: var(--yellow-light); border-radius: var(--radius-lg);">
-            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: var(--space-1);">Order Notes:</p>
-            <p>${order.notes}</p>
-          </div>
-        ` : ''}
-      `;
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Auth guard
+  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+  if (!user || (user.ROLE !== 'admin' && user.role !== 'admin')) {
+    window.location.href = '../login.html'; return;
+  }
 
-      document.getElementById('order-details').innerHTML = detailsHtml;
-      document.getElementById('order-status-select').value = order.orderStatus;
-      document.getElementById('payment-status-select').value = order.paymentStatus;
-      document.getElementById('order-modal').classList.remove('hidden');
-    }
+  requestNotifPermission();
+  startPolling();
+});
 
-    // Close order modal
-    function closeOrderModal() {
-      document.getElementById('order-modal').classList.add('hidden');
-    }
-
-    // Update order status
-    function updateOrderStatus() {
-      const newStatus = document.getElementById('order-status-select').value;
-      DB.updateOrder(currentOrderId, { orderStatus: newStatus });
-      Utils.showNotification('Order status updated successfully');
-      closeOrderModal();
-      loadOrders(currentFilter);
-    }
-
-    // Update payment status
-    function updatePaymentStatus() {
-      const newStatus = document.getElementById('payment-status-select').value;
-      DB.updateOrder(currentOrderId, { paymentStatus: newStatus });
-      Utils.showNotification('Payment status updated successfully');
-      closeOrderModal();
-      loadOrders(currentFilter);
-    }
-
-    function logout() {
-      if (confirm('Are you sure you want to logout?')) {
-        Auth.logout();
-      }
-    }
-
-    // Initial load
-    loadOrders();
-  </script>
+// Clean up timer on page leave
+window.addEventListener('beforeunload', () => clearInterval(pollTimer));
+</script>
 </body>
 </html>
