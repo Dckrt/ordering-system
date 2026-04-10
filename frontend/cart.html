@@ -66,7 +66,7 @@
       <div id="cart-content">
         <div id="cart-items" class="flex flex-col gap-4"></div>
 
-        <!-- Sticky bottom bar -->
+        <!-- Sticky bottom bar — shows total only, NO checkout button -->
         <div id="cart-footer" style="
           margin-top: 32px;
           background: white;
@@ -83,16 +83,103 @@
           <div>
             <p style="font-size:13px;color:var(--gray-500);margin-bottom:2px;" id="cart-item-count">0 items</p>
             <p style="font-size:1.375rem;font-weight:700;color:var(--gray-900);" id="cart-total-display">₱0.00</p>
-            <p style="font-size:12px;color:var(--gray-400);">+ ₱50.00 delivery</p>
+            <p style="font-size:12px;color:var(--gray-400);">Checkout each item individually below</p>
           </div>
-          <button id="checkout-btn" class="btn btn-primary" style="padding: 14px 32px; font-size:1rem;">
-            <i class="fas fa-lock" style="margin-right:8px;"></i>Checkout
-          </button>
         </div>
       </div>
 
     </div>
   </main>
+
+  <!-- ── TIKTOK-STYLE CHECKOUT SHEET ── -->
+  <div id="checkout-overlay" onclick="closeCheckoutSheet()" style="
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
+    z-index:8000; backdrop-filter:blur(2px);
+  "></div>
+
+  <div id="checkout-sheet" style="
+    display:none; position:fixed; bottom:0; left:0; right:0;
+    background:white; border-radius:24px 24px 0 0;
+    z-index:8001; padding:0;
+    box-shadow:0 -8px 40px rgba(0,0,0,0.2);
+    transform:translateY(100%);
+    transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
+    max-height:92vh; overflow-y:auto;
+  ">
+    <!-- Drag handle -->
+    <div style="display:flex;justify-content:center;padding:12px 0 0;">
+      <div style="width:40px;height:4px;background:#e5e7eb;border-radius:2px;"></div>
+    </div>
+
+    <div style="padding:16px 24px 32px;">
+      <!-- Product preview -->
+      <div id="sheet-product" style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #f3f4f6;">
+        <img id="sheet-img" src="" alt="" style="width:72px;height:72px;object-fit:cover;border-radius:12px;background:#f3f4f6;" />
+        <div style="flex:1;">
+          <p id="sheet-name" style="font-weight:700;font-size:16px;color:#111;margin-bottom:4px;"></p>
+          <p id="sheet-price" style="font-size:15px;font-weight:600;color:#dc2626;"></p>
+        </div>
+      </div>
+
+      <!-- Quantity -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <span style="font-size:14px;font-weight:600;color:#374151;">Quantity</span>
+        <div style="display:flex;align-items:center;gap:0;border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+          <button onclick="sheetQty(-1)" style="width:40px;height:40px;background:#f9fafb;border:none;font-size:18px;cursor:pointer;color:#374151;">−</button>
+          <span id="sheet-qty" style="width:44px;text-align:center;font-weight:700;font-size:16px;">1</span>
+          <button onclick="sheetQty(1)" style="width:40px;height:40px;background:#f9fafb;border:none;font-size:18px;cursor:pointer;color:#374151;">+</button>
+        </div>
+      </div>
+
+      <!-- Order type -->
+      <div style="margin-bottom:20px;">
+        <p style="font-size:14px;font-weight:600;color:#374151;margin-bottom:10px;">Order Type</p>
+        <div style="display:flex;gap:10px;">
+          <button class="sheet-type-btn active" data-type="Delivery" onclick="selectSheetType(this)" style="flex:1;padding:10px;border:2px solid #dc2626;border-radius:10px;background:#fff5f5;color:#dc2626;font-weight:600;font-size:13px;cursor:pointer;">
+            <i class="fas fa-truck" style="margin-right:6px;"></i>Delivery
+          </button>
+          <button class="sheet-type-btn" data-type="Pick-up" onclick="selectSheetType(this)" style="flex:1;padding:10px;border:2px solid #e5e7eb;border-radius:10px;background:white;color:#374151;font-weight:600;font-size:13px;cursor:pointer;">
+            <i class="fas fa-store" style="margin-right:6px;"></i>Pick-up
+          </button>
+        </div>
+      </div>
+
+      <!-- Customer info -->
+      <div style="margin-bottom:20px;">
+        <p style="font-size:14px;font-weight:600;color:#374151;margin-bottom:10px;">Your Info</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <input id="sheet-fullname" type="text" placeholder="Full Name *" style="padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;" />
+          <input id="sheet-phone" type="tel" placeholder="Phone Number *" style="padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;" />
+          <input id="sheet-email" type="email" placeholder="Email *" style="padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;" />
+          <input id="sheet-address" type="text" placeholder="Delivery Address *" style="padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;" />
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div style="margin-bottom:20px;">
+        <p style="font-size:14px;font-weight:600;color:#374151;margin-bottom:10px;">Payment</p>
+        <select id="sheet-payment" style="width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;background:white;">
+          <option value="Cash">Cash on Delivery / Pick-up</option>
+          <option value="Online Transfer">Online Transfer (GCash/PayMaya)</option>
+        </select>
+      </div>
+
+      <!-- Total -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid #f3f4f6;margin-bottom:16px;">
+        <span style="font-size:15px;font-weight:600;color:#374151;">Total</span>
+        <span id="sheet-total" style="font-size:20px;font-weight:800;color:#dc2626;">₱0.00</span>
+      </div>
+
+      <!-- Place Order -->
+      <button id="sheet-order-btn" onclick="placeSheetOrder()" style="
+        width:100%;padding:16px;background:linear-gradient(135deg,#dc2626,#f97316);
+        color:white;border:none;border-radius:14px;font-size:16px;font-weight:700;
+        cursor:pointer;letter-spacing:0.3px;
+      ">
+        <i class="fas fa-check" style="margin-right:8px;"></i>Place Order
+      </button>
+    </div>
+  </div>
 
   <footer class="footer">
     <div class="container">
@@ -138,5 +225,153 @@
   <script src="js/api.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
+
+  <script>
+    // ── SHEET STATE ──
+    let sheetItem = null;
+    let sheetQtyVal = 1;
+    let sheetOrderType = 'Delivery';
+
+    function openCheckoutSheet(item) {
+      if (!Auth.isLoggedIn()) {
+        sessionStorage.setItem('redirectAfterLogin', 'cart.html');
+        window.location.href = 'login.html'; return;
+      }
+
+      sheetItem = item;
+      sheetQtyVal = item.quantity || 1;
+      sheetOrderType = 'Delivery';
+
+      // Fill product info
+      document.getElementById('sheet-img').src = item.image || 'https://via.placeholder.com/72';
+      document.getElementById('sheet-name').textContent = item.name;
+      document.getElementById('sheet-qty').textContent = sheetQtyVal;
+      updateSheetTotal();
+
+      // Pre-fill user info
+      const user = Auth.getCurrentUser();
+      if (user) {
+        document.getElementById('sheet-fullname').value = user.FULL_NAME || user.full_name || '';
+        document.getElementById('sheet-phone').value    = user.PHONE    || user.phone    || '';
+        document.getElementById('sheet-email').value    = user.EMAIL    || user.email    || '';
+      }
+
+      // Reset type buttons
+      document.querySelectorAll('.sheet-type-btn').forEach(b => {
+        const isDelivery = b.dataset.type === 'Delivery';
+        b.style.border     = isDelivery ? '2px solid #dc2626' : '2px solid #e5e7eb';
+        b.style.background = isDelivery ? '#fff5f5' : 'white';
+        b.style.color      = isDelivery ? '#dc2626' : '#374151';
+      });
+      document.getElementById('sheet-address').style.display = 'block';
+
+      // Show sheet
+      document.getElementById('checkout-overlay').style.display = 'block';
+      const sheet = document.getElementById('checkout-sheet');
+      sheet.style.display = 'block';
+      requestAnimationFrame(() => { sheet.style.transform = 'translateY(0)'; });
+    }
+
+    function closeCheckoutSheet() {
+      const sheet = document.getElementById('checkout-sheet');
+      sheet.style.transform = 'translateY(100%)';
+      setTimeout(() => {
+        sheet.style.display = 'none';
+        document.getElementById('checkout-overlay').style.display = 'none';
+      }, 350);
+    }
+
+    function sheetQty(delta) {
+      sheetQtyVal = Math.max(1, sheetQtyVal + delta);
+      document.getElementById('sheet-qty').textContent = sheetQtyVal;
+      updateSheetTotal();
+    }
+
+    function selectSheetType(btn) {
+      sheetOrderType = btn.dataset.type;
+      document.querySelectorAll('.sheet-type-btn').forEach(b => {
+        const active = b === btn;
+        b.style.border     = active ? '2px solid #dc2626' : '2px solid #e5e7eb';
+        b.style.background = active ? '#fff5f5' : 'white';
+        b.style.color      = active ? '#dc2626' : '#374151';
+      });
+      document.getElementById('sheet-address').style.display =
+        sheetOrderType === 'Delivery' ? 'block' : 'none';
+      updateSheetTotal();
+    }
+
+    function updateSheetTotal() {
+      if (!sheetItem) return;
+      const deliveryFee = sheetOrderType === 'Pick-up' ? 0 : 50;
+      const total = (sheetItem.price * sheetQtyVal) + deliveryFee;
+      document.getElementById('sheet-price').textContent =
+        '₱' + parseFloat(sheetItem.price).toFixed(2);
+      document.getElementById('sheet-total').textContent =
+        '₱' + total.toFixed(2);
+    }
+
+    async function placeSheetOrder() {
+      const fullName = document.getElementById('sheet-fullname').value.trim();
+      const phone    = document.getElementById('sheet-phone').value.trim();
+      const email    = document.getElementById('sheet-email').value.trim();
+      const address  = document.getElementById('sheet-address').value.trim();
+      const payment  = document.getElementById('sheet-payment').value;
+
+      if (!fullName || !phone || !email) {
+        Utils.showToast('Please fill in all required fields.', 'error'); return;
+      }
+      if (sheetOrderType === 'Delivery' && !address) {
+        Utils.showToast('Please enter your delivery address.', 'error'); return;
+      }
+
+      const btn = document.getElementById('sheet-order-btn');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Placing Order...';
+      btn.disabled = true;
+
+      const user = Auth.getCurrentUser();
+      const deliveryFee = sheetOrderType === 'Pick-up' ? 0 : 50;
+      const subtotal = sheetItem.price * sheetQtyVal;
+
+      const orderData = {
+        user_id:        user ? (user.USER_ID || user.user_id) : null,
+        full_name:      fullName,
+        phone:          phone,
+        email:          email,
+        order_type:     sheetOrderType,
+        address:        sheetOrderType === 'Delivery' ? address : null,
+        city:           sheetOrderType === 'Delivery' ? 'Naga City' : null,
+        payment_method: payment,
+        notes:          '',
+        subtotal:       subtotal,
+        delivery_fee:   deliveryFee,
+        total:          subtotal + deliveryFee,
+        items: [{
+          product_id: sheetItem.id,
+          name:       sheetItem.name,
+          price:      sheetItem.price,
+          quantity:   sheetQtyVal
+        }]
+      };
+
+      try {
+        const result = await api.placeOrder(orderData);
+        if (result.success) {
+          // Remove just this item from cart
+          Cart.removeItem(sheetItem.id);
+          sessionStorage.setItem('lastOrder', JSON.stringify({ ...orderData, order_id: result.order_id }));
+          closeCheckoutSheet();
+          window.location.href = 'confirmation.html';
+        } else {
+          Utils.showToast(result.message || 'Failed to place order', 'error');
+          btn.innerHTML = '<i class="fas fa-check" style="margin-right:8px;"></i>Place Order';
+          btn.disabled = false;
+        }
+      } catch {
+        Utils.showToast('Server error. Please try again.', 'error');
+        btn.innerHTML = '<i class="fas fa-check" style="margin-right:8px;"></i>Place Order';
+        btn.disabled = false;
+      }
+    }
+  </script>
 </body>
 </html>

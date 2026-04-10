@@ -76,7 +76,7 @@ const NavInit = {
           <p style="font-size:13px;font-weight:600;color:#111;margin-bottom:1px;">${name}</p>
           <p style="font-size:11px;color:#888;">${user.EMAIL||user.email||''}</p></div>
           ${Auth.isAdmin() ? `<a href="admin/dashboard.html" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">⚙ Admin Panel</a>` : ''}
-          <a href="orders.html" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">📦 My Orders</a>
+          <a href="orders.html" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">My Orders</a>
           <button onclick="Auth.logout()" style="display:block;width:100%;text-align:left;padding:10px 16px;font-size:13px;color:#dc2626;background:none;border:none;border-top:1px solid #f0f0f0;cursor:pointer;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background=''">Sign Out</button>`;
         document.body.appendChild(dd);
         setTimeout(() => document.addEventListener('click', function h() { dd?.remove(); document.removeEventListener('click', h); }), 50);
@@ -136,14 +136,13 @@ const PageInit = {
     await renderProducts();
   },
 
-  // CART
+  // ── CART — TikTok style: each item has its own Checkout button ──
   cart: () => {
     const render = () => {
       const items = Cart.getItems();
-      const emptyEl = document.getElementById('empty-cart');
+      const emptyEl   = document.getElementById('empty-cart');
       const contentEl = document.getElementById('cart-content');
-      const itemsEl = document.getElementById('cart-items');
-      const footerEl = document.getElementById('cart-footer');
+      const itemsEl   = document.getElementById('cart-items');
 
       if (items.length === 0) {
         emptyEl?.classList.remove('hidden');
@@ -177,27 +176,38 @@ const PageInit = {
                 </button>
               </div>
             </div>
-            <div style="text-align:right;">
+            <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:12px;">
               <p style="font-size:1.125rem;font-weight:700;color:var(--gray-900);">
                 ${Utils.formatCurrency(item.price * item.quantity)}</p>
+              <!-- ── Per-item Checkout button ── -->
+              <button
+                onclick='openCheckoutSheet(${JSON.stringify(item).replace(/'/g, "&#39;")})'
+                style="
+                  padding:9px 16px;
+                  background:linear-gradient(135deg,#dc2626,#f97316);
+                  color:white;border:none;border-radius:10px;
+                  font-size:13px;font-weight:700;cursor:pointer;
+                  white-space:nowrap;
+                ">
+                Checkout
+              </button>
             </div>
           </div>`).join('');
       }
 
-      // Update sticky footer totals
+      // Update footer totals
       const subtotal = Cart.getTotalPrice();
-      const count = Cart.getTotalItems();
-      const totalEl = document.getElementById('cart-total-display');
-      const countEl = document.getElementById('cart-item-count');
+      const count    = Cart.getTotalItems();
+      const totalEl  = document.getElementById('cart-total-display');
+      const countEl  = document.getElementById('cart-item-count');
       if (totalEl) totalEl.textContent = Utils.formatCurrency(subtotal);
       if (countEl) countEl.textContent = `${count} item${count !== 1 ? 's' : ''}`;
     };
 
     window.cartChangeQty = (id, delta) => {
       const items = Cart.getItems();
-      const item = items.find(i => i.id === id);
+      const item  = items.find(i => i.id === id);
       if (item && item.quantity === 1 && delta === -1) {
-        // Fade out then remove
         const row = document.getElementById(`cart-item-${id}`);
         if (row) { row.style.opacity = '0'; setTimeout(() => { Cart.updateQuantity(id, -1); render(); }, 240); }
         return;
@@ -206,20 +216,10 @@ const PageInit = {
       render();
     };
 
-    // Checkout
-    document.getElementById('checkout-btn')?.addEventListener('click', () => {
-      if (!Auth.isLoggedIn()) {
-        sessionStorage.setItem('redirectAfterLogin', 'checkout.html');
-        window.location.href = 'login.html'; return;
-      }
-      sessionStorage.removeItem('buyNowItem');
-      window.location.href = 'checkout.html';
-    });
-
     render();
   },
 
-  // CHECKOUT
+  // CHECKOUT — kept for Buy Now flow from menu/product pages
   checkout: () => {
     if (!Auth.isLoggedIn()) {
       sessionStorage.setItem('redirectAfterLogin', 'checkout.html');
@@ -485,7 +485,6 @@ function setupProductButtons() {
     btn.addEventListener('click', () => {
       const p = JSON.parse(btn.dataset.product);
       Cart.addItem({ id:p.id, name:p.name, price:p.price, image:p.image, category:p.category });
-      // Bounce badge
       document.querySelectorAll('.cart-badge').forEach(b => {
         b.style.transform = 'scale(1.5)';
         setTimeout(() => b.style.transform = 'scale(1)', 200);
