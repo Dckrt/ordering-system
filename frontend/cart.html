@@ -3,40 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shopping Cart - Batangas Premium Naga</title>
+  <title>Cart - Batangas Premium Naga</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
 </head>
 <body>
-  <!-- Header -->
   <header class="header">
     <div class="container header-content">
       <a href="index.html" class="logo">
-        <div class="logo-icon">
-          <i class="fas fa-utensils"></i>
-        </div>
+        <div class="logo-icon"><i class="fas fa-utensils"></i></div>
         <div>
           <div class="logo-text">Batangas Premium Naga</div>
           <div class="logo-subtext">Noona's Food Station</div>
         </div>
       </a>
-      
       <nav class="nav">
-        <a href="index.html" class="nav-link active">Home</a>
+        <a href="index.html" class="nav-link">Home</a>
         <a href="menu.html" class="nav-link">Menu</a>
         <a href="about.html" class="nav-link">About</a>
         <a href="contact.html" class="nav-link">Contact</a>
         <a href="login.html" class="nav-link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
           </svg>
         </a>
         <a href="cart.html" class="nav-link cart-icon-wrapper">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
           </svg>
           <span class="cart-badge">0</span>
         </a>
@@ -44,7 +38,6 @@
     </div>
   </header>
 
-  <!-- Hero Section -->
   <section class="hero">
     <div class="container">
       <h1>Shopping Cart</h1>
@@ -52,25 +45,26 @@
     </div>
   </section>
 
-  <!-- Cart Content -->
   <main style="padding: var(--space-8) 0; min-height: 60vh;">
     <div class="container">
-      <!-- Empty Cart State -->
+
+      <!-- Empty state -->
       <div id="empty-cart" class="hidden">
         <div class="empty-state">
-          <i style="font-size: 64px; color: var(--gray-300);"><!-- Empty cart icon --></i>
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
           <h2>Your cart is empty</h2>
           <p>Add some delicious items to get started</p>
           <a href="menu.html" class="btn btn-primary mt-6">Browse Menu</a>
         </div>
       </div>
 
-      <!-- Cart Items -->
+      <!-- Cart with items -->
       <div id="cart-content" class="grid grid-cols-3">
         <div style="grid-column: span 2;">
-          <div id="cart-items" class="flex flex-col gap-4">
-            <!-- Cart items loaded by JavaScript -->
-          </div>
+          <div id="cart-items" class="flex flex-col gap-4"></div>
         </div>
 
         <!-- Order Summary -->
@@ -89,37 +83,30 @@
               <span>Total</span>
               <span id="total" class="amount">₱0.00</span>
             </div>
-            <a href="checkout.html" class="btn btn-primary" style="width: 100%; margin-top: var(--space-4);">
-              Proceed to Checkout
-            </a>
-            <a href="menu.html" class="btn btn-outline" style="width: 100%; margin-top: var(--space-2);">
+            <button id="checkout-btn" class="btn btn-primary" style="width:100%;margin-top:var(--space-4);padding:14px;">
+              <i class="fas fa-lock" style="margin-right:8px;"></i>Proceed to Checkout
+            </button>
+            <a href="menu.html" class="btn btn-outline" style="width:100%;margin-top:var(--space-2);">
               Continue Shopping
             </a>
           </div>
         </div>
       </div>
+
     </div>
   </main>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
         <div>
           <h3>Batangas Premium Naga</h3>
-          <p style="margin-bottom: var(--space-4);">
-            Your trusted partner for premium frozen goods and delicious Filipino meals in Naga City.
-          </p>
+          <p style="margin-bottom:var(--space-4);">Your trusted partner for premium frozen goods and delicious Filipino meals in Naga City.</p>
           <div class="social-links">
-            <a href="" class="social-link">
-              <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="#" class="social-link">
-              <i class="fab fa-instagram"></i>
-            </a>
+            <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
           </div>
         </div>
-
         <div>
           <h4>Quick Links</h4>
           <ul class="footer-links">
@@ -129,7 +116,6 @@
             <li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
-
         <div>
           <h4>Customer Service</h4>
           <ul class="footer-links">
@@ -137,15 +123,13 @@
             <li><a href="login.html">My Account</a></li>
           </ul>
         </div>
-
         <div>
           <h4>Contact Us</h4>
-          <p style="margin-bottom: var(--space-2);">Naga City, Camarines Sur</p>
-          <p style="margin-bottom: var(--space-2);">+63 XXX XXX XXXX</p>
+          <p style="margin-bottom:var(--space-2);">Naga City, Camarines Sur</p>
+          <p style="margin-bottom:var(--space-2);">+63 XXX XXX XXXX</p>
           <p>info@batangaspremium.com</p>
         </div>
       </div>
-
       <div class="footer-bottom">
         <p>© 2026 Batangas Premium Naga - Noona's Food Station. All rights reserved.</p>
       </div>

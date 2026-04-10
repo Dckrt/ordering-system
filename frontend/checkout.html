@@ -47,35 +47,38 @@
 
   <main style="padding: var(--space-8) 0;">
     <div class="container">
+      <!-- Buy Now notice injected here by JS -->
+      <div id="buynow-notice" style="display:none;"></div>
+
       <div class="grid grid-cols-3">
-        <!-- Checkout Form -->
         <div style="grid-column: span 2;">
           <div class="card">
             <div class="card-content">
               <form id="checkout-form">
+
                 <h2 class="mb-4">Customer Information</h2>
                 <div class="grid grid-cols-2">
                   <div class="form-group">
                     <label class="form-label">Full Name *</label>
-                    <input type="text" name="fullName" class="form-input" required>
+                    <input type="text" name="fullName" class="form-input" required placeholder="Juan dela Cruz">
                   </div>
                   <div class="form-group">
                     <label class="form-label">Phone Number *</label>
-                    <input type="tel" name="phone" class="form-input" required>
+                    <input type="tel" name="phone" class="form-input" required placeholder="+63 9XX XXX XXXX">
                   </div>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Email Address *</label>
-                  <input type="email" name="email" class="form-input" required>
+                  <input type="email" name="email" class="form-input" required placeholder="you@email.com">
                 </div>
 
                 <h2 class="mb-4 mt-6">Order Type</h2>
                 <div class="flex gap-4 mb-4">
                   <button type="button" class="btn btn-outline order-type-btn active" data-type="Delivery">
-                    <i class="fas fa-truck"></i> Delivery
+                    <i class="fas fa-truck" style="margin-right:6px;"></i>Delivery
                   </button>
                   <button type="button" class="btn btn-outline order-type-btn" data-type="Pick-up">
-                    <i class="fas fa-store"></i> Pick-up
+                    <i class="fas fa-store" style="margin-right:6px;"></i>Pick-up
                   </button>
                 </div>
 
@@ -103,15 +106,14 @@
                   <textarea name="notes" class="form-textarea" placeholder="Any special instructions?"></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width:100%;margin-top:var(--space-4);padding:14px;">
-                  <i class="fas fa-check" style="margin-right:8px;"></i> Place Order
+                <button type="submit" class="btn btn-primary" style="width:100%;margin-top:var(--space-4);padding:14px;font-size:1rem;">
+                  <i class="fas fa-check" style="margin-right:8px;"></i>Place Order
                 </button>
               </form>
             </div>
           </div>
         </div>
 
-        <!-- Order Summary -->
         <div>
           <div class="order-summary">
             <h2 class="summary-title">Order Summary</h2>

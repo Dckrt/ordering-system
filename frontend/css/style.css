@@ -1327,3 +1327,78 @@ body.drawer-open {
   font-size: 1rem;
   font-weight: 600;
 }
+
+/* ===== ORDER TYPE BUTTON ACTIVE ===== */
+.order-type-btn.active {
+  background: linear-gradient(135deg, var(--primary-red), var(--primary-orange)) !important;
+  color: white !important;
+  border-color: var(--primary-red) !important;
+}
+
+.order-type-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+/* ===== BUY NOW BUTTON ===== */
+.btn-primary.buy-now-btn {
+  background: linear-gradient(135deg, var(--primary-red), var(--primary-orange));
+}
+
+/* ===== PRODUCT CARD BUTTONS ===== */
+.product-card .card-content .btn {
+  font-size: 0.8125rem;
+  padding: var(--space-2) var(--space-3);
+}
+
+/* ===== CART BADGE ANIMATION ===== */
+.cart-badge {
+  transition: transform 0.2s ease;
+}
+
+/* ===== FORM READONLY ===== */
+.form-input[readonly] {
+  background-color: var(--gray-100);
+  color: var(--gray-500);
+  cursor: default;
+}
+
+/* ===== CHECKOUT ITEMS SCROLL ===== */
+#checkout-items {
+  max-height: 260px;
+  overflow-y: auto;
+}
+#checkout-items::-webkit-scrollbar { width: 4px; }
+#checkout-items::-webkit-scrollbar-track { background: var(--gray-100); border-radius: 2px; }
+#checkout-items::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 2px; }
+
+/* ===== TOAST ===== */
+#toast-notif { pointer-events: none; }
+
+/* ===== SPINNER ===== */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== EMPTY STATE ICON ===== */
+.empty-state svg {
+  color: var(--gray-300);
+  stroke: var(--gray-300);
+}
+
+/* ===== USER DROPDOWN ===== */
+#user-dd a, #user-dd button {
+  transition: background 0.15s;
+}
+
+/* ===== CART PAGE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  #cart-content {
+    grid-template-columns: 1fr !important;
+  }
+  #cart-content > div:first-child {
+    grid-column: span 1 !important;
+  }
+}
