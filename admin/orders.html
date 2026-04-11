@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Auth guard
   const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
   if (!user || (user.ROLE !== 'admin' && user.role !== 'admin')) {
-    window.location.href = '../login.html'; return;
+    window.location.href=window.location.pathname.split('/admin/')[0]+'/login.html'; return;
   }
 
   requestNotifPermission();

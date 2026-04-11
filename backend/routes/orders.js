@@ -6,19 +6,8 @@ const { getConnection } = require('../db');
 // POST /api/orders — place a new order
 router.post('/', async (req, res) => {
   const {
-    user_id,
-    full_name,
-    phone,
-    email,
-    order_type,
-    address,
-    city,
-    payment_method,
-    notes,
-    subtotal,
-    delivery_fee,
-    total,
-    items   // array of { product_id, name, price, quantity }
+    user_id, full_name, phone, email, order_type, address, city,
+    payment_method, notes, subtotal, delivery_fee, total, items
   } = req.body;
 
   if (!full_name || !phone || !email || !items || items.length === 0)
@@ -28,7 +17,6 @@ router.post('/', async (req, res) => {
   try {
     conn = await getConnection();
 
-    // Insert order
     const orderResult = await conn.execute(
       `INSERT INTO orders
          (user_id, full_name, phone, email, order_type, address, city,
@@ -39,9 +27,7 @@ router.post('/', async (req, res) => {
        RETURNING order_id INTO :order_id`,
       {
         user_id:        user_id || null,
-        full_name,
-        phone,
-        email,
+        full_name, phone, email,
         order_type:     order_type || 'Delivery',
         address:        address || null,
         city:           city || 'Naga City',
@@ -56,7 +42,6 @@ router.post('/', async (req, res) => {
 
     const orderId = orderResult.outBinds.order_id[0];
 
-    // Insert each order item
     for (const item of items) {
       await conn.execute(
         `INSERT INTO order_items (order_id, product_id, name, price, quantity)
@@ -81,16 +66,26 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/orders/user/:userId — get orders for a specific customer
+// GET /api/orders/user/:userId — orders for a specific customer (lowercase aliases)
 router.get('/user/:userId', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
     const ordersResult = await conn.execute(
-      `SELECT o.order_id, o.full_name, o.phone, o.email, o.order_type,
-              o.address, o.city, o.payment_method, o.notes,
-              o.subtotal, o.delivery_fee, o.total, o.status,
-              TO_CHAR(o.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS created_at
+      `SELECT o.order_id        AS "order_id",
+              o.full_name       AS "full_name",
+              o.phone           AS "phone",
+              o.email           AS "email",
+              o.order_type      AS "order_type",
+              o.address         AS "address",
+              o.city            AS "city",
+              o.payment_method  AS "payment_method",
+              o.notes           AS "notes",
+              o.subtotal        AS "subtotal",
+              o.delivery_fee    AS "delivery_fee",
+              o.total           AS "total",
+              o.status          AS "status",
+              TO_CHAR(o.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS "created_at"
        FROM orders o
        WHERE o.user_id = :user_id
        ORDER BY o.created_at DESC`,
@@ -100,11 +95,14 @@ router.get('/user/:userId', async (req, res) => {
 
     const orders = ordersResult.rows;
 
-    // Attach items to each order
     for (const order of orders) {
       const itemsResult = await conn.execute(
-        `SELECT name, price, quantity FROM order_items WHERE order_id = :order_id`,
-        { order_id: order.ORDER_ID },
+        `SELECT name     AS "name",
+                price    AS "price",
+                quantity AS "quantity"
+         FROM order_items
+         WHERE order_id = :order_id`,
+        { order_id: order.order_id },
         { outFormat: oracledb.OUT_FORMAT_OBJECT }
       );
       order.items = itemsResult.rows;
@@ -118,16 +116,25 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
-// GET /api/orders — admin: get all orders
+// GET /api/orders — admin: get all orders (lowercase aliases)
 router.get('/', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT o.order_id, o.full_name, o.phone, o.email, o.order_type,
-              o.address, o.city, o.payment_method, o.subtotal,
-              o.delivery_fee, o.total, o.status,
-              TO_CHAR(o.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS created_at
+      `SELECT o.order_id        AS "order_id",
+              o.full_name       AS "full_name",
+              o.phone           AS "phone",
+              o.email           AS "email",
+              o.order_type      AS "order_type",
+              o.address         AS "address",
+              o.city            AS "city",
+              o.payment_method  AS "payment_method",
+              o.subtotal        AS "subtotal",
+              o.delivery_fee    AS "delivery_fee",
+              o.total           AS "total",
+              o.status          AS "status",
+              TO_CHAR(o.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS "created_at"
        FROM orders o
        ORDER BY o.created_at DESC`,
       {},
@@ -135,10 +142,15 @@ router.get('/', async (req, res) => {
     );
 
     const orders = result.rows;
+
     for (const order of orders) {
       const itemsResult = await conn.execute(
-        `SELECT name, price, quantity FROM order_items WHERE order_id = :order_id`,
-        { order_id: order.ORDER_ID },
+        `SELECT name     AS "name",
+                price    AS "price",
+                quantity AS "quantity"
+         FROM order_items
+         WHERE order_id = :order_id`,
+        { order_id: order.order_id },
         { outFormat: oracledb.OUT_FORMAT_OBJECT }
       );
       order.items = itemsResult.rows;

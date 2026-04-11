@@ -13,7 +13,11 @@ router.post('/login', async (req, res) => {
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT user_id, full_name, email, phone, role
+      `SELECT user_id   AS "user_id",
+              full_name AS "full_name",
+              email     AS "email",
+              phone     AS "phone",
+              role      AS "role"
        FROM users
        WHERE email = :email AND password = :password`,
       { email, password },
@@ -23,8 +27,7 @@ router.post('/login', async (req, res) => {
     if (result.rows.length === 0)
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
 
-    const user = result.rows[0];
-    res.json({ success: true, user });
+    res.json({ success: true, user: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   } finally {
@@ -42,7 +45,6 @@ router.post('/register', async (req, res) => {
   try {
     conn = await getConnection();
 
-    // Check if email already exists
     const check = await conn.execute(
       `SELECT user_id FROM users WHERE email = :email`,
       { email },
@@ -51,7 +53,6 @@ router.post('/register', async (req, res) => {
     if (check.rows.length > 0)
       return res.status(409).json({ success: false, message: 'Email already registered' });
 
-    // Insert new user
     const insert = await conn.execute(
       `INSERT INTO users (full_name, email, phone, password, role)
        VALUES (:full_name, :email, :phone, :password, 'customer')
@@ -59,17 +60,18 @@ router.post('/register', async (req, res) => {
       {
         full_name,
         email,
-        phone: phone || null,
+        phone:    phone || null,
         password,
-        user_id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+        user_id:  { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
       }
     );
     await conn.commit();
 
     const userId = insert.outBinds.user_id[0];
+    // Return lowercase keys — same shape as login response
     res.json({
       success: true,
-      user: { user_id: userId, full_name, email, phone, role: 'customer' }
+      user: { user_id: userId, full_name, email, phone: phone || null, role: 'customer' }
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
