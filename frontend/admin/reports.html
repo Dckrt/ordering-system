@@ -11,11 +11,10 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     .report-card{background:white;border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-md);margin-bottom:24px;}
     .report-card h3{font-size:1rem;font-weight:600;margin-bottom:16px;color:var(--gray-700);}
-    .print-hide { }
     @media print {
-      .admin-sidebar, .print-hide { display:none!important; }
-      .admin-content { padding:0; }
-      body { background:white; }
+      .admin-sidebar,.print-hide{display:none!important;}
+      .admin-content{padding:0;}
+      body{background:white;}
     }
   </style>
 </head>
@@ -23,8 +22,13 @@
 <div class="admin-layout">
   <aside class="admin-sidebar">
     <div class="admin-sidebar-header">
-      <div class="logo-text" style="color:white;font-size:1rem;">Batangas Premium</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;">Admin Panel</div>
+      <a href="../index.html" class="logo" style="text-decoration:none;">
+        <div class="logo-icon"><i class="fas fa-utensils"></i></div>
+        <div>
+          <div class="logo-text" style="color:white;">Batangas Premium Naga</div>
+          <div class="logo-subtext" style="color:rgba(255,255,255,0.7);">Admin Panel</div>
+        </div>
+      </a>
     </div>
     <nav class="admin-sidebar-nav">
       <a href="dashboard.html"  class="admin-nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
@@ -33,13 +37,14 @@
       <a href="categories.html" class="admin-nav-item"><i class="fas fa-tags"></i> Categories</a>
       <a href="customers.html"  class="admin-nav-item"><i class="fas fa-users"></i> Customers</a>
       <a href="reports.html"    class="admin-nav-item active"><i class="fas fa-chart-bar"></i> Reports</a>
-      <a href="../index.html"   class="admin-nav-item"><i class="fas fa-arrow-left"></i> Back to Site</a>
-      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+      <a href="../index.html"   class="admin-nav-item" style="margin-top:auto;"><i class="fas fa-arrow-left"></i> Back to Site</a>
+      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </button>
     </nav>
   </aside>
 
   <main class="admin-content">
-    <!-- Header -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
       <div>
         <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:4px;">Sales & Reports</h1>
@@ -58,97 +63,44 @@
       </div>
     </div>
 
-    <!-- Loading -->
     <div id="loading" style="text-align:center;padding:60px;color:var(--gray-500);">
       <div style="width:32px;height:32px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>
       Loading report data...
     </div>
 
     <div id="report-content" style="display:none;">
-
-      <!-- Summary stats -->
       <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
-        <div class="stats-card">
-          <div class="stats-header">
-            <div><div class="stats-value" id="r-revenue" style="font-size:1.3rem;color:#dc2626;">₱0</div><div class="stats-label">Total Revenue</div></div>
-            <div class="stats-icon green"><i class="fas fa-peso-sign"></i></div>
-          </div>
-        </div>
-        <div class="stats-card">
-          <div class="stats-header">
-            <div><div class="stats-value" id="r-orders" style="font-size:1.5rem;">0</div><div class="stats-label">Completed Orders</div></div>
-            <div class="stats-icon blue"><i class="fas fa-check-double"></i></div>
-          </div>
-        </div>
-        <div class="stats-card">
-          <div class="stats-header">
-            <div><div class="stats-value" id="r-avg" style="font-size:1.3rem;">₱0</div><div class="stats-label">Avg Order Value</div></div>
-            <div class="stats-icon orange"><i class="fas fa-calculator"></i></div>
-          </div>
-        </div>
-        <div class="stats-card">
-          <div class="stats-header">
-            <div><div class="stats-value" id="r-items" style="font-size:1.5rem;">0</div><div class="stats-label">Items Sold</div></div>
-            <div class="stats-icon red"><i class="fas fa-box-open"></i></div>
-          </div>
-        </div>
+        <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="r-revenue" style="font-size:1.3rem;color:#dc2626;">₱0</div><div class="stats-label">Total Revenue</div></div><div class="stats-icon green"><i class="fas fa-peso-sign"></i></div></div></div>
+        <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="r-orders" style="font-size:1.5rem;">0</div><div class="stats-label">Completed Orders</div></div><div class="stats-icon blue"><i class="fas fa-check-double"></i></div></div></div>
+        <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="r-avg" style="font-size:1.3rem;">₱0</div><div class="stats-label">Avg Order Value</div></div><div class="stats-icon orange"><i class="fas fa-calculator"></i></div></div></div>
+        <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="r-items" style="font-size:1.5rem;">0</div><div class="stats-label">Items Sold</div></div><div class="stats-icon red"><i class="fas fa-box-open"></i></div></div></div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
-        <!-- Daily sales chart -->
-        <div class="report-card">
-          <h3><i class="fas fa-chart-line" style="margin-right:8px;color:#dc2626;"></i>Daily Sales</h3>
-          <canvas id="daily-chart" height="200"></canvas>
-        </div>
-        <!-- Top products chart -->
-        <div class="report-card">
-          <h3><i class="fas fa-trophy" style="margin-right:8px;color:#f97316;"></i>Top Products</h3>
-          <canvas id="products-chart" height="200"></canvas>
-        </div>
+        <div class="report-card"><h3><i class="fas fa-chart-line" style="margin-right:8px;color:#dc2626;"></i>Daily Sales</h3><canvas id="daily-chart" height="200"></canvas></div>
+        <div class="report-card"><h3><i class="fas fa-trophy" style="margin-right:8px;color:#f97316;"></i>Top Products</h3><canvas id="products-chart" height="200"></canvas></div>
       </div>
 
-      <!-- Order type breakdown -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
-        <div class="report-card">
-          <h3><i class="fas fa-chart-pie" style="margin-right:8px;color:#2563eb;"></i>Order Type</h3>
-          <canvas id="type-chart" height="180"></canvas>
-        </div>
-        <div class="report-card">
-          <h3><i class="fas fa-credit-card" style="margin-right:8px;color:#16a34a;"></i>Payment Method</h3>
-          <canvas id="payment-chart" height="180"></canvas>
-        </div>
+        <div class="report-card"><h3><i class="fas fa-chart-pie" style="margin-right:8px;color:#2563eb;"></i>Order Type</h3><canvas id="type-chart" height="180"></canvas></div>
+        <div class="report-card"><h3><i class="fas fa-credit-card" style="margin-right:8px;color:#16a34a;"></i>Payment Method</h3><canvas id="payment-chart" height="180"></canvas></div>
       </div>
 
-      <!-- Top products table -->
       <div class="report-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-          <h3 style="margin:0;"><i class="fas fa-list-ol" style="margin-right:8px;color:#dc2626;"></i>Product Sales Breakdown</h3>
-        </div>
+        <h3><i class="fas fa-list-ol" style="margin-right:8px;color:#dc2626;"></i>Product Sales Breakdown</h3>
         <table class="table" id="product-sales-table">
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Product</th>
-              <th>Qty Sold</th>
-              <th>Revenue</th>
-              <th>Share</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Rank</th><th>Product</th><th>Qty Sold</th><th>Revenue</th><th>Share</th></tr></thead>
           <tbody id="product-sales-tbody"></tbody>
         </table>
       </div>
 
-      <!-- Daily summary table -->
       <div class="report-card">
         <h3><i class="fas fa-calendar-days" style="margin-right:8px;color:#dc2626;"></i>Daily Summary</h3>
-        <table class="table" id="daily-table">
-          <thead>
-            <tr><th>Date</th><th>Orders</th><th>Revenue</th><th>Avg Order</th></tr>
-          </thead>
+        <table class="table">
+          <thead><tr><th>Date</th><th>Orders</th><th>Revenue</th><th>Avg Order</th></tr></thead>
           <tbody id="daily-tbody"></tbody>
         </table>
       </div>
-
     </div>
   </main>
 </div>
@@ -161,98 +113,83 @@
 let dailyChart, productsChart, typeChart, paymentChart;
 
 function getPeriodRange(period) {
-  const now = new Date();
-  const start = new Date();
-  if (period === 'today') { start.setHours(0,0,0,0); }
-  else if (period === 'week') { start.setDate(now.getDate() - 6); start.setHours(0,0,0,0); }
-  else if (period === 'month') { start.setDate(1); start.setHours(0,0,0,0); }
-  else { return null; }
-  return { start, end: now };
+  const now=new Date(), start=new Date();
+  if (period==='today'){start.setHours(0,0,0,0);}
+  else if(period==='week'){start.setDate(now.getDate()-6);start.setHours(0,0,0,0);}
+  else if(period==='month'){start.setDate(1);start.setHours(0,0,0,0);}
+  else{return null;}
+  return{start,end:now};
 }
 
 async function loadReport() {
-  const period  = document.getElementById('period-select').value;
-  const range   = getPeriodRange(period);
-  const labels  = { today:'Today', week:'This Week', month:'This Month', all:'All Time' };
-  document.getElementById('report-date').textContent = `${labels[period]} — Generated ${new Date().toLocaleString('en-PH')}`;
+  const period=document.getElementById('period-select').value;
+  const range=getPeriodRange(period);
+  const labels={today:'Today',week:'This Week',month:'This Month',all:'All Time'};
+  document.getElementById('report-date').textContent=`${labels[period]} — Generated ${new Date().toLocaleString('en-PH')}`;
 
   try {
-    const [orders, productSales] = await Promise.all([api.getAllOrders(), api.getReports()]);
+    const [orders, productSales]=await Promise.all([api.getAllOrders(), api.getReports()]);
+    const filtered=range?orders.filter(o=>{const d=new Date(o.CREATED_AT||o.created_at);return d>=range.start&&d<=range.end;}):orders;
+    const completed=filtered.filter(o=>!['Cancelled'].includes(o.STATUS||o.status));
+    const revenue=completed.reduce((s,o)=>s+parseFloat(o.TOTAL||o.total||0),0);
+    const itemsSold=completed.reduce((s,o)=>s+(o.items||[]).reduce((si,i)=>si+(i.QUANTITY||i.quantity||0),0),0);
+    const avgOrder=completed.length?revenue/completed.length:0;
 
-    // Filter by period
-    const filtered = range
-      ? orders.filter(o => { const d = new Date(o.CREATED_AT||o.created_at); return d >= range.start && d <= range.end; })
-      : orders;
-
-    const completed = filtered.filter(o => !['Cancelled'].includes(o.STATUS||o.status));
-    const revenue   = completed.reduce((s,o) => s + parseFloat(o.TOTAL||o.total||0), 0);
-    const itemsSold = completed.reduce((s,o) => s + (o.items||[]).reduce((si,i)=>si+(i.QUANTITY||i.quantity||0),0), 0);
-    const avgOrder  = completed.length ? revenue / completed.length : 0;
-
-    document.getElementById('r-revenue').textContent = `₱${revenue.toFixed(2)}`;
-    document.getElementById('r-orders').textContent  = completed.length;
-    document.getElementById('r-avg').textContent     = `₱${avgOrder.toFixed(2)}`;
-    document.getElementById('r-items').textContent   = itemsSold;
+    document.getElementById('r-revenue').textContent=`₱${revenue.toFixed(2)}`;
+    document.getElementById('r-orders').textContent=completed.length;
+    document.getElementById('r-avg').textContent=`₱${avgOrder.toFixed(2)}`;
+    document.getElementById('r-items').textContent=itemsSold;
 
     // Daily breakdown
-    const dailyMap = {};
-    completed.forEach(o => {
-      const d = new Date(o.CREATED_AT||o.created_at).toLocaleDateString('en-PH',{month:'short',day:'numeric'});
-      if (!dailyMap[d]) dailyMap[d] = { count:0, revenue:0 };
-      dailyMap[d].count++;
-      dailyMap[d].revenue += parseFloat(o.TOTAL||o.total||0);
+    const dailyMap={};
+    completed.forEach(o=>{
+      const d=new Date(o.CREATED_AT||o.created_at).toLocaleDateString('en-PH',{month:'short',day:'numeric'});
+      if(!dailyMap[d])dailyMap[d]={count:0,revenue:0};
+      dailyMap[d].count++; dailyMap[d].revenue+=parseFloat(o.TOTAL||o.total||0);
     });
-    const dailyDates = Object.keys(dailyMap);
-    const dailyRevs  = dailyDates.map(d => +dailyMap[d].revenue.toFixed(2));
+    const dailyDates=Object.keys(dailyMap);
+    const dailyRevs=dailyDates.map(d=>+dailyMap[d].revenue.toFixed(2));
 
-    // Daily Sales chart
-    if (dailyChart) dailyChart.destroy();
-    dailyChart = new Chart(document.getElementById('daily-chart'), {
-      type: 'bar',
-      data: { labels: dailyDates, datasets: [{ label: 'Revenue (₱)', data: dailyRevs, backgroundColor: 'rgba(220,38,38,0.7)', borderRadius: 4 }] },
-      options: { responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{ callback: v=>'₱'+v } } } }
+    if(dailyChart)dailyChart.destroy();
+    dailyChart=new Chart(document.getElementById('daily-chart'),{
+      type:'bar',
+      data:{labels:dailyDates,datasets:[{label:'Revenue (₱)',data:dailyRevs,backgroundColor:'rgba(220,38,38,0.7)',borderRadius:4}]},
+      options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'₱'+v}}}}
     });
 
-    // Top products from /api/admin/reports (filtered by period approximation via product sales)
-    const topProducts = productSales.slice(0, 8);
-    if (productsChart) productsChart.destroy();
-    productsChart = new Chart(document.getElementById('products-chart'), {
-      type: 'bar',
-      data: {
-        labels: topProducts.map(p => (p.PRODUCT_NAME||p.product_name||'').slice(0,18)),
-        datasets: [{ label: 'Qty Sold', data: topProducts.map(p=>p.TOTAL_SOLD||p.total_sold||0), backgroundColor:'rgba(249,115,22,0.7)', borderRadius:4 }]
-      },
-      options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true}} }
+    const topProducts=productSales.slice(0,8);
+    if(productsChart)productsChart.destroy();
+    productsChart=new Chart(document.getElementById('products-chart'),{
+      type:'bar',
+      data:{labels:topProducts.map(p=>(p.PRODUCT_NAME||p.product_name||'').slice(0,18)),datasets:[{label:'Qty Sold',data:topProducts.map(p=>p.TOTAL_SOLD||p.total_sold||0),backgroundColor:'rgba(249,115,22,0.7)',borderRadius:4}]},
+      options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}
     });
 
-    // Order type chart
-    const delivery = completed.filter(o=>(o.ORDER_TYPE||o.order_type)==='Delivery').length;
-    const pickup   = completed.filter(o=>(o.ORDER_TYPE||o.order_type)==='Pick-up').length;
-    if (typeChart) typeChart.destroy();
-    typeChart = new Chart(document.getElementById('type-chart'), {
+    const delivery=completed.filter(o=>(o.ORDER_TYPE||o.order_type)==='Delivery').length;
+    const pickup=completed.filter(o=>(o.ORDER_TYPE||o.order_type)==='Pick-up').length;
+    if(typeChart)typeChart.destroy();
+    typeChart=new Chart(document.getElementById('type-chart'),{
       type:'doughnut',
-      data:{ labels:['Delivery','Pick-up'], datasets:[{ data:[delivery,pickup], backgroundColor:['#dc2626','#f97316'], borderWidth:0 }] },
-      options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } }
+      data:{labels:['Delivery','Pick-up'],datasets:[{data:[delivery,pickup],backgroundColor:['#dc2626','#f97316'],borderWidth:0}]},
+      options:{responsive:true,plugins:{legend:{position:'bottom'}}}
     });
 
-    // Payment chart
-    const cash   = completed.filter(o=>(o.PAYMENT_METHOD||o.payment_method)==='Cash').length;
-    const online = completed.filter(o=>(o.PAYMENT_METHOD||o.payment_method)==='Online Transfer').length;
-    if (paymentChart) paymentChart.destroy();
-    paymentChart = new Chart(document.getElementById('payment-chart'), {
+    const cash=completed.filter(o=>(o.PAYMENT_METHOD||o.payment_method)==='Cash').length;
+    const online=completed.filter(o=>(o.PAYMENT_METHOD||o.payment_method)==='Online Transfer').length;
+    if(paymentChart)paymentChart.destroy();
+    paymentChart=new Chart(document.getElementById('payment-chart'),{
       type:'doughnut',
-      data:{ labels:['Cash','Online Transfer'], datasets:[{ data:[cash,online], backgroundColor:['#16a34a','#2563eb'], borderWidth:0 }] },
-      options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } }
+      data:{labels:['Cash','Online Transfer'],datasets:[{data:[cash,online],backgroundColor:['#16a34a','#2563eb'],borderWidth:0}]},
+      options:{responsive:true,plugins:{legend:{position:'bottom'}}}
     });
 
-    // Product sales table
-    const totalRevenue = revenue || 1;
-    document.getElementById('product-sales-tbody').innerHTML = topProducts.map((p,i) => {
-      const pRev   = parseFloat(p.TOTAL_REVENUE||p.total_revenue||0);
-      const pSold  = p.TOTAL_SOLD||p.total_sold||0;
-      const share  = ((pRev / totalRevenue)*100).toFixed(1);
-      const medals = ['🥇','🥈','🥉'];
-      return `<tr>
+    const totalRevenue=revenue||1;
+    document.getElementById('product-sales-tbody').innerHTML=topProducts.map((p,i)=>{
+      const pRev=parseFloat(p.TOTAL_REVENUE||p.total_revenue||0);
+      const pSold=p.TOTAL_SOLD||p.total_sold||0;
+      const share=((pRev/totalRevenue)*100).toFixed(1);
+      const medals=['🥇','🥈','🥉'];
+      return`<tr>
         <td style="font-size:18px;">${medals[i]||`#${i+1}`}</td>
         <td style="font-weight:600;">${p.PRODUCT_NAME||p.product_name||'—'}</td>
         <td>${pSold}</td>
@@ -268,28 +205,27 @@ async function loadReport() {
       </tr>`;
     }).join('');
 
-    // Daily summary table
-    document.getElementById('daily-tbody').innerHTML = dailyDates.map(d => {
-      const row = dailyMap[d];
-      return `<tr>
+    document.getElementById('daily-tbody').innerHTML=dailyDates.map(d=>{
+      const row=dailyMap[d];
+      return`<tr>
         <td style="font-weight:500;">${d}</td>
         <td>${row.count}</td>
         <td style="font-weight:600;color:#dc2626;">₱${row.revenue.toFixed(2)}</td>
-        <td style="color:var(--gray-500);">₱${row.count ? (row.revenue/row.count).toFixed(2) : '0.00'}</td>
+        <td style="color:var(--gray-500);">₱${row.count?(row.revenue/row.count).toFixed(2):'0.00'}</td>
       </tr>`;
     }).reverse().join('');
 
-    document.getElementById('loading').style.display      = 'none';
-    document.getElementById('report-content').style.display = 'block';
+    document.getElementById('loading').style.display='none';
+    document.getElementById('report-content').style.display='block';
   } catch(e) {
-    document.getElementById('loading').textContent = 'Failed to load report data.';
+    document.getElementById('loading').textContent='Failed to load report data.';
     console.error(e);
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const user = JSON.parse(localStorage.getItem('currentUser')||'null');
-  if(!user||(user.ROLE!=='admin'&&user.role!=='admin')){ window.location.href=window.location.pathname.split('/admin/')[0]+'/login.html'; return; }
+document.addEventListener('DOMContentLoaded',()=>{
+  const user=JSON.parse(localStorage.getItem('currentUser')||'null');
+  if(!user||(user.ROLE!=='admin'&&user.role!=='admin')){window.location.href='../login.html';return;}
   loadReport();
 });
 </script>
