@@ -94,7 +94,7 @@ const NavInit = {
           <p style="font-size:13px;font-weight:600;color:#111;margin-bottom:1px;">${name}</p>
           <p style="font-size:11px;color:#888;">${user.email || user.EMAIL || ''}</p></div>
           ${Auth.isAdmin() ? `<a href="javascript:void(0)" onclick="goTo('admin/dashboard.html')" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">⚙ Admin Panel</a>` : ''}
-          <a href="javascript:void(0)" onclick="goTo('orders.html')" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">📦 My Orders</a>
+          <a href="javascript:void(0)" onclick="goTo('orders.html')" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">My Orders</a>
           <button onclick="Auth.logout()" style="display:block;width:100%;text-align:left;padding:10px 16px;font-size:13px;color:#dc2626;background:none;border:none;border-top:1px solid #f0f0f0;cursor:pointer;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background=''">Sign Out</button>`;
         document.body.appendChild(dd);
         setTimeout(() => document.addEventListener('click', function h() { dd?.remove(); document.removeEventListener('click', h); }), 50);

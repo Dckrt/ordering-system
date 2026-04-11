@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products - Admin | Batangas Premium Naga</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
+  <style>
+    .product-img-thumb {
+      width: 48px; height: 48px;
+      border-radius: 8px; object-fit: cover;
+      background: var(--gray-100);
+    }
+    .badge-instock  { background: #dcfce7; color: #16a34a; }
+    .badge-outstock { background: #fee2e2; color: #dc2626; }
+
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .modal-box {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto;
+    }
+
+    /* ── Upload area ── */
+    .upload-area {
+      border: 2px dashed #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      position: relative;
+    }
+    .upload-area:hover,
+    .upload-area.drag-over {
+      border-color: #dc2626;
+      background: #fff5f5;
+    }
+    .upload-area input[type="file"] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .upload-preview {
+      width: 100%; max-height: 180px;
+      object-fit: contain;
+      border-radius: 8px;
+      display: none;
+      margin-top: 10px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-header">
+      <a href="../index.html" class="logo" style="text-decoration:none;">
+        <div class="logo-icon"><i class="fas fa-utensils"></i></div>
+        <div>
+          <div class="logo-text" style="color:white;">Batangas Premium Naga</div>
+          <div class="logo-subtext" style="color:rgba(255,255,255,0.7);">Noona's Food Station</div>
+        </div>
+      </a>
+    </div>
+    <nav class="admin-sidebar-nav">
+      <a href="dashboard.html" class="admin-nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+      <a href="orders.html"    class="admin-nav-item"><i class="fas fa-list-check"></i> Orders</a>
+      <a href="products.html"  class="admin-nav-item active"><i class="fas fa-box"></i> Products</a>
+      <a href="categories.html" class="admin-nav-item"><i class="fas fa-tags"></i> Categories</a>
+      <a href="customers.html" class="admin-nav-item"><i class="fas fa-users"></i> Customers</a>
+      <a href="reports.html"   class="admin-nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
+      <a href="../index.html"  class="admin-nav-item" style="margin-top:auto;">
+        <i class="fas fa-arrow-left"></i> Back to Site
+      </a>
+      <button onclick="Auth.logout()" class="admin-nav-item"
+        style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="admin-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:4px;">Products</h1>
+        <p style="color:var(--gray-500);font-size:14px;" id="product-count">Loading...</p>
+      </div>
+      <button onclick="openModal()" class="btn btn-primary">
+        <i class="fas fa-plus" style="margin-right:8px;"></i>Add Product
+      </button>
+    </div>
+
+    <!-- Search + filter -->
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <input id="search-input" type="text" placeholder="Search products..." class="form-input"
+        style="max-width:280px;" oninput="filterProducts()">
+      <select id="cat-filter" class="form-select" style="max-width:200px;" onchange="filterProducts()">
+        <option value="">All Categories</option>
+      </select>
+      <select id="stock-filter" class="form-select" style="max-width:160px;" onchange="filterProducts()">
+        <option value="">All Stock</option>
+        <option value="1">In Stock</option>
+        <option value="0">Out of Stock</option>
+      </select>
+    </div>
+
+    <div class="table-container">
+      <div id="loading" style="text-align:center;padding:48px;color:var(--gray-500);">
+        <div style="width:32px;height:32px;border:3px solid #dc2626;border-top-color:transparent;
+          border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>
+        Loading products...
+      </div>
+      <table class="table" id="products-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>Image</th><th>Name</th><th>Category</th>
+            <th>Price</th><th>Stock</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="products-tbody"></tbody>
+      </table>
+      <div id="no-results" style="display:none;text-align:center;padding:48px;color:var(--gray-500);">
+        No products found.
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add / Edit Modal -->
+<div id="modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h2 id="modal-title" style="font-size:1.25rem;font-weight:700;margin-bottom:20px;">Add Product</h2>
+    <form id="product-form">
+      <input type="hidden" id="product-id">
+
+      <div class="form-group">
+        <label class="form-label">Product Name *</label>
+        <input type="text" id="p-name" class="form-input" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Category *</label>
+        <select id="p-category" class="form-select" required></select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea id="p-desc" class="form-textarea" rows="3"></textarea>
+      </div>
+
+      <div class="grid grid-cols-2" style="gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Price (₱) *</label>
+          <input type="number" id="p-price" class="form-input" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stock Status</label>
+          <select id="p-stock" class="form-select">
+            <option value="1">In Stock</option>
+            <option value="0">Out of Stock</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ── Image Upload ── -->
+      <div class="form-group">
+        <label class="form-label">Product Image</label>
+
+        <!-- Upload area -->
+        <div class="upload-area" id="upload-area"
+          ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+          <input type="file" id="p-image-file" accept="image/*" onchange="onFileChange(event)">
+          <div id="upload-placeholder">
+            <i class="fas fa-cloud-arrow-up" style="font-size:32px;color:#9ca3af;margin-bottom:8px;display:block;"></i>
+            <p style="font-size:14px;color:#6b7280;margin:0;">Click to upload or drag & drop</p>
+            <p style="font-size:12px;color:#9ca3af;margin:4px 0 0;">PNG, JPG, WEBP — max 5MB</p>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div id="preview-wrap" style="display:none;margin-top:10px;position:relative;">
+          <img id="img-preview-el" style="width:100%;max-height:180px;object-fit:contain;border-radius:8px;border:1px solid #e5e7eb;">
+          <button type="button" onclick="clearImage()"
+            style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;
+              background:rgba(0,0,0,0.5);border:none;color:white;cursor:pointer;font-size:14px;
+              display:flex;align-items:center;justify-content:center;">✕</button>
+          <p id="file-name" style="font-size:12px;color:#6b7280;margin-top:4px;text-align:center;"></p>
+        </div>
+
+        <!-- Existing image URL (shown on edit if no new file chosen) -->
+        <input type="hidden" id="p-image-existing">
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:24px;">
+        <button type="submit" class="btn btn-primary" id="save-btn" style="flex:1;">
+          <i class="fas fa-floppy-disk" style="margin-right:6px;"></i>Save Product
+        </button>
+        <button type="button" onclick="closeModal()" class="btn btn-outline" style="flex:1;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div id="delete-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box" style="max-width:400px;">
+    <h2 style="font-size:1.1rem;font-weight:700;color:#dc2626;margin-bottom:12px;">
+      <i class="fas fa-triangle-exclamation" style="margin-right:8px;"></i>Delete Product
+    </h2>
+    <p style="color:var(--gray-600);margin-bottom:24px;">
+      Are you sure you want to delete <strong id="delete-name"></strong>? This cannot be undone.
+    </p>
+    <div style="display:flex;gap:12px;">
+      <button id="confirm-delete-btn" class="btn btn-primary" style="background:#dc2626;flex:1;">Delete</button>
+      <button onclick="closeDeleteModal()" class="btn btn-outline" style="flex:1;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/cart.js"></script>
+<script src="../js/app.js"></script>
+<script>
+let allProducts   = [];
+let allCategories = [];
+let deleteTargetId = null;
+let selectedFileBase64 = null;  // stores base64 of chosen image
+
+// ── Load ─────────────────────────────────────────────────────
+async function loadAll() {
+  try {
+    const [products, cats] = await Promise.all([
+      api.getProducts(),
+      api.getCategories_admin()
+    ]);
+    allProducts   = products;
+    allCategories = cats;
+
+    const catFilter = document.getElementById('cat-filter');
+    catFilter.innerHTML = '<option value="">All Categories</option>' +
+      cats.map(c => {
+        const id   = c.category_id || c.CATEGORY_ID;
+        const name = c.name        || c.NAME;
+        return `<option value="${id}">${name}</option>`;
+      }).join('');
+
+    document.getElementById('product-count').textContent =
+      `${products.length} product${products.length !== 1 ? 's' : ''}`;
+    document.getElementById('loading').style.display = 'none';
+    renderTable(products);
+  } catch(e) {
+    document.getElementById('loading').innerHTML =
+      `<p style="color:#dc2626;">Failed to load. Is the server running?</p>`;
+  }
+}
+
+// ── Render table ─────────────────────────────────────────────
+function renderTable(products) {
+  const table = document.getElementById('products-table');
+  const tbody = document.getElementById('products-tbody');
+  const noRes = document.getElementById('no-results');
+  if (!products.length) {
+    table.style.display = 'none'; noRes.style.display = 'block'; return;
+  }
+  noRes.style.display = 'none'; table.style.display = 'table';
+  tbody.innerHTML = products.map(p => {
+    const id      = p.id || p.product_id;
+    const inStock = p.in_stock == 1;
+    return `<tr>
+      <td>
+        <img src="${p.image || 'https://via.placeholder.com/48'}"
+          class="product-img-thumb"
+          onerror="this.src='https://via.placeholder.com/48'">
+      </td>
+      <td>
+        <div style="font-weight:600;">${p.name}</div>
+        <div style="font-size:12px;color:var(--gray-500);">${p.description || ''}</div>
+      </td>
+      <td>${p.category || '—'}</td>
+      <td style="font-weight:600;color:var(--primary-red);">₱${parseFloat(p.price).toFixed(2)}</td>
+      <td>
+        <span class="badge ${inStock ? 'badge-instock' : 'badge-outstock'}">
+          ${inStock ? 'In Stock' : 'Out of Stock'}
+        </span>
+      </td>
+      <td>
+        <div class="table-actions">
+          <button class="icon-btn edit" onclick='editProduct(${JSON.stringify(p)})' title="Edit">
+            <i class="fas fa-pen"></i>
+          </button>
+          <button class="icon-btn delete"
+            onclick="confirmDelete(${id}, '${p.name.replace(/'/g,"\\'")}')" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Filter ───────────────────────────────────────────────────
+function filterProducts() {
+  const q     = document.getElementById('search-input').value.toLowerCase();
+  const catId = document.getElementById('cat-filter').value;
+  const stock = document.getElementById('stock-filter').value;
+
+  let filtered = allProducts.filter(p => {
+    const matchQ     = !q || p.name.toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q);
+    const matchStock = stock === '' || String(p.in_stock) === stock;
+    return matchQ && matchStock;
+  });
+
+  if (catId) {
+    const cat = allCategories.find(c => (c.category_id||c.CATEGORY_ID) == catId);
+    const catName = cat ? (cat.name || cat.NAME) : null;
+    if (catName) filtered = filtered.filter(p => p.category === catName);
+  }
+
+  renderTable(filtered);
+}
+
+// ── Modal open/close ─────────────────────────────────────────
+function openModal(data = null) {
+  document.getElementById('modal-title').textContent = data ? 'Edit Product' : 'Add Product';
+  document.getElementById('product-id').value        = data ? (data.id || data.product_id) : '';
+  document.getElementById('p-name').value            = data?.name        || '';
+  document.getElementById('p-desc').value            = data?.description || '';
+  document.getElementById('p-price').value           = data?.price       || '';
+  document.getElementById('p-stock').value           = data?.in_stock !== undefined ? data.in_stock : '1';
+  document.getElementById('p-image-existing').value  = data?.image       || '';
+
+  // Category dropdown
+  const sel = document.getElementById('p-category');
+  sel.innerHTML = allCategories.map(c => {
+    const id   = c.category_id || c.CATEGORY_ID;
+    const name = c.name        || c.NAME;
+    return `<option value="${id}" ${data?.category === name ? 'selected' : ''}>${name}</option>`;
+  }).join('');
+
+  // Reset image upload
+  clearImage();
+  // If editing and has existing image, show it in preview
+  if (data?.image) {
+    showPreview(data.image, 'Current image');
+    selectedFileBase64 = null; // no new file yet
+  }
+
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function editProduct(p) { openModal(p); }
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+  clearImage();
+}
+
+// ── Image upload handlers ─────────────────────────────────────
+function onFileChange(e) {
+  const file = e.target.files[0];
+  if (file) handleFile(file);
+}
+
+function onDragOver(e) {
+  e.preventDefault();
+  document.getElementById('upload-area').classList.add('drag-over');
+}
+
+function onDragLeave(e) {
+  document.getElementById('upload-area').classList.remove('drag-over');
+}
+
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-area').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) handleFile(file);
+}
+
+function handleFile(file) {
+  if (file.size > 5 * 1024 * 1024) {
+    Utils.showToast('Image must be under 5MB', 'error'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    selectedFileBase64 = e.target.result; // full base64 data URL
+    showPreview(e.target.result, file.name);
+  };
+  reader.readAsDataURL(file);
+}
+
+function showPreview(src, name) {
+  document.getElementById('img-preview-el').src  = src;
+  document.getElementById('file-name').textContent = name || '';
+  document.getElementById('preview-wrap').style.display  = 'block';
+  document.getElementById('upload-area').style.display   = 'none';
+}
+
+function clearImage() {
+  selectedFileBase64 = null;
+  document.getElementById('p-image-file').value          = '';
+  document.getElementById('img-preview-el').src          = '';
+  document.getElementById('file-name').textContent       = '';
+  document.getElementById('preview-wrap').style.display  = 'none';
+  document.getElementById('upload-area').style.display   = 'block';
+}
+
+// ── Save product ──────────────────────────────────────────────
+document.getElementById('product-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('save-btn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Saving...';
+  btn.disabled = true;
+
+  const id = document.getElementById('product-id').value;
+
+  // Use new uploaded image (base64) OR existing URL
+  const imageValue = selectedFileBase64 || document.getElementById('p-image-existing').value || null;
+
+  const data = {
+    category_id: parseInt(document.getElementById('p-category').value),
+    name:        document.getElementById('p-name').value,
+    description: document.getElementById('p-desc').value,
+    price:       parseFloat(document.getElementById('p-price').value),
+    image_url:   imageValue,
+    in_stock:    parseInt(document.getElementById('p-stock').value),
+  };
+
+  try {
+    const result = id ? await api.updateProduct(id, data) : await api.addProduct(data);
+    if (result.success || result.product_id) {
+      closeModal();
+      await loadAll();
+      Utils.showToast(id ? 'Product updated!' : 'Product added!', 'success');
+    } else {
+      Utils.showToast(result.message || 'Failed to save', 'error');
+    }
+  } catch {
+    Utils.showToast('Server error', 'error');
+  }
+
+  btn.innerHTML = '<i class="fas fa-floppy-disk" style="margin-right:6px;"></i>Save Product';
+  btn.disabled = false;
+});
+
+// ── Delete ────────────────────────────────────────────────────
+function confirmDelete(id, name) {
+  deleteTargetId = id;
+  document.getElementById('delete-name').textContent = name;
+  document.getElementById('delete-modal').style.display = 'flex';
+}
+function closeDeleteModal() {
+  document.getElementById('delete-modal').style.display = 'none';
+  deleteTargetId = null;
+}
+
+document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+  if (!deleteTargetId) return;
+  try {
+    await api.deleteProduct(deleteTargetId);
+    closeDeleteModal();
+    await loadAll();
+    Utils.showToast('Product deleted', 'info');
+  } catch {
+    Utils.showToast('Failed to delete', 'error');
+  }
+});
+
+// Close modal on backdrop click
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+// ── Init ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+  if (!user || (user.ROLE !== 'admin' && user.role !== 'admin')) {
+    window.location.href = '../login.html'; return;
+  }
+  loadAll();
+});
+</script>
+</body>
+</html>
