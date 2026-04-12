@@ -18,13 +18,12 @@
       gap: 14px;
       position: relative;
       transition: opacity .22s, transform .22s;
+      animation: fadeInUp .25s ease both;
     }
     .cart-item img {
       width: 84px; height: 84px;
-      object-fit: cover;
-      border-radius: 12px;
-      background: #f3f4f6;
-      flex-shrink: 0;
+      object-fit: cover; border-radius: 12px;
+      background: #f3f4f6; flex-shrink: 0;
     }
     .item-body { flex: 1; min-width: 0; padding-right: 28px; }
     .item-cat  { font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
@@ -32,10 +31,22 @@
     .item-unit { font-size: 13px; color: #dc2626; font-weight: 600; margin-bottom: 10px; }
     .item-row  { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 
-    .qty-ctrl  { display: flex; align-items: center; border: 1.5px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
-    .qty-btn   { width: 36px; height: 36px; background: #f9fafb; border: none; font-size: 18px; cursor: pointer; color: #374151; display: flex; align-items: center; justify-content: center; transition: background .15s; }
-    .qty-btn:hover { background: #f3f4f6; }
-    .qty-val   { min-width: 36px; text-align: center; font-weight: 700; font-size: 15px; color: #111; }
+    .qty-ctrl { display: flex; align-items: center; border: 1.5px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+    .qty-btn {
+      width: 36px; height: 36px; background: #f9fafb;
+      border: none; font-size: 18px; cursor: pointer;
+      color: #374151; display: flex; align-items: center;
+      justify-content: center; transition: background .15s;
+      user-select: none;
+    }
+    .qty-btn:hover:not(.qty-disabled) { background: #f3f4f6; }
+    /* Grayed-out minus when qty = 1 */
+    .qty-btn.qty-disabled {
+      color: #d1d5db;
+      cursor: not-allowed;
+      background: #f9fafb;
+    }
+    .qty-val { min-width: 36px; text-align: center; font-weight: 700; font-size: 15px; color: #111; }
 
     .remove-btn {
       position: absolute; top: 10px; right: 10px;
@@ -83,11 +94,9 @@
       from { opacity: 0; transform: translateY(12px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .cart-item { animation: fadeInUp .25s ease both; }
   </style>
 </head>
 <body>
-  <!-- Header -->
   <header class="header">
     <div class="container header-content">
       <a href="index.html" class="logo">
@@ -118,7 +127,6 @@
     </div>
   </header>
 
-  <!-- Hero -->
   <section class="hero">
     <div class="container">
       <h1>Shopping Cart</h1>
@@ -126,11 +134,9 @@
     </div>
   </section>
 
-  <!-- Content -->
   <main style="padding: var(--space-8) 0; min-height: 60vh;">
     <div class="container" style="max-width: 860px;">
 
-      <!-- Page title row -->
       <div style="display:flex;align-items:center;margin-bottom:20px;">
         <span style="font-size:1.1rem;font-weight:700;color:#111;">Your Items</span>
         <span class="item-count-pill" id="item-count-pill">0</span>
@@ -154,8 +160,7 @@
       <div id="cart-content">
         <div id="cart-items" style="display:flex;flex-direction:column;gap:12px;"></div>
 
-        <!-- Order Summary -->
-        <div class="summary-box" id="summary-box">
+        <div class="summary-box">
           <p style="font-size:15px;font-weight:700;color:#111;margin-bottom:12px;">Order Summary</p>
           <div class="summary-row">
             <span class="label">Subtotal</span>
@@ -172,7 +177,6 @@
           </div>
         </div>
 
-        <!-- Bottom actions -->
         <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;align-items:center;">
           <a href="menu.html" class="btn btn-outline" style="display:inline-flex;align-items:center;gap:6px;">
             <i class="fas fa-plus" style="font-size:12px;"></i> Add more items
@@ -183,7 +187,6 @@
     </div>
   </main>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
@@ -229,19 +232,16 @@
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    renderCart();
-  });
+  document.addEventListener('DOMContentLoaded', () => { renderCart(); });
 
   function renderCart() {
-    const items    = Cart.getItems();
-    const emptyEl  = document.getElementById('empty-cart');
-    const contentEl= document.getElementById('cart-content');
-    const itemsEl  = document.getElementById('cart-items');
-    const pillEl   = document.getElementById('item-count-pill');
-    const totalItems = Cart.getTotalItems();
+    const items     = Cart.getItems();
+    const emptyEl   = document.getElementById('empty-cart');
+    const contentEl = document.getElementById('cart-content');
+    const itemsEl   = document.getElementById('cart-items');
+    const pillEl    = document.getElementById('item-count-pill');
 
-    pillEl.textContent = totalItems;
+    pillEl.textContent = Cart.getTotalItems();
 
     if (items.length === 0) {
       emptyEl.classList.remove('hidden');
@@ -251,58 +251,70 @@
     emptyEl.classList.add('hidden');
     contentEl.style.display = 'block';
 
-    itemsEl.innerHTML = items.map((item, idx) => `
-      <div class="cart-item" id="cart-item-${item.id}" style="animation-delay:${idx * 0.05}s">
-        <button class="remove-btn" onclick="cartRemove(${item.id})" title="Remove">✕</button>
-        <img src="${item.image || 'https://via.placeholder.com/84'}"
-          onerror="this.src='https://via.placeholder.com/84'" alt="${item.name}">
-        <div class="item-body">
-          <p class="item-cat">${item.category || ''}</p>
-          <p class="item-name">${item.name}</p>
-          <p class="item-unit">₱${parseFloat(item.price).toFixed(2)} each</p>
-          <div class="item-row">
-            <div class="qty-ctrl">
-              <button class="qty-btn" onclick="cartChangeQty(${item.id}, -1)">−</button>
-              <span class="qty-val">${item.quantity}</span>
-              <button class="qty-btn" onclick="cartChangeQty(${item.id}, 1)">+</button>
+    itemsEl.innerHTML = items.map((item, idx) => {
+      // ✅ atMin = true when quantity is 1 → disable minus button
+      const atMin = item.quantity <= 1;
+      return `
+        <div class="cart-item" id="cart-item-${item.id}" style="animation-delay:${idx * 0.05}s">
+          <button class="remove-btn" onclick="cartRemove(${item.id})" title="Remove item">✕</button>
+          <img src="${item.image || 'https://via.placeholder.com/84'}"
+            onerror="this.src='https://via.placeholder.com/84'" alt="${item.name}">
+          <div class="item-body">
+            <p class="item-cat">${item.category || ''}</p>
+            <p class="item-name">${item.name}</p>
+            <p class="item-unit">₱${parseFloat(item.price).toFixed(2)} each</p>
+            <div class="item-row">
+              <div class="qty-ctrl">
+                <!-- Minus: disabled class + no onclick when qty = 1 -->
+                <button
+                  class="qty-btn ${atMin ? 'qty-disabled' : ''}"
+                  ${atMin ? '' : `onclick="cartChangeQty(${item.id}, -1)"`}
+                  title="${atMin ? 'Minimum is 1' : 'Decrease quantity'}">−</button>
+                <span class="qty-val">${item.quantity}</span>
+                <button class="qty-btn" onclick="cartChangeQty(${item.id}, 1)" title="Increase quantity">+</button>
+              </div>
+              <span style="font-size:16px;font-weight:800;color:#111;">
+                ₱${(item.price * item.quantity).toFixed(2)}
+              </span>
+              <button class="order-btn"
+                onclick='cartOrderItem(${JSON.stringify(item).replace(/'/g,"&#39;")})'>
+                Order this
+              </button>
             </div>
-            <span style="font-size:16px;font-weight:800;color:#111;">
-              ₱${(item.price * item.quantity).toFixed(2)}
-            </span>
-            <button class="order-btn"
-              onclick='cartOrderItem(${JSON.stringify(item).replace(/'/g,"&#39;")})'>
-              Order this
-            </button>
           </div>
-        </div>
-      </div>
-    `).join('');
+        </div>`;
+    }).join('');
 
     const subtotal = Cart.getTotalPrice();
     document.getElementById('summary-subtotal').textContent = '₱' + subtotal.toFixed(2);
     document.getElementById('summary-total').textContent    = '₱' + subtotal.toFixed(2);
   }
 
+  // ✅ Never goes below 1 — uses saveCart directly to bypass cart.js auto-remove
   window.cartChangeQty = (id, delta) => {
-    const item = Cart.getItems().find(i => i.id === id);
-    if (item && item.quantity === 1 && delta === -1) {
-      const row = document.getElementById('cart-item-' + id);
-      if (row) {
-        row.style.opacity = '0'; row.style.transform = 'translateX(16px)';
-        setTimeout(() => { Cart.updateQuantity(id, -1); renderCart(); }, 220);
-      }
-      return;
-    }
-    Cart.updateQuantity(id, delta);
+    const cart = Cart.getCart();
+    const item = cart.find(i => i.id === id);
+    if (!item) return;
+
+    const newQty = item.quantity + delta;
+    if (newQty < 1) return; // hard block — quantity cannot go below 1
+
+    item.quantity = newQty;
+    Cart.saveCart(cart);
+    Cart.updateBadge();
     renderCart();
   };
 
+  // Only the ✕ button removes items
   window.cartRemove = (id) => {
     const row = document.getElementById('cart-item-' + id);
     if (row) {
-      row.style.opacity = '0'; row.style.transform = 'translateX(20px)';
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(20px)';
       setTimeout(() => { Cart.removeItem(id); renderCart(); }, 220);
-    } else { Cart.removeItem(id); renderCart(); }
+    } else {
+      Cart.removeItem(id); renderCart();
+    }
   };
 
   window.cartOrderItem = (item) => {
