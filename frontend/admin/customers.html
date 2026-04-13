@@ -10,6 +10,11 @@
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;}
     .modal-box{background:white;border-radius:var(--radius-lg);padding:32px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
     .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#dc2626,#f97316);display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:700;flex-shrink:0;}
+    .badge-blocked{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;}
+    .badge-active{background:#dcfce7;color:#16a34a;border:1px solid #86efac;}
+    .password-wrapper{position:relative;}
+    .password-wrapper .form-input{padding-right:44px;}
+    .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;font-size:15px;}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
@@ -21,7 +26,7 @@
         <div class="logo-icon"><i class="fas fa-utensils"></i></div>
         <div>
           <div class="logo-text" style="color:white;">Batangas Premium Naga</div>
-          <div class="logo-subtext" style="color:rgba(255,255,255,0.7);">Admin Panel</div>
+          <div class="logo-subtext" style="color:rgba(255,255,255,0.7);">Noona's Food Station</div>
         </div>
       </a>
     </div>
@@ -45,16 +50,26 @@
         <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:4px;">Customers</h1>
         <p style="color:var(--gray-500);font-size:14px;" id="cust-count">Loading...</p>
       </div>
+      <button onclick="openAddModal()" class="btn btn-primary">
+        <i class="fas fa-user-plus" style="margin-right:8px;"></i>Add Customer
+      </button>
     </div>
 
-    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
-      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-total" style="font-size:1.5rem;">0</div><div class="stats-label">Total Customers</div></div><div class="stats-icon blue"><i class="fas fa-users"></i></div></div></div>
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-total" style="font-size:1.5rem;">0</div><div class="stats-label">Total</div></div><div class="stats-icon blue"><i class="fas fa-users"></i></div></div></div>
       <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-new" style="font-size:1.5rem;">0</div><div class="stats-label">New This Month</div></div><div class="stats-icon green"><i class="fas fa-user-plus"></i></div></div></div>
       <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-ordered" style="font-size:1.5rem;">0</div><div class="stats-label">With Orders</div></div><div class="stats-icon orange"><i class="fas fa-bag-shopping"></i></div></div></div>
+      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-blocked" style="font-size:1.5rem;">0</div><div class="stats-label">Blocked</div></div><div class="stats-icon red"><i class="fas fa-ban"></i></div></div></div>
     </div>
 
-    <div style="margin-bottom:16px;">
-      <input id="search-input" type="text" placeholder="Search by name, email or phone..." class="form-input" style="max-width:360px;" oninput="filterCustomers()">
+    <!-- Search + filter -->
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <input id="search-input" type="text" placeholder="Search name, email or phone..." class="form-input" style="max-width:320px;" oninput="filterCustomers()">
+      <select id="status-filter" class="form-select" style="max-width:160px;" onchange="filterCustomers()">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="blocked">Blocked</option>
+      </select>
     </div>
 
     <div class="table-container">
@@ -64,7 +79,7 @@
       </div>
       <table class="table" id="cust-table" style="display:none;">
         <thead>
-          <tr><th>Customer</th><th>Email</th><th>Phone</th><th>Registered</th><th>Orders</th><th>Actions</th></tr>
+          <tr><th>Customer</th><th>Email</th><th>Phone</th><th>Registered</th><th>Orders</th><th>Status</th><th>Actions</th></tr>
         </thead>
         <tbody id="cust-tbody"></tbody>
       </table>
@@ -73,14 +88,55 @@
   </main>
 </div>
 
-<!-- View modal -->
+<!-- View / Edit customer modal -->
 <div id="view-modal" class="modal-overlay" style="display:none;">
   <div class="modal-box">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
       <h2 style="font-size:1.1rem;font-weight:700;margin:0;">Customer Details</h2>
-      <button onclick="document.getElementById('view-modal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);">✕</button>
+      <button onclick="closeViewModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);">✕</button>
     </div>
     <div id="view-content"></div>
+  </div>
+</div>
+
+<!-- Add customer modal -->
+<div id="add-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box" style="max-width:460px;">
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">Add New Customer</h2>
+    <form id="add-form">
+      <div class="form-group">
+        <label class="form-label">Full Name *</label>
+        <input type="text" id="a-name" class="form-input" required placeholder="Juan dela Cruz">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input type="email" id="a-email" class="form-input" required placeholder="user@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <input type="tel" id="a-phone" class="form-input" placeholder="+63 9XX XXX XXXX">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password *</label>
+        <div class="password-wrapper">
+          <input type="password" id="a-pass" class="form-input" required placeholder="Min. 6 characters">
+          <button type="button" class="pw-toggle" onclick="togglePw('a-pass','a-eye')"><i id="a-eye" class="fa-regular fa-eye"></i></button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <select id="a-role" class="form-select">
+          <option value="customer">Customer</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:20px;">
+        <button type="submit" class="btn btn-primary" id="add-btn" style="flex:1;">
+          <i class="fas fa-user-plus" style="margin-right:6px;"></i>Add Customer
+        </button>
+        <button type="button" onclick="closeAddModal()" class="btn btn-outline" style="flex:1;">Cancel</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -89,85 +145,165 @@
 <script src="../js/cart.js"></script>
 <script src="../js/app.js"></script>
 <script>
-let allCustomers=[], allOrders=[];
+let allCustomers = [], allOrders = [];
+
+function togglePw(inputId, iconId) {
+  const input = document.getElementById(inputId), icon = document.getElementById(iconId);
+  if (input.type === 'password') { input.type = 'text'; icon.className = 'fa-regular fa-eye-slash'; }
+  else { input.type = 'password'; icon.className = 'fa-regular fa-eye'; }
+}
 
 async function loadAll() {
   try {
     const [customers, orders] = await Promise.all([api.getCustomers(), api.getAllOrders()]);
-    allCustomers=customers; allOrders=orders;
-    const now=new Date();
-    const thisMonth=customers.filter(c=>{const d=new Date(c.CREATED_AT||c.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
-    const withOrders=new Set(orders.map(o=>o.USER_ID||o.user_id).filter(Boolean)).size;
+    allCustomers = customers; allOrders = orders;
+    const now = new Date();
+    const thisMonth = customers.filter(c => {
+      const d = new Date(c.CREATED_AT || c.created_at);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length;
+    const withOrders = new Set(orders.map(o => o.USER_ID || o.user_id).filter(Boolean)).size;
+    const blocked = customers.filter(c => (c.STATUS || c.status) === 'blocked').length;
     document.getElementById('stat-total').textContent   = customers.length;
     document.getElementById('stat-new').textContent     = thisMonth;
     document.getElementById('stat-ordered').textContent = withOrders;
-    document.getElementById('cust-count').textContent   = `${customers.length} registered customer${customers.length!==1?'s':''}`;
-    document.getElementById('loading').style.display    = 'none';
+    document.getElementById('stat-blocked').textContent = blocked;
+    document.getElementById('cust-count').textContent   = `${customers.length} registered customer${customers.length !== 1 ? 's' : ''}`;
+    document.getElementById('loading').style.display = 'none';
     renderTable(customers);
-  } catch { document.getElementById('loading').textContent='Failed to load.'; }
+  } catch { document.getElementById('loading').textContent = 'Failed to load.'; }
 }
 
 function renderTable(customers) {
-  const table=document.getElementById('cust-table'), tbody=document.getElementById('cust-tbody'), noRes=document.getElementById('no-results');
-  if(!customers.length){table.style.display='none';noRes.style.display='block';return;}
-  noRes.style.display='none'; table.style.display='table';
-  tbody.innerHTML=customers.map(c=>{
-    const id=c.USER_ID||c.user_id, name=c.FULL_NAME||c.full_name||'—', email=c.EMAIL||c.email||'—', phone=c.PHONE||c.phone||'—';
-    const date=new Date(c.CREATED_AT||c.created_at).toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'});
-    const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-    const orderCount=allOrders.filter(o=>(o.USER_ID||o.user_id)===id).length;
-    return `<tr>
+  const table = document.getElementById('cust-table'), tbody = document.getElementById('cust-tbody'), noRes = document.getElementById('no-results');
+  if (!customers.length) { table.style.display = 'none'; noRes.style.display = 'block'; return; }
+  noRes.style.display = 'none'; table.style.display = 'table';
+  tbody.innerHTML = customers.map(c => {
+    const id       = c.USER_ID || c.user_id;
+    const name     = c.FULL_NAME || c.full_name || '—';
+    const email    = c.EMAIL    || c.email    || '—';
+    const phone    = c.PHONE    || c.phone    || '—';
+    const status   = (c.STATUS  || c.status   || 'active').toLowerCase();
+    const date     = new Date(c.CREATED_AT || c.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    const orderCount = allOrders.filter(o => (o.USER_ID || o.user_id) === id).length;
+    const isBlocked  = status === 'blocked';
+    return `<tr style="${isBlocked ? 'opacity:.65;' : ''}">
       <td><div style="display:flex;align-items:center;gap:10px;"><div class="avatar">${initials}</div><span style="font-weight:600;">${name}</span></div></td>
       <td style="color:var(--gray-600);font-size:13px;">${email}</td>
       <td style="font-size:13px;">${phone}</td>
       <td style="font-size:13px;color:var(--gray-500);">${date}</td>
-      <td><span class="badge badge-info">${orderCount} order${orderCount!==1?'s':''}</span></td>
-      <td><button class="btn btn-outline btn-sm" onclick="viewCustomer(${id})"><i class="fas fa-eye" style="margin-right:4px;"></i>View</button></td>
+      <td><span class="badge badge-info">${orderCount} order${orderCount !== 1 ? 's' : ''}</span></td>
+      <td><span class="badge ${isBlocked ? 'badge-blocked' : 'badge-active'}">${isBlocked ? 'Blocked' : 'Active'}</span></td>
+      <td>
+        <div class="table-actions">
+          <button class="btn btn-outline btn-sm" onclick="viewCustomer(${id})" title="View"><i class="fas fa-eye"></i></button>
+          <button class="btn btn-outline btn-sm" onclick="toggleBlock(${id},'${status}')" title="${isBlocked ? 'Unblock' : 'Block'}"
+            style="${isBlocked ? 'color:#16a34a;border-color:#86efac;' : 'color:#dc2626;border-color:#fca5a5;'}">
+            <i class="fas ${isBlocked ? 'fa-unlock' : 'fa-ban'}"></i>
+          </button>
+        </div>
+      </td>
     </tr>`;
   }).join('');
 }
 
 function filterCustomers() {
-  const q=document.getElementById('search-input').value.toLowerCase();
-  renderTable(allCustomers.filter(c=>(c.FULL_NAME||c.full_name||'').toLowerCase().includes(q)||(c.EMAIL||c.email||'').toLowerCase().includes(q)||(c.PHONE||c.phone||'').toLowerCase().includes(q)));
+  const q  = document.getElementById('search-input').value.toLowerCase();
+  const st = document.getElementById('status-filter').value;
+  renderTable(allCustomers.filter(c => {
+    const matchQ  = !q  || (c.FULL_NAME || c.full_name || '').toLowerCase().includes(q) || (c.EMAIL || c.email || '').toLowerCase().includes(q) || (c.PHONE || c.phone || '').toLowerCase().includes(q);
+    const matchSt = !st || (c.STATUS || c.status || 'active').toLowerCase() === st;
+    return matchQ && matchSt;
+  }));
+}
+
+async function toggleBlock(id, currentStatus) {
+  const isBlocked = currentStatus === 'blocked';
+  const action    = isBlocked ? 'unblock' : 'block';
+  if (!confirm(`Are you sure you want to ${action} this customer?`)) return;
+  try {
+    const res = await fetch(`http://localhost:3000/api/admin/customers/${id}/status`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: isBlocked ? 'active' : 'blocked' })
+    }).then(r => r.json());
+    if (res.success) { Utils.showToast(`Customer ${action}ed`, 'success'); await loadAll(); }
+    else { Utils.showToast(res.message || 'Failed', 'error'); }
+  } catch { Utils.showToast('Server error', 'error'); }
 }
 
 function viewCustomer(id) {
-  const c=allCustomers.find(x=>(x.USER_ID||x.user_id)===id); if(!c) return;
-  const orders=allOrders.filter(o=>(o.USER_ID||o.user_id)===id);
-  const name=c.FULL_NAME||c.full_name||'—', email=c.EMAIL||c.email||'—', phone=c.PHONE||c.phone||'—';
-  const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  const totalSpent=orders.filter(o=>(o.STATUS||o.status)!=='Cancelled').reduce((s,o)=>s+parseFloat(o.TOTAL||o.total||0),0);
-  const statusColors={Pending:'badge-warning',Confirmed:'badge-info',Preparing:'badge-info',Ready:'badge-success',Delivered:'badge-success',Cancelled:'badge-danger'};
-
-  document.getElementById('view-content').innerHTML=`
+  const c = allCustomers.find(x => (x.USER_ID || x.user_id) === id); if (!c) return;
+  const orders = allOrders.filter(o => (o.USER_ID || o.user_id) === id);
+  const name  = c.FULL_NAME || c.full_name || '—';
+  const email = c.EMAIL    || c.email    || '—';
+  const phone = c.PHONE    || c.phone    || '—';
+  const status = (c.STATUS || c.status || 'active').toLowerCase();
+  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  const totalSpent = orders.filter(o => (o.STATUS || o.status) !== 'Cancelled').reduce((s, o) => s + parseFloat(o.TOTAL || o.total || 0), 0);
+  const statusColors = { Pending:'badge-warning', Confirmed:'badge-info', Preparing:'badge-info', Ready:'badge-success', Delivered:'badge-success', Cancelled:'badge-danger' };
+  document.getElementById('view-content').innerHTML = `
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--gray-200);">
       <div class="avatar" style="width:56px;height:56px;font-size:18px;">${initials}</div>
-      <div>
+      <div style="flex:1;">
         <p style="font-size:1.125rem;font-weight:700;">${name}</p>
         <p style="color:var(--gray-500);font-size:13px;">${email}</p>
         <p style="color:var(--gray-500);font-size:13px;">${phone}</p>
       </div>
+      <span class="badge ${status === 'blocked' ? 'badge-blocked' : 'badge-active'}">${status === 'blocked' ? 'Blocked' : 'Active'}</span>
     </div>
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px;">
       <div style="background:var(--gray-50);border-radius:8px;padding:14px;"><p style="font-size:12px;color:var(--gray-500);margin-bottom:4px;">Total Orders</p><p style="font-size:1.5rem;font-weight:700;">${orders.length}</p></div>
       <div style="background:var(--gray-50);border-radius:8px;padding:14px;"><p style="font-size:12px;color:var(--gray-500);margin-bottom:4px;">Total Spent</p><p style="font-size:1.5rem;font-weight:700;color:#dc2626;">₱${totalSpent.toFixed(2)}</p></div>
     </div>
-    ${orders.length?`
+    ${orders.length ? `
     <h3 style="font-size:15px;margin-bottom:12px;">Order History</h3>
     <div style="display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;">
-      ${orders.map(o=>{const oid=o.ORDER_ID||o.order_id,status=o.STATUS||o.status;return`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--gray-50);border-radius:8px;font-size:13px;">
+      ${orders.map(o => { const oid = o.ORDER_ID || o.order_id, ostatus = o.STATUS || o.status; return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--gray-50);border-radius:8px;font-size:13px;">
         <div><span style="font-weight:600;">ORD-${String(oid).padStart(4,'0')}</span><span style="color:var(--gray-500);margin-left:8px;">${new Date(o.CREATED_AT||o.created_at).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})}</span></div>
-        <div style="display:flex;align-items:center;gap:8px;"><span class="badge ${statusColors[status]||'badge-info'}">${status}</span><span style="font-weight:700;color:#dc2626;">₱${parseFloat(o.TOTAL||o.total||0).toFixed(2)}</span></div>
-      </div>`;}).join('')}
-    </div>`:'<p style="color:var(--gray-500);font-size:13px;">No orders yet.</p>'}`;
-
-  document.getElementById('view-modal').style.display='flex';
+        <div style="display:flex;align-items:center;gap:8px;"><span class="badge ${statusColors[ostatus]||'badge-info'}">${ostatus}</span><span style="font-weight:700;color:#dc2626;">₱${parseFloat(o.TOTAL||o.total||0).toFixed(2)}</span></div>
+      </div>`; }).join('')}
+    </div>` : '<p style="color:var(--gray-500);font-size:13px;">No orders yet.</p>'}
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button onclick="toggleBlock(${id},'${status}');closeViewModal();" class="btn ${status === 'blocked' ? 'btn-outline' : 'btn-primary'}" style="${status !== 'blocked' ? 'background:#dc2626;' : ''}flex:1;">
+        <i class="fas ${status === 'blocked' ? 'fa-unlock' : 'fa-ban'}" style="margin-right:6px;"></i>${status === 'blocked' ? 'Unblock' : 'Block'} Customer
+      </button>
+    </div>`;
+  document.getElementById('view-modal').style.display = 'flex';
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  const user=JSON.parse(localStorage.getItem('currentUser')||'null');
-  if(!user||(user.ROLE!=='admin'&&user.role!=='admin')){window.location.href='../login.html';return;}
+function closeViewModal() { document.getElementById('view-modal').style.display = 'none'; }
+
+// Add customer
+function openAddModal() { document.getElementById('add-modal').style.display = 'flex'; }
+function closeAddModal() { document.getElementById('add-modal').style.display = 'none'; document.getElementById('add-form').reset(); }
+
+document.getElementById('add-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('add-btn');
+  btn.textContent = 'Adding...'; btn.disabled = true;
+  const pass = document.getElementById('a-pass').value;
+  if (pass.length < 6) { Utils.showToast('Password must be at least 6 characters', 'error'); btn.textContent = 'Add Customer'; btn.disabled = false; return; }
+  try {
+    const res = await fetch('http://localhost:3000/api/auth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        full_name: document.getElementById('a-name').value,
+        email:     document.getElementById('a-email').value,
+        phone:     document.getElementById('a-phone').value,
+        password:  pass,
+        role:      document.getElementById('a-role').value,
+      })
+    }).then(r => r.json());
+    if (res.success) { closeAddModal(); await loadAll(); Utils.showToast('Customer added!', 'success'); }
+    else { Utils.showToast(res.message || 'Failed', 'error'); }
+  } catch { Utils.showToast('Server error', 'error'); }
+  btn.innerHTML = '<i class="fas fa-user-plus" style="margin-right:6px;"></i>Add Customer'; btn.disabled = false;
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+  if (!user || (user.ROLE !== 'admin' && user.role !== 'admin')) { window.location.href = '../login.html'; return; }
   loadAll();
 });
 </script>
