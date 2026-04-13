@@ -1,100 +1,103 @@
 const express = require('express');
-const router = express.Router();
+const router  = express.Router();
 const oracledb = require('oracledb');
 const { getConnection } = require('../db');
 
-// GET /api/admin/dashboard — summary stats
+// GET /api/admin/dashboard
 router.get('/dashboard', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
-
-    const [ordersTotal, revenue, customers, products] = await Promise.all([
-      conn.execute(`SELECT COUNT(*) AS cnt FROM orders`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
-      conn.execute(`SELECT NVL(SUM(total), 0) AS total FROM orders WHERE status != 'Cancelled'`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
-      conn.execute(`SELECT COUNT(*) AS cnt FROM users WHERE role = 'customer'`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
-      conn.execute(`SELECT COUNT(*) AS cnt FROM products`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
+    const [orders, customers, products] = await Promise.all([
+      conn.execute(`SELECT COUNT(*) AS "total", SUM(total) AS "revenue" FROM orders`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
+      conn.execute(`SELECT COUNT(*) AS "total" FROM users WHERE role = 'customer'`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
+      conn.execute(`SELECT COUNT(*) AS "total" FROM products`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
     ]);
-
     res.json({
-      total_orders:    ordersTotal.rows[0].CNT,
-      total_revenue:   revenue.rows[0].TOTAL,
-      total_customers: customers.rows[0].CNT,
-      total_products:  products.rows[0].CNT,
+      total_orders:    orders.rows[0].total    || 0,
+      total_revenue:   orders.rows[0].revenue  || 0,
+      total_customers: customers.rows[0].total || 0,
+      total_products:  products.rows[0].total  || 0,
     });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    if (conn) await conn.close();
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
+  finally { if (conn) await conn.close(); }
 });
 
-// GET /api/admin/customers — all customers
+// GET /api/admin/customers
 router.get('/customers', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT user_id, full_name, email, phone, role,
-              TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS created_at
+      `SELECT user_id    AS "user_id",
+              full_name  AS "full_name",
+              email      AS "email",
+              phone      AS "phone",
+              role       AS "role",
+              status     AS "status",
+              TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS "created_at"
        FROM users
+       WHERE role = 'customer'
        ORDER BY created_at DESC`,
-      {},
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+      {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
     res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    if (conn) await conn.close();
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
+  finally { if (conn) await conn.close(); }
 });
 
-// GET /api/admin/categories — all categories
+// PUT /api/admin/customers/:id/status — block or unblock
+router.put('/customers/:id/status', async (req, res) => {
+  const { status } = req.body;
+  if (!['active', 'blocked'].includes(status))
+    return res.status(400).json({ success: false, message: 'Invalid status' });
+  let conn;
+  try {
+    conn = await getConnection();
+    await conn.execute(
+      `UPDATE users SET status = :status WHERE user_id = :id`,
+      { status, id: parseInt(req.params.id) }
+    );
+    await conn.commit();
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  finally { if (conn) await conn.close(); }
+});
+
+// GET /api/admin/categories
 router.get('/categories', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT category_id, name, description FROM categories ORDER BY category_id`,
-      {},
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+      `SELECT category_id  AS "category_id",
+              name         AS "name",
+              description  AS "description"
+       FROM categories ORDER BY category_id`,
+      {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
     res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    if (conn) await conn.close();
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
+  finally { if (conn) await conn.close(); }
 });
 
-// POST /api/admin/categories — add category
+// POST /api/admin/categories
 router.post('/categories', async (req, res) => {
   const { name, description } = req.body;
-  if (!name) return res.status(400).json({ success: false, message: 'Name required' });
   let conn;
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `INSERT INTO categories (name, description)
-       VALUES (:name, :description)
-       RETURNING category_id INTO :category_id`,
-      {
-        name,
-        description: description || null,
-        category_id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
-      }
+      `INSERT INTO categories (name, description) VALUES (:name, :description) RETURNING category_id INTO :category_id`,
+      { name, description: description || null, category_id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER } }
     );
     await conn.commit();
     res.json({ success: true, category_id: result.outBinds.category_id[0] });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    if (conn) await conn.close();
-  }
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  finally { if (conn) await conn.close(); }
 });
 
-// PUT /api/admin/categories/:id — update category
+// PUT /api/admin/categories/:id
 router.put('/categories/:id', async (req, res) => {
   const { name, description } = req.body;
   let conn;
@@ -106,54 +109,42 @@ router.put('/categories/:id', async (req, res) => {
     );
     await conn.commit();
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    if (conn) await conn.close();
-  }
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  finally { if (conn) await conn.close(); }
 });
 
-// DELETE /api/admin/categories/:id — delete category
+// DELETE /api/admin/categories/:id
 router.delete('/categories/:id', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
-    await conn.execute(
-      `DELETE FROM categories WHERE category_id = :id`,
-      { id: parseInt(req.params.id) }
-    );
+    await conn.execute(`DELETE FROM categories WHERE category_id = :id`, { id: parseInt(req.params.id) });
     await conn.commit();
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    if (conn) await conn.close();
-  }
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  finally { if (conn) await conn.close(); }
 });
 
-// GET /api/admin/reports — sales summary by product
+// GET /api/admin/reports — top selling products
 router.get('/reports', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT oi.name AS product_name,
-              SUM(oi.quantity) AS total_sold,
-              SUM(oi.price * oi.quantity) AS total_revenue
+      `SELECT oi.name           AS "product_name",
+              SUM(oi.quantity)  AS "total_sold",
+              SUM(oi.price * oi.quantity) AS "total_revenue"
        FROM order_items oi
        JOIN orders o ON oi.order_id = o.order_id
        WHERE o.status != 'Cancelled'
        GROUP BY oi.name
-       ORDER BY total_revenue DESC`,
-      {},
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+       ORDER BY total_sold DESC
+       FETCH FIRST 20 ROWS ONLY`,
+      {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
     res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    if (conn) await conn.close();
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
+  finally { if (conn) await conn.close(); }
 });
 
 module.exports = router;

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile - Batangas Premium Naga</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
+  <style>
+    .profile-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, #dc2626, #f97316);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; font-weight: 700; color: white;
+      margin: 0 auto 16px; flex-shrink: 0;
+    }
+    .password-wrapper { position: relative; }
+    .password-wrapper .form-input { padding-right: 48px; }
+    .password-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--gray-400);
+      font-size: 16px; padding: 0; display: flex; align-items: center; z-index: 2;
+      transition: color .2s;
+    }
+    .password-toggle:hover { color: var(--gray-700); }
+    .section-divider { border: none; border-top: 1px solid var(--gray-200); margin: 24px 0; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container header-content">
+      <a href="index.html" class="logo">
+        <div class="logo-icon"><i class="fas fa-utensils"></i></div>
+        <div>
+          <div class="logo-text">Batangas Premium Naga</div>
+          <div class="logo-subtext">Noona's Food Station</div>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="menu.html"  class="nav-link">Menu</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <a href="login.html" class="nav-link">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </a>
+        <a href="cart.html" class="nav-link cart-icon-wrapper">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          <span class="cart-badge">0</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Edit Profile</h1>
+      <p>Update your personal information</p>
+    </div>
+  </section>
+
+  <main style="padding: var(--space-8) 0; min-height: 60vh;">
+    <div class="container" style="max-width: 560px;">
+      <div class="card">
+        <div class="card-content" style="padding: var(--space-8);">
+
+          <!-- Avatar -->
+          <div style="text-align: center; margin-bottom: 28px;">
+            <div class="profile-avatar" id="profile-avatar">?</div>
+            <p style="font-size: 13px; color: var(--gray-500);">Your profile</p>
+          </div>
+
+          <form id="profile-form">
+
+            <!-- Personal Info -->
+            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--gray-700);">
+              <i class="fas fa-user" style="margin-right: 8px; color: #dc2626;"></i>Personal Information
+            </h3>
+
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" name="fullName" class="form-input" required placeholder="Juan dela Cruz">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" name="email" class="form-input" readonly
+                style="background: var(--gray-100); color: var(--gray-500); cursor: not-allowed;">
+              <p style="font-size: 12px; color: var(--gray-400); margin-top: 4px;">Email cannot be changed</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" name="phone" class="form-input" placeholder="+63 9XX XXX XXXX">
+            </div>
+
+            <hr class="section-divider">
+
+            <!-- Change Password -->
+            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 4px; color: var(--gray-700);">
+              <i class="fas fa-lock" style="margin-right: 8px; color: #dc2626;"></i>Change Password
+            </h3>
+            <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 16px;">Leave blank to keep current password</p>
+
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <div class="password-wrapper">
+                <input type="password" name="newPassword" id="new-pass" class="form-input" placeholder="Min. 6 characters">
+                <button type="button" class="password-toggle" onclick="togglePw('new-pass','eye1')">
+                  <i id="eye1" class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <div class="password-wrapper">
+                <input type="password" name="confirmPassword" id="confirm-pass" class="form-input" placeholder="Repeat new password">
+                <button type="button" class="password-toggle" onclick="togglePw('confirm-pass','eye2')">
+                  <i id="eye2" class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 8px;">
+              <button type="submit" class="btn btn-primary" style="flex: 1; padding: 13px;">
+                <i class="fas fa-floppy-disk" style="margin-right: 8px;"></i>Save Changes
+              </button>
+              <a href="orders.html" class="btn btn-outline" style="flex: 1; padding: 13px; text-align: center;">
+                <i class="fas fa-list" style="margin-right: 8px;"></i>My Orders
+              </a>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h3>Batangas Premium Naga</h3>
+          <p style="margin-bottom: var(--space-4);">Your trusted partner for premium frozen goods and delicious Filipino meals in Naga City.</p>
+          <div class="social-links">
+            <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li><li><a href="menu.html">Menu</a></li>
+            <li><a href="about.html">About Us</a></li><li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Customer Service</h4>
+          <ul class="footer-links">
+            <li><a href="orders.html">Track Order</a></li><li><a href="login.html">My Account</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Contact Us</h4>
+          <p style="margin-bottom: var(--space-2);">Naga City, Camarines Sur</p>
+          <p style="margin-bottom: var(--space-2);">+63 XXX XXX XXXX</p>
+          <p>info@batangaspremium.com</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Batangas Premium Naga - Noona's Food Station. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+  function togglePw(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon  = document.getElementById(iconId);
+    if (input.type === 'password') { input.type = 'text'; icon.className = 'fa-regular fa-eye-slash'; }
+    else { input.type = 'password'; icon.className = 'fa-regular fa-eye'; }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!Auth.isLoggedIn()) { goTo('login.html'); return; }
+    const user = Auth.getCurrentUser();
+    const name = user.full_name || user.FULL_NAME || '';
+    // Set avatar initials
+    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+    document.getElementById('profile-avatar').textContent = initials;
+    // Pre-fill form
+    const form = document.getElementById('profile-form');
+    const f = (n, v) => { const el = form.querySelector(`[name="${n}"]`); if (el) el.value = v || ''; };
+    f('fullName', name);
+    f('email',    user.email || user.EMAIL);
+    f('phone',    user.phone || user.PHONE);
+  });
+  </script>
+</body>
+</html>
