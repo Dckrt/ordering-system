@@ -6,21 +6,49 @@
   <title>Login - Batangas Premium Naga</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
+  <!-- Google Sign-In -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
-    .password-wrapper { position: relative; }
-    .password-wrapper .form-input { padding-right: 48px; }
-    .password-toggle {
-      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer; color: var(--gray-400);
-      font-size: 16px; padding: 0; display: flex; align-items: center; z-index: 2; transition: color .2s;
+    .auth-wrap { min-height:80vh;display:flex;align-items:center;justify-content:center;padding:var(--space-8);background:var(--gray-50); }
+    .auth-card { max-width:440px;width:100%;background:white;border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);padding:var(--space-8); }
+    .auth-logo { text-align:center;margin-bottom:24px; }
+    .auth-logo-icon { width:56px;height:56px;background:linear-gradient(135deg,#dc2626,#f97316);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px; }
+
+    .password-wrapper { position:relative; }
+    .password-wrapper .form-input { padding-right:48px; }
+    .password-toggle { position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--gray-400);font-size:16px;padding:0;display:flex;align-items:center;z-index:2;transition:color .2s; }
+    .password-toggle:hover { color:var(--gray-700); }
+
+    /* Password strength */
+    #strength-bar { height:4px;border-radius:2px;margin-top:6px;background:#e5e7eb;overflow:hidden;display:none; }
+    #strength-fill { height:100%;width:0%;border-radius:2px;transition:width .3s,background .3s; }
+
+    /* Google button */
+    .google-btn {
+      width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:var(--radius-lg);
+      background:white;display:flex;align-items:center;justify-content:center;gap:10px;
+      font-size:15px;font-weight:500;color:#374151;cursor:pointer;transition:all .2s;margin-bottom:16px;
     }
-    .password-toggle:hover { color: var(--gray-700); }
-    .demo-box {
-      background: var(--blue-light); border: 1px solid var(--blue);
-      border-radius: var(--radius-lg); padding: var(--space-4); margin-top: var(--space-4);
-      font-size: 13px; color: var(--blue);
-    }
-    .demo-box strong { display: block; margin-bottom: 4px; }
+    .google-btn:hover { background:var(--gray-50);border-color:#9ca3af;box-shadow:var(--shadow-sm); }
+    .google-btn img { width:20px;height:20px; }
+
+    .divider { display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--gray-400);font-size:13px; }
+    .divider::before,.divider::after { content:'';flex:1;height:1px;background:var(--gray-200); }
+
+    .remember-row { display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;font-size:13px; }
+    .remember-check { display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--gray-600); }
+    .remember-check input { width:16px;height:16px;accent-color:#dc2626;cursor:pointer; }
+    .forgot-link { color:#dc2626;font-weight:500;cursor:pointer;background:none;border:none;font-size:13px;text-decoration:none; }
+    .forgot-link:hover { text-decoration:underline; }
+
+    .demo-box { background:var(--blue-light);border:1px solid var(--blue);border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);margin-top:16px;font-size:13px;color:var(--blue); }
+
+    /* Forgot password modal */
+    .fp-overlay { position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px; }
+    .fp-box { background:white;border-radius:16px;padding:32px;width:100%;max-width:400px; }
+
+    /* Email/password hints */
+    .hint-text { font-size:12px;margin-top:4px;display:none; }
   </style>
 </head>
 <body>
@@ -28,10 +56,7 @@
     <div class="container header-content">
       <a href="index.html" class="logo">
         <div class="logo-icon"><i class="fas fa-utensils"></i></div>
-        <div>
-          <div class="logo-text">Batangas Premium Naga</div>
-          <div class="logo-subtext">Noona's Food Station</div>
-        </div>
+        <div><div class="logo-text">Batangas Premium Naga</div><div class="logo-subtext">Noona's Food Station</div></div>
       </a>
       <nav class="nav">
         <a href="index.html" class="nav-link">Home</a>
@@ -49,25 +74,32 @@
     </div>
   </header>
 
-  <main style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:var(--space-8);background:var(--gray-50);">
-    <div class="card" style="max-width:440px;width:100%;padding:var(--space-8);">
+  <div class="auth-wrap">
+    <div class="auth-card">
 
-      <!-- Logo inside card -->
-      <div style="text-align:center;margin-bottom:24px;">
-        <div style="width:56px;height:56px;background:linear-gradient(135deg,#dc2626,#f97316);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
-          <i class="fas fa-utensils" style="color:white;font-size:24px;"></i>
-        </div>
+      <div class="auth-logo">
+        <div class="auth-logo-icon"><i class="fas fa-utensils" style="color:white;font-size:24px;"></i></div>
         <h1 id="page-title" style="font-size:1.5rem;margin-bottom:4px;">Welcome Back</h1>
-        <p id="page-subtitle" style="color:var(--gray-500);font-size:0.875rem;">Sign in to your account</p>
+        <p id="page-subtitle" style="color:var(--gray-500);font-size:.875rem;">Sign in to your account</p>
       </div>
+
+      <!-- Google Sign-In -->
+      <button class="google-btn" onclick="signInWithGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+        Continue with Google
+      </button>
+
+      <div class="divider">OR</div>
 
       <!-- ── LOGIN FORM ── -->
       <form id="login-form">
         <div class="form-group">
           <label class="form-label">Email</label>
-          <input type="email" name="email" class="form-input" required placeholder="you@email.com">
+          <input type="email" name="email" id="login-email" class="form-input" required placeholder="you@email.com"
+            oninput="validateEmail(this,'login-email-hint')">
+          <p id="login-email-hint" class="hint-text"></p>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:8px;">
           <label class="form-label">Password</label>
           <div class="password-wrapper">
             <input type="password" name="password" id="login-password" class="form-input" required placeholder="Your password">
@@ -76,7 +108,16 @@
             </button>
           </div>
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;margin-top:4px;">
+
+        <!-- Remember me + Forgot password -->
+        <div class="remember-row">
+          <label class="remember-check">
+            <input type="checkbox" id="remember-me"> Remember me
+          </label>
+          <button type="button" class="forgot-link" onclick="openForgotPassword()">Forgot your password?</button>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">
           <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>Sign In
         </button>
       </form>
@@ -84,7 +125,7 @@
       <!-- ── REGISTER FORM ── -->
       <form id="register-form" class="hidden">
         <div class="form-group">
-          <label class="form-label">Name</label>
+          <label class="form-label">Full Name *</label>
           <input type="text" name="fullName" class="form-input" required placeholder="Juan dela Cruz">
         </div>
         <div class="form-group">
@@ -92,38 +133,35 @@
           <input type="tel" name="phone" class="form-input" placeholder="+63 9XX XXX XXXX">
         </div>
         <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" name="email" id="reg-email" class="form-input" required placeholder="you@email.com">
-          <p id="email-hint" style="font-size:12px;color:var(--gray-400);margin-top:4px;display:none;">
-            <i class="fas fa-circle-check" style="color:#16a34a;margin-right:4px;"></i>Valid email format
-          </p>
+          <label class="form-label">Email *</label>
+          <input type="email" name="email" id="reg-email" class="form-input" required placeholder="you@email.com"
+            oninput="validateEmail(this,'reg-email-hint')">
+          <p id="reg-email-hint" class="hint-text"></p>
         </div>
         <div class="form-group">
-          <label class="form-label">Password</label>
+          <label class="form-label">Password *</label>
           <div class="password-wrapper">
             <input type="password" name="password" id="reg-password" class="form-input" required placeholder="Min. 6 characters"
-              oninput="checkPasswordStrength(this.value)">
+              oninput="checkStrength(this.value);checkMatch()">
             <button type="button" class="password-toggle" onclick="togglePw('reg-password','reg-eye')">
               <i id="reg-eye" class="fa-regular fa-eye"></i>
             </button>
           </div>
-          <div id="strength-bar" style="height:4px;border-radius:2px;margin-top:6px;background:#e5e7eb;overflow:hidden;display:none;">
-            <div id="strength-fill" style="height:100%;width:0%;border-radius:2px;transition:width .3s,background .3s;"></div>
-          </div>
-          <p id="strength-label" style="font-size:12px;margin-top:4px;display:none;"></p>
+          <div id="strength-bar"><div id="strength-fill"></div></div>
+          <p id="strength-label" class="hint-text"></p>
         </div>
         <div class="form-group">
-          <label class="form-label">Confirm Password</label>
+          <label class="form-label">Confirm Password *</label>
           <div class="password-wrapper">
             <input type="password" name="confirmPassword" id="confirm-password" class="form-input" required placeholder="Repeat password"
-              oninput="checkPasswordMatch()">
+              oninput="checkMatch()">
             <button type="button" class="password-toggle" onclick="togglePw('confirm-password','confirm-eye')">
               <i id="confirm-eye" class="fa-regular fa-eye"></i>
             </button>
           </div>
-          <p id="match-hint" style="font-size:12px;margin-top:4px;display:none;"></p>
+          <p id="match-hint" class="hint-text"></p>
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;margin-top:4px;">
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">
           <i class="fas fa-user-plus" style="margin-right:8px;"></i>Create Account
         </button>
       </form>
@@ -134,10 +172,38 @@
         </button>
       </div>
 
-      
-
+      <div class="demo-box">
+        <strong><i class="fas fa-circle-info" style="margin-right:4px;"></i>Demo Login:</strong>
+        Email: admin@batangas.com &nbsp;|&nbsp; Password: admin
+      </div>
     </div>
-  </main>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div id="forgot-modal" style="display:none;">
+    <div class="fp-overlay" onclick="closeForgotPassword()">
+      <div class="fp-box" onclick="event.stopPropagation()">
+        <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:8px;">Reset Password</h2>
+        <p style="font-size:13px;color:var(--gray-500);margin-bottom:20px;">
+          Enter your registered email and we'll send you a reset link.<br>
+          <strong style="color:#dc2626;">Note:</strong> For this demo, contact admin directly.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="forgot-email" class="form-input" placeholder="you@email.com">
+        </div>
+        <div style="display:flex;gap:12px;margin-top:16px;">
+          <button onclick="submitForgotPassword()" class="btn btn-primary" style="flex:1;">
+            <i class="fas fa-paper-plane" style="margin-right:6px;"></i>Send Reset Link
+          </button>
+          <button onclick="closeForgotPassword()" class="btn btn-outline" style="flex:1;">Cancel</button>
+        </div>
+        <div id="forgot-success" style="display:none;margin-top:14px;padding:12px;background:#dcfce7;border-radius:8px;font-size:13px;color:#15803d;">
+          <i class="fas fa-circle-check" style="margin-right:6px;"></i>If this email is registered, a reset link has been sent.
+        </div>
+      </div>
+    </div>
+  </div>
 
   <footer class="footer">
     <div class="container">
@@ -150,29 +216,11 @@
             <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
           </div>
         </div>
-        <div>
-          <h4>Quick Links</h4>
-          <ul class="footer-links">
-            <li><a href="index.html">Home</a></li><li><a href="menu.html">Menu</a></li>
-            <li><a href="about.html">About Us</a></li><li><a href="contact.html">Contact</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Customer Service</h4>
-          <ul class="footer-links">
-            <li><a href="orders.html">Track Order</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Contact Us</h4>
-          <p style="margin-bottom:var(--space-2);">Naga City, Camarines Sur</p>
-          <p style="margin-bottom:var(--space-2);">+63 XXX XXX XXXX</p>
-          <p>info@batangaspremium.com</p>
-        </div>
+        <div><h4>Quick Links</h4><ul class="footer-links"><li><a href="index.html">Home</a></li><li><a href="menu.html">Menu</a></li><li><a href="about.html">About Us</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+        <div><h4>Customer Service</h4><ul class="footer-links"><li><a href="orders.html">Track Order</a></li></ul></div>
+        <div><h4>Contact Us</h4><p style="margin-bottom:var(--space-2);">Naga City, Camarines Sur</p><p style="margin-bottom:var(--space-2);">+63 XXX XXX XXXX</p><p>info@batangaspremium.com</p></div>
       </div>
-      <div class="footer-bottom">
-        <p>© 2026 Batangas Premium Naga - Noona's Food Station. All rights reserved.</p>
-      </div>
+      <div class="footer-bottom"><p>© 2026 Batangas Premium Naga - Noona's Food Station. All rights reserved.</p></div>
     </div>
   </footer>
 
@@ -181,57 +229,150 @@
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
   <script>
+  // ── Utilities
   function togglePw(inputId, iconId) {
-    const input = document.getElementById(inputId);
-    const icon  = document.getElementById(iconId);
-    if (input.type === 'password') { input.type = 'text'; icon.className = 'fa-regular fa-eye-slash'; }
-    else { input.type = 'password'; icon.className = 'fa-regular fa-eye'; }
+    const input=document.getElementById(inputId), icon=document.getElementById(iconId);
+    if(input.type==='password'){input.type='text';icon.className='fa-regular fa-eye-slash';}
+    else{input.type='password';icon.className='fa-regular fa-eye';}
   }
 
-  // Password strength
-  function checkPasswordStrength(val) {
-    const bar = document.getElementById('strength-bar');
-    const fill = document.getElementById('strength-fill');
-    const label = document.getElementById('strength-label');
-    if (!val) { bar.style.display = 'none'; label.style.display = 'none'; return; }
-    bar.style.display = 'block'; label.style.display = 'block';
-    let score = 0;
-    if (val.length >= 6) score++;
-    if (val.length >= 10) score++;
-    if (/[A-Z]/.test(val)) score++;
-    if (/[0-9]/.test(val)) score++;
-    if (/[^A-Za-z0-9]/.test(val)) score++;
-    const levels = [
-      { w: '20%',  bg: '#ef4444', text: 'Very weak',   color: '#ef4444' },
-      { w: '40%',  bg: '#f97316', text: 'Weak',        color: '#f97316' },
-      { w: '60%',  bg: '#eab308', text: 'Fair',        color: '#eab308' },
-      { w: '80%',  bg: '#22c55e', text: 'Strong',      color: '#22c55e' },
-      { w: '100%', bg: '#16a34a', text: 'Very strong', color: '#16a34a' },
-    ];
-    const lvl = levels[Math.min(score - 1, 4)] || levels[0];
-    fill.style.width = lvl.w; fill.style.background = lvl.bg;
-    label.textContent = lvl.text; label.style.color = lvl.color;
-    checkPasswordMatch();
+  function validateEmail(input, hintId) {
+    const hint=document.getElementById(hintId);
+    const valid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value);
+    hint.style.display=input.value?'block':'none';
+    if(valid){hint.innerHTML='<span style="color:#16a34a;"><i class="fas fa-circle-check" style="margin-right:4px;"></i>Valid email</span>';}
+    else{hint.innerHTML='<span style="color:#dc2626;"><i class="fas fa-circle-xmark" style="margin-right:4px;"></i>Invalid email format</span>';}
   }
 
-  // Password match hint
-  function checkPasswordMatch() {
-    const pass    = document.getElementById('reg-password').value;
-    const confirm = document.getElementById('confirm-password').value;
-    const hint    = document.getElementById('match-hint');
-    if (!confirm) { hint.style.display = 'none'; return; }
-    hint.style.display = 'block';
-    if (pass === confirm) { hint.textContent = '✓ Passwords match'; hint.style.color = '#16a34a'; }
-    else { hint.textContent = '✕ Passwords do not match'; hint.style.color = '#dc2626'; }
+  function checkStrength(val) {
+    const bar=document.getElementById('strength-bar'), fill=document.getElementById('strength-fill'), label=document.getElementById('strength-label');
+    if(!val){bar.style.display='none';label.style.display='none';return;}
+    bar.style.display='block'; label.style.display='block';
+    let score=0;
+    if(val.length>=6)score++;if(val.length>=10)score++;
+    if(/[A-Z]/.test(val))score++;if(/[0-9]/.test(val))score++;if(/[^A-Za-z0-9]/.test(val))score++;
+    const levels=[{w:'20%',bg:'#ef4444',text:'Very weak',color:'#ef4444'},{w:'40%',bg:'#f97316',text:'Weak',color:'#f97316'},{w:'60%',bg:'#eab308',text:'Fair',color:'#eab308'},{w:'80%',bg:'#22c55e',text:'Strong',color:'#22c55e'},{w:'100%',bg:'#16a34a',text:'Very strong',color:'#16a34a'}];
+    const lvl=levels[Math.min(score-1,4)]||levels[0];
+    fill.style.width=lvl.w;fill.style.background=lvl.bg;
+    label.textContent=lvl.text;label.style.color=lvl.color;
   }
 
-  // Email format validation feedback
-  document.getElementById('reg-email')?.addEventListener('input', function() {
-    const hint = document.getElementById('email-hint');
-    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value);
-    hint.style.display = this.value ? 'block' : 'none';
-    if (valid) { hint.innerHTML = '<i class="fas fa-circle-check" style="color:#16a34a;margin-right:4px;"></i>Valid email format'; hint.style.color = '#16a34a'; }
-    else { hint.innerHTML = '<i class="fas fa-circle-xmark" style="color:#dc2626;margin-right:4px;"></i>Invalid email format'; hint.style.color = '#dc2626'; }
+  function checkMatch() {
+    const pass=document.getElementById('reg-password').value, confirm=document.getElementById('confirm-password').value, hint=document.getElementById('match-hint');
+    if(!confirm){hint.style.display='none';return;}
+    hint.style.display='block';
+    if(pass===confirm){hint.innerHTML='<span style="color:#16a34a;">✓ Passwords match</span>';}
+    else{hint.innerHTML='<span style="color:#dc2626;">✕ Passwords do not match</span>';}
+  }
+
+  // ── Google Sign-In
+  function signInWithGoogle() {
+    // Initialize Google Identity Services
+    if (typeof google === 'undefined') {
+      Utils.showToast('Google Sign-In is loading. Please try again.', 'info');
+      return;
+    }
+    google.accounts.id.initialize({
+      client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
+      callback: handleGoogleResponse,
+      auto_select: false,
+    });
+    google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        // Fallback: show one-tap or popup
+        google.accounts.id.renderButton(
+          document.createElement('div'),
+          { theme: 'outline', size: 'large' }
+        );
+      }
+    });
+  }
+
+  async function handleGoogleResponse(response) {
+    try {
+      // Decode JWT credential
+      const base64Url = response.credential.split('.')[1];
+      const base64    = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload   = JSON.parse(window.atob(base64));
+      const { email, name, picture, sub: googleId } = payload;
+
+      // Register or login via backend
+      const res = await fetch('http://localhost:3000/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, full_name: name, profile_image: picture, google_id: googleId })
+      }).then(r => r.json());
+
+      if (res.success) {
+        localStorage.setItem('currentUser', JSON.stringify(res.user));
+        Utils.showToast('Signed in with Google!', 'success');
+        const redirect = sessionStorage.getItem('redirectAfterLogin') || 'index.html';
+        sessionStorage.removeItem('redirectAfterLogin');
+        setTimeout(() => goTo(Auth.isAdmin() ? 'admin/dashboard.html' : redirect), 700);
+      } else {
+        Utils.showToast(res.message || 'Google sign-in failed', 'error');
+      }
+    } catch (err) {
+      Utils.showToast('Google sign-in error: ' + err.message, 'error');
+    }
+  }
+
+  // ── Forgot Password
+  function openForgotPassword() {
+    document.getElementById('forgot-modal').style.display = 'block';
+    document.getElementById('forgot-success').style.display = 'none';
+  }
+  function closeForgotPassword() {
+    document.getElementById('forgot-modal').style.display = 'none';
+  }
+  function submitForgotPassword() {
+    const email = document.getElementById('forgot-email').value;
+    if (!email) { Utils.showToast('Please enter your email', 'error'); return; }
+    // Show success message (in production, call /api/auth/forgot-password)
+    document.getElementById('forgot-success').style.display = 'block';
+    setTimeout(() => closeForgotPassword(), 3000);
+  }
+
+  // ── Remember Me
+  document.addEventListener('DOMContentLoaded', () => {
+    // Restore remembered email
+    const remembered = localStorage.getItem('rememberedEmail');
+    if (remembered) {
+      const emailInput = document.querySelector('#login-form input[name="email"]');
+      if (emailInput) emailInput.value = remembered;
+      document.getElementById('remember-me').checked = true;
+    }
+  });
+
+  // Handle login form submit with remember me
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Signing in...';
+      btn.disabled = true;
+      const d = new FormData(e.target);
+      const email = d.get('email'), password = d.get('password');
+
+      // Remember me
+      if (document.getElementById('remember-me').checked) {
+        localStorage.setItem('rememberedEmail', email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
+      const result = await Auth.login(email, password);
+      if (result.success) {
+        Utils.showToast('Login successful!', 'success');
+        const redirect = sessionStorage.getItem('redirectAfterLogin') || 'index.html';
+        sessionStorage.removeItem('redirectAfterLogin');
+        setTimeout(() => goTo(Auth.isAdmin() ? 'admin/dashboard.html' : redirect), 700);
+      } else {
+        Utils.showToast(result.message || 'Login failed', 'error');
+        btn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>Sign In';
+        btn.disabled = false;
+      }
+    });
   });
   </script>
 </body>
