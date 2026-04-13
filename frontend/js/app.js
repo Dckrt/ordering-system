@@ -1,14 +1,10 @@
 // ============================================================
-// BASE PATH HELPER
+// NAVIGATION HELPER — relative paths, works anywhere
 // ============================================================
 function getBase() {
-  const path = window.location.pathname;
-  const parts = path.split('/').filter(Boolean);
-  const idx = parts.indexOf('frontend');
-  if (idx !== -1) return window.location.origin + '/' + parts.slice(0, idx + 1).join('/') + '/';
-  const dir = parts.slice(0, -1);
-  if (dir[dir.length - 1] === 'admin') dir.pop();
-  return window.location.origin + '/' + dir.join('/') + '/';
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  const folder = parts.length >= 2 ? parts[parts.length - 2] : '';
+  return folder === 'admin' ? '../' : './';
 }
 function goTo(page) { window.location.href = getBase() + page; }
 
@@ -69,10 +65,26 @@ const Utils = {
 };
 
 // ============================================================
-// NAV
+// NAV — active state + user dropdown + LOGO FIX
 // ============================================================
 const NavInit = {
   init: () => {
+    // ── Fix logo icon (fa-utensils might not render if FA not loaded yet)
+    document.querySelectorAll('.logo-icon i').forEach(i => {
+      if (!i.classList.contains('fas')) { i.className = 'fas fa-utensils'; }
+    });
+
+    // ── Active nav link based on current page
+    const page = window.location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.nav-link').forEach(link => {
+      const href = link.getAttribute('href') || '';
+      if (href && href !== '#' && !href.startsWith('javascript') &&
+          !link.querySelector('svg') && !link.querySelector('span.cart-badge')) {
+        link.classList.toggle('active', href === page || href.endsWith('/' + page));
+      }
+    });
+
+    // ── User dropdown
     const user = Auth.getCurrentUser();
     const userLink = document.querySelector('a[href="login.html"].nav-link');
     if (!userLink) return;
@@ -93,11 +105,14 @@ const NavInit = {
         dd.innerHTML = `<div style="padding:12px 16px;background:#fafafa;border-bottom:1px solid #f0f0f0;">
           <p style="font-size:13px;font-weight:600;color:#111;margin-bottom:1px;">${name}</p>
           <p style="font-size:11px;color:#888;">${user.email || user.EMAIL || ''}</p></div>
-          ${Auth.isAdmin() ? `<a href="javascript:void(0)" onclick="goTo('admin/dashboard.html')" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">⚙ Admin Panel</a>` : ''}
-          <a href="javascript:void(0)" onclick="goTo('orders.html')" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">My Orders</a>
+          ${Auth.isAdmin() ? `<a href="javascript:void(0)" onclick="goTo('admin/dashboard.html');document.getElementById('user-dd')?.remove();" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">⚙ Admin Panel</a>` : ''}
+          <a href="javascript:void(0)" onclick="goTo('orders.html');document.getElementById('user-dd')?.remove();" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">${ ['📦 My Orders']}</a>
+          <a href="javascript:void(0)" onclick="goTo('profile.html');document.getElementById('user-dd')?.remove();" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">${ ['👤 Edit Profile']}</a>
           <button onclick="Auth.logout()" style="display:block;width:100%;text-align:left;padding:10px 16px;font-size:13px;color:#dc2626;background:none;border:none;border-top:1px solid #f0f0f0;cursor:pointer;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background=''">Sign Out</button>`;
         document.body.appendChild(dd);
-        setTimeout(() => document.addEventListener('click', function h() { dd?.remove(); document.removeEventListener('click', h); }), 50);
+        setTimeout(() => document.addEventListener('click', function h(ev) {
+          if (!dd.contains(ev.target) && ev.target !== userLink) { dd?.remove(); document.removeEventListener('click', h); }
+        }), 50);
       });
     }
   }
@@ -128,7 +143,6 @@ const PageInit = {
     const catFilter = document.getElementById('category-filter');
     if (!grid || !catFilter) return;
     ensureSpinnerStyle();
-
     const renderCats = async () => {
       try {
         const cats = await api.getCategories();
@@ -137,10 +151,8 @@ const PageInit = {
         ).join('');
       } catch { catFilter.innerHTML = '<button class="category-btn active">All</button>'; }
     };
-
     const renderProducts = async () => {
-      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:#aaa;">
-        <div style="width:32px;height:32px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>Loading...</div>`;
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:#aaa;"><div style="width:32px;height:32px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>Loading...</div>`;
       try {
         const products = await api.getProducts(selectedCategory === 'All' ? null : selectedCategory);
         if (!products.length) { grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;padding:60px;">No products in this category.</p>'; return; }
@@ -148,72 +160,26 @@ const PageInit = {
         setupProductButtons();
       } catch { grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;padding:60px;">Failed to load.</p>'; }
     };
-
     window.selectCategory = (cat) => { selectedCategory = cat; renderCats(); renderProducts(); };
     await renderCats();
     await renderProducts();
-  },
-
-  // CART
-  cart: () => {
-    const render = () => {
-      const items = Cart.getItems();
-      const emptyEl   = document.getElementById('empty-cart');
-      const contentEl = document.getElementById('cart-content');
-      const itemsEl   = document.getElementById('cart-items');
-      if (items.length === 0) { emptyEl?.classList.remove('hidden'); contentEl?.classList.add('hidden'); return; }
-      emptyEl?.classList.add('hidden'); contentEl?.classList.remove('hidden');
-      if (itemsEl) {
-        itemsEl.innerHTML = items.map(item => `
-          <div class="cart-item" id="cart-item-${item.id}" style="transition:opacity .25s,transform .25s;position:relative;border-radius:16px;background:white;box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:16px;display:flex;align-items:flex-start;gap:14px;">
-            <button onclick="cartRemove(${item.id})" title="Remove" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:#f3f4f6;border:1px solid #e5e7eb;color:#9ca3af;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s;z-index:1;"
-              onmouseover="this.style.background='#fee2e2';this.style.color='#dc2626';this.style.borderColor='#fca5a5';"
-              onmouseout="this.style.background='#f3f4f6';this.style.color='#9ca3af';this.style.borderColor='#e5e7eb';">✕</button>
-            <img src="${item.image || 'https://via.placeholder.com/88'}" onerror="this.src='https://via.placeholder.com/88'" style="width:88px;height:88px;object-fit:cover;border-radius:12px;flex-shrink:0;background:#f3f4f6;" />
-            <div style="flex:1;min-width:0;padding-right:32px;">
-              <p style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">${item.category || ''}</p>
-              <h3 style="font-size:15px;font-weight:700;color:#111;margin:0 0 2px;">${item.name}</h3>
-              <p style="font-size:14px;color:#dc2626;font-weight:600;margin:0 0 10px;">₱${parseFloat(item.price).toFixed(2)} each</p>
-              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-                <div style="display:flex;align-items:center;border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden;">
-                  <button onclick="cartChangeQty(${item.id}, -1)" style="width:36px;height:36px;background:#f9fafb;border:none;font-size:18px;cursor:pointer;color:#374151;display:flex;align-items:center;justify-content:center;">−</button>
-                  <span style="min-width:32px;text-align:center;font-weight:700;font-size:15px;color:#111;">${item.quantity}</span>
-                  <button onclick="cartChangeQty(${item.id}, 1)" style="width:36px;height:36px;background:#f9fafb;border:none;font-size:18px;cursor:pointer;color:#374151;display:flex;align-items:center;justify-content:center;">+</button>
-                </div>
-                <span style="font-size:16px;font-weight:800;color:#111;">₱${(item.price * item.quantity).toFixed(2)}</span>
-                <button onclick='cartOrderItem(${JSON.stringify(item).replace(/'/g, "&#39;")})' style="padding:9px 20px;background:linear-gradient(135deg,#dc2626,#f97316);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Order</button>
-              </div>
-            </div>
-          </div>`).join('');
-      }
-    };
-    window.cartChangeQty = (id, delta) => {
-      const item = Cart.getItems().find(i => i.id === id);
-      if (item && item.quantity === 1 && delta === -1) {
-        const row = document.getElementById(`cart-item-${id}`);
-        if (row) { row.style.opacity = '0'; row.style.transform = 'translateX(16px)'; setTimeout(() => { Cart.updateQuantity(id, -1); render(); }, 240); }
-        return;
-      }
-      Cart.updateQuantity(id, delta); render();
-    };
-    window.cartRemove = (id) => {
-      const row = document.getElementById(`cart-item-${id}`);
-      if (row) { row.style.opacity = '0'; row.style.transform = 'translateX(20px)'; setTimeout(() => { Cart.removeItem(id); render(); }, 230); }
-      else { Cart.removeItem(id); render(); }
-    };
-    window.cartOrderItem = (item) => {
-      if (!Auth.isLoggedIn()) { sessionStorage.setItem('redirectAfterLogin', 'checkout.html'); sessionStorage.setItem('buyNowItem', JSON.stringify({ ...item, quantity: item.quantity || 1 })); goTo('login.html'); return; }
-      sessionStorage.setItem('buyNowItem', JSON.stringify({ ...item, quantity: item.quantity || 1 }));
-      goTo('checkout.html');
-    };
-    render();
   },
 
   // CHECKOUT
   checkout: () => {
     if (!Auth.isLoggedIn()) { sessionStorage.setItem('redirectAfterLogin', 'checkout.html'); goTo('login.html'); return; }
     const buyNow = JSON.parse(sessionStorage.getItem('buyNowItem') || 'null');
-    const items = buyNow ? [{ ...buyNow, quantity: buyNow.quantity || 1 }] : Cart.getItems();
+    // checkedItems: array of ids selected from cart, or null = use buyNow
+    const checkedStr = sessionStorage.getItem('checkedItems');
+    let items;
+    if (buyNow) {
+      items = [{ ...buyNow, quantity: buyNow.quantity || 1 }];
+    } else if (checkedStr) {
+      const ids = JSON.parse(checkedStr);
+      items = Cart.getItems().filter(i => ids.includes(i.id));
+    } else {
+      items = Cart.getItems();
+    }
     if (!items.length) { Utils.showToast('Your cart is empty!', 'info'); setTimeout(() => goTo('menu.html'), 1500); return; }
     if (buyNow) {
       const notice = document.getElementById('buynow-notice');
@@ -234,10 +200,7 @@ const PageInit = {
       const el = document.getElementById('checkout-items');
       if (el) el.innerHTML = items.map(i => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px;">
-          <div style="flex:1;min-width:0;margin-right:12px;">
-            <p style="font-weight:500;color:#111;">${i.name}</p>
-            <p style="color:#888;margin-top:2px;">x${i.quantity} @ ₱${parseFloat(i.price).toFixed(2)}</p>
-          </div>
+          <div style="flex:1;min-width:0;margin-right:12px;"><p style="font-weight:500;color:#111;">${i.name}</p><p style="color:#888;margin-top:2px;">x${i.quantity} @ ₱${parseFloat(i.price).toFixed(2)}</p></div>
           <span style="font-weight:600;color:#111;flex-shrink:0;">₱${(i.price * i.quantity).toFixed(2)}</span>
         </div>`).join('');
       const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
@@ -249,8 +212,8 @@ const PageInit = {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.order-type-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active'); selectedOrderType = btn.dataset.type;
-        const addrFields = document.getElementById('address-fields');
-        if (addrFields) addrFields.style.display = selectedOrderType === 'Delivery' ? 'block' : 'none';
+        const af = document.getElementById('address-fields');
+        if (af) af.style.display = selectedOrderType === 'Delivery' ? 'block' : 'none';
         renderSummary();
       });
     });
@@ -275,8 +238,11 @@ const PageInit = {
       try {
         const result = await api.placeOrder(orderData);
         if (result.success) {
-          if (!buyNow) Cart.clearCart(); else Cart.removeItem(buyNow.id);
+          if (buyNow) { Cart.removeItem(buyNow.id); }
+          else if (checkedStr) { const ids = JSON.parse(checkedStr); ids.forEach(id => Cart.removeItem(id)); }
+          else { Cart.clearCart(); }
           sessionStorage.removeItem('buyNowItem');
+          sessionStorage.removeItem('checkedItems');
           const lastOrderData = JSON.stringify({ ...orderData, order_id: result.order_id });
           sessionStorage.setItem('lastOrder', lastOrderData);
           localStorage.setItem('lastOrder', lastOrderData);
@@ -292,23 +258,14 @@ const PageInit = {
     const order = JSON.parse(raw);
     localStorage.removeItem('lastOrder');
     if (!order) {
-      document.querySelector('main').innerHTML = `<div style="text-align:center;padding:80px 20px;">
-        <i class="fas fa-exclamation-circle" style="font-size:48px;color:#dc2626;margin-bottom:16px;display:block;"></i>
-        <h2 style="margin-bottom:8px;">Order not found</h2><p style="color:#888;margin-bottom:20px;">Check My Orders to confirm.</p>
-        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-          <a href="javascript:void(0)" onclick="goTo('orders.html')" class="btn btn-primary">View My Orders</a>
-          <a href="javascript:void(0)" onclick="goTo('menu.html')" class="btn btn-outline">Back to Menu</a>
-        </div></div>`;
+      document.querySelector('main').innerHTML = `<div style="text-align:center;padding:80px 20px;"><i class="fas fa-exclamation-circle" style="font-size:48px;color:#dc2626;margin-bottom:16px;display:block;"></i><h2 style="margin-bottom:8px;">Order not found</h2><p style="color:#888;margin-bottom:20px;">Check My Orders to confirm.</p><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;"><a href="javascript:void(0)" onclick="goTo('orders.html')" class="btn btn-primary">View My Orders</a><a href="javascript:void(0)" onclick="goTo('menu.html')" class="btn btn-outline">Back to Menu</a></div></div>`;
       return;
     }
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     set('order-number',   `ORD-${String(order.order_id).padStart(4, '0')}`);
-    set('customer-name',  order.full_name);
-    set('customer-phone', order.phone);
-    set('customer-email', order.email);
-    set('order-type',     order.order_type);
-    set('payment-method', order.payment_method);
-    set('order-total',    Utils.formatCurrency(order.total));
+    set('customer-name',  order.full_name); set('customer-phone', order.phone);
+    set('customer-email', order.email); set('order-type', order.order_type);
+    set('payment-method', order.payment_method); set('order-total', Utils.formatCurrency(order.total));
     const addrRow = document.getElementById('address-row');
     if (order.order_type === 'Pick-up') { if (addrRow) addrRow.style.display = 'none'; }
     else { const el = document.getElementById('delivery-address'); if (el) el.textContent = `${order.address || ''}, ${order.city || ''}`; }
@@ -322,40 +279,21 @@ const PageInit = {
     }
   },
 
-  // ============================================================
-  // ORDERS — fixed: all lowercase keys from Oracle
-  // ============================================================
+  // ORDERS
   orders: async () => {
     if (!Auth.isLoggedIn()) { sessionStorage.setItem('redirectAfterLogin', 'orders.html'); goTo('login.html'); return; }
     const user = Auth.getCurrentUser();
     const container = document.getElementById('orders-list');
     if (!container) return;
     ensureSpinnerStyle();
-
-    container.innerHTML = `<div style="text-align:center;padding:60px;color:#aaa;">
-      <div style="width:32px;height:32px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>
-      Loading your orders...</div>`;
-
+    container.innerHTML = `<div style="text-align:center;padding:60px;color:#aaa;"><div style="width:32px;height:32px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>Loading your orders...</div>`;
     try {
       const userId = user.user_id || user.USER_ID;
       const orders = await api.getMyOrders(userId);
-
       if (!orders || orders.length === 0) {
-        container.innerHTML = `
-          <div style="text-align:center;padding:80px 20px;">
-            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" stroke-width="1.2" style="margin:0 auto 20px;display:block;">
-              <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
-              <rect x="9" y="3" width="6" height="4" rx="1"/>
-              <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
-            </svg>
-            <h2 style="font-size:20px;font-weight:700;margin-bottom:8px;color:#111;">No orders yet</h2>
-            <p style="color:#9ca3af;margin-bottom:24px;">Start ordering to see your history here.</p>
-            <a href="javascript:void(0)" onclick="goTo('menu.html')" class="btn btn-primary">Browse Menu</a>
-          </div>`;
+        container.innerHTML = `<div style="text-align:center;padding:80px 20px;"><svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" stroke-width="1.2" style="margin:0 auto 20px;display:block;"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg><h2 style="font-size:20px;font-weight:700;margin-bottom:8px;color:#111;">No orders yet</h2><p style="color:#9ca3af;margin-bottom:24px;">Start ordering to see your history here.</p><a href="javascript:void(0)" onclick="goTo('menu.html')" class="btn btn-primary">Browse Menu</a></div>`;
         return;
       }
-
-      // Status badge styles (inline — no dependency on CSS classes)
       const statusStyle = {
         Pending:   'background:#fef3c7;color:#92400e;border:1px solid #fde68a;',
         Confirmed: 'background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;',
@@ -364,84 +302,33 @@ const PageInit = {
         Delivered: 'background:#dcfce7;color:#14532d;border:1px solid #86efac;',
         Cancelled: 'background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;',
       };
-
       container.innerHTML = orders.map((order, idx) => {
-        // ✅ All lowercase — matches our fixed orders.js backend aliases
-        const id        = order.order_id;
-        const status    = order.status    || 'Pending';
-        const orderType = order.order_type     || '—';
-        const payment   = order.payment_method || '—';
-        const total     = parseFloat(order.total || 0);
-        const createdAt = order.created_at;
-        const items     = order.items || [];
-        const badge     = statusStyle[status] || statusStyle['Pending'];
-
-        return `
-          <div style="border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.07);
-            margin-bottom:20px;background:white;animation:fadeInUp .3s ease ${idx * 0.06}s both;">
-
-            <!-- Header -->
-            <div style="background:linear-gradient(135deg,#dc2626,#f97316);padding:16px 20px;
-              display:flex;justify-content:space-between;align-items:center;">
-              <div>
-                <p style="color:rgba(255,255,255,.75);font-size:11px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Order Number</p>
-                <p style="color:white;font-weight:700;font-size:18px;">ORD-${String(id).padStart(4, '0')}</p>
-              </div>
-              <div style="text-align:right;">
-                <span style="display:inline-block;padding:5px 14px;border-radius:999px;font-size:12px;font-weight:700;${badge}">${status}</span>
-                <p style="color:rgba(255,255,255,.75);font-size:11px;margin-top:6px;">${createdAt ? Utils.formatDate(createdAt) : ''}</p>
-              </div>
+        const id = order.order_id; const status = order.status || 'Pending';
+        const orderType = order.order_type || '—'; const payment = order.payment_method || '—';
+        const total = parseFloat(order.total || 0); const createdAt = order.created_at;
+        const items = order.items || []; const badge = statusStyle[status] || statusStyle['Pending'];
+        return `<div style="border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.07);margin-bottom:20px;background:white;animation:fadeInUp .3s ease ${idx * 0.06}s both;">
+          <div style="background:linear-gradient(135deg,#dc2626,#f97316);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+            <div><p style="color:rgba(255,255,255,.75);font-size:11px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Order Number</p><p style="color:white;font-weight:700;font-size:18px;">ORD-${String(id).padStart(4, '0')}</p></div>
+            <div style="text-align:right;"><span style="display:inline-block;padding:5px 14px;border-radius:999px;font-size:12px;font-weight:700;${badge}">${status}</span><p style="color:rgba(255,255,255,.75);font-size:11px;margin-top:6px;">${createdAt ? Utils.formatDate(createdAt) : ''}</p></div>
+          </div>
+          <div style="padding:18px 20px;">
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px;">
+              <div><p style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Order Type</p><p style="font-size:14px;font-weight:600;color:#111;">${orderType}</p></div>
+              <div><p style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Payment</p><p style="font-size:14px;font-weight:600;color:#111;">${payment}</p></div>
+              ${order.address ? `<div style="grid-column:span 2;"><p style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Delivery Address</p><p style="font-size:14px;font-weight:600;color:#111;">${order.address}, ${order.city || 'Naga City'}</p></div>` : ''}
             </div>
-
-            <!-- Body -->
-            <div style="padding:18px 20px;">
-              <!-- Meta -->
-              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px;">
-                <div>
-                  <p style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Order Type</p>
-                  <p style="font-size:14px;font-weight:600;color:#111;">${orderType}</p>
-                </div>
-                <div>
-                  <p style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Payment</p>
-                  <p style="font-size:14px;font-weight:600;color:#111;">${payment}</p>
-                </div>
-                ${order.address ? `
-                <div style="grid-column:span 2;">
-                  <p style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Delivery Address</p>
-                  <p style="font-size:14px;font-weight:600;color:#111;">${order.address}, ${order.city || 'Naga City'}</p>
-                </div>` : ''}
-              </div>
-
-              <!-- Items -->
-              ${items.length ? `
-              <div style="border-top:1px solid #f3f4f6;padding-top:14px;margin-bottom:14px;">
-                <p style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">Items Ordered</p>
-                ${items.map(i => `
-                  <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid #fafafa;">
-                    <span style="color:#374151;font-weight:500;">${i.name}
-                      <span style="color:#9ca3af;font-weight:400;">× ${i.quantity}</span>
-                    </span>
-                    <span style="font-weight:600;color:#111;">₱${(parseFloat(i.price) * i.quantity).toFixed(2)}</span>
-                  </div>`).join('')}
-              </div>` : ''}
-
-              <!-- Total -->
-              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f3f4f6;padding-top:14px;">
-                <span style="font-size:13px;color:#6b7280;font-weight:500;">Total Amount</span>
-                <span style="font-size:20px;font-weight:800;color:#dc2626;">₱${total.toFixed(2)}</span>
-              </div>
+            ${items.length ? `<div style="border-top:1px solid #f3f4f6;padding-top:14px;margin-bottom:14px;"><p style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">Items Ordered</p>${items.map(i => `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid #fafafa;"><span style="color:#374151;font-weight:500;">${i.name}<span style="color:#9ca3af;font-weight:400;"> × ${i.quantity}</span></span><span style="font-weight:600;color:#111;">₱${(parseFloat(i.price) * i.quantity).toFixed(2)}</span></div>`).join('')}</div>` : ''}
+            <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f3f4f6;padding-top:14px;">
+              <span style="font-size:13px;color:#6b7280;font-weight:500;">Total Amount</span>
+              <span style="font-size:20px;font-weight:800;color:#dc2626;">₱${total.toFixed(2)}</span>
             </div>
-          </div>`;
+          </div>
+        </div>`;
       }).join('');
-
     } catch (err) {
       console.error('Orders error:', err);
-      container.innerHTML = `
-        <div style="text-align:center;padding:48px;color:#888;">
-          <i class="fas fa-exclamation-circle" style="font-size:40px;color:#fca5a5;margin-bottom:12px;display:block;"></i>
-          <p style="margin-bottom:16px;">Could not load your orders.</p>
-          <button onclick="PageInit.orders()" class="btn btn-primary">Try Again</button>
-        </div>`;
+      container.innerHTML = `<div style="text-align:center;padding:48px;color:#888;"><i class="fas fa-exclamation-circle" style="font-size:40px;color:#fca5a5;margin-bottom:12px;display:block;"></i><p style="margin-bottom:16px;">Could not load your orders.</p><button onclick="PageInit.orders()" class="btn btn-primary">Try Again</button></div>`;
     }
   },
 
@@ -476,12 +363,50 @@ const PageInit = {
     });
     document.getElementById('register-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const d = new FormData(e.target);
+      const pass = d.get('password'), confirm = d.get('confirmPassword');
+      if (pass !== confirm) { Utils.showToast('Passwords do not match', 'error'); return; }
+      if (pass.length < 6) { Utils.showToast('Password must be at least 6 characters', 'error'); return; }
       const btn = e.target.querySelector('button[type=submit]');
       btn.textContent = 'Creating...'; btn.disabled = true;
-      const d = new FormData(e.target);
-      const result = await Auth.register({ full_name: d.get('fullName'), email: d.get('email'), phone: d.get('phone'), password: d.get('password') });
+      const result = await Auth.register({ full_name: d.get('fullName'), email: d.get('email'), phone: d.get('phone'), password: pass });
       if (result.success) { Utils.showToast('Account created!', 'success'); setTimeout(() => goTo('index.html'), 700); }
       else { Utils.showToast(result.message || 'Registration failed', 'error'); btn.textContent = 'Create Account'; btn.disabled = false; }
+    });
+  },
+
+  // PROFILE
+  profile: () => {
+    if (!Auth.isLoggedIn()) { goTo('login.html'); return; }
+    const user = Auth.getCurrentUser();
+    const form = document.getElementById('profile-form');
+    if (!form) return;
+    const f = (n, v) => { const el = form.querySelector(`[name="${n}"]`); if (el) el.value = v || ''; };
+    f('fullName', user.full_name || user.FULL_NAME);
+    f('email',    user.email    || user.EMAIL);
+    f('phone',    user.phone    || user.PHONE);
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector('button[type=submit]');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+      const d = new FormData(form);
+      const newPass = d.get('newPassword'); const confirmPass = d.get('confirmPassword');
+      if (newPass && newPass !== confirmPass) { Utils.showToast('Passwords do not match', 'error'); btn.textContent = 'Save Changes'; btn.disabled = false; return; }
+      if (newPass && newPass.length < 6) { Utils.showToast('Password must be at least 6 characters', 'error'); btn.textContent = 'Save Changes'; btn.disabled = false; return; }
+      try {
+        const userId = user.user_id || user.USER_ID;
+        const body = { full_name: d.get('fullName'), phone: d.get('phone') };
+        if (newPass) body.password = newPass;
+        const res = await fetch(`http://localhost:3000/api/auth/profile/${userId}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+        }).then(r => r.json());
+        if (res.success) {
+          const updated = { ...user, full_name: body.full_name, phone: body.phone, FULL_NAME: body.full_name, PHONE: body.phone };
+          localStorage.setItem('currentUser', JSON.stringify(updated));
+          Utils.showToast('Profile updated!', 'success');
+        } else { Utils.showToast(res.message || 'Failed to update', 'error'); }
+      } catch { Utils.showToast('Server error', 'error'); }
+      btn.textContent = 'Save Changes'; btn.disabled = false;
     });
   },
 
@@ -510,15 +435,11 @@ function productCardHTML(p) {
           <span class="badge ${available ? 'badge-success' : 'badge-danger'}">${available ? 'Available' : 'Unavailable'}</span>
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-sm add-to-cart-btn"
-            style="flex:1;background:#f3f4f6;color:#374151;border:1.5px solid #e5e7eb;font-weight:600;transition:all .2s;"
+          <button class="btn btn-sm add-to-cart-btn" style="flex:1;background:#f3f4f6;color:#374151;border:1.5px solid #e5e7eb;font-weight:600;transition:all .2s;"
             data-product="${pJson}" ${!available ? 'disabled' : ''}
             onmouseover="if(!this.disabled)this.style.cssText='flex:1;background:#e5e7eb;color:#111;border:1.5px solid #d1d5db;font-weight:600;transition:all .2s;'"
             onmouseout="if(!this.disabled)this.style.cssText='flex:1;background:#f3f4f6;color:#374151;border:1.5px solid #e5e7eb;font-weight:600;transition:all .2s;'">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:4px;">
-              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-            </svg>Cart
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:4px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Cart
           </button>
           <button class="btn btn-primary btn-sm buy-now-btn" style="flex:1.3;" data-product="${pJson}" ${!available ? 'disabled' : ''}>Buy Now</button>
         </div>
@@ -549,10 +470,7 @@ function ensureSpinnerStyle() {
   if (!document.getElementById('spin-style')) {
     const s = document.createElement('style');
     s.id = 'spin-style';
-    s.textContent = `
-      @keyframes spin { to { transform: rotate(360deg); } }
-      @keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-    `;
+    s.textContent = `@keyframes spin{to{transform:rotate(360deg)}}@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}`;
     document.head.appendChild(s);
   }
 }

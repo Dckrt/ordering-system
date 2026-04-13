@@ -6,6 +6,22 @@
   <title>Login - Batangas Premium Naga</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
+  <style>
+    .password-wrapper { position: relative; }
+    .password-wrapper .form-input { padding-right: 48px; }
+    .password-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--gray-400);
+      font-size: 16px; padding: 0; display: flex; align-items: center; z-index: 2; transition: color .2s;
+    }
+    .password-toggle:hover { color: var(--gray-700); }
+    .demo-box {
+      background: var(--blue-light); border: 1px solid var(--blue);
+      border-radius: var(--radius-lg); padding: var(--space-4); margin-top: var(--space-4);
+      font-size: 13px; color: var(--blue);
+    }
+    .demo-box strong { display: block; margin-bottom: 4px; }
+  </style>
 </head>
 <body>
   <header class="header">
@@ -19,7 +35,7 @@
       </a>
       <nav class="nav">
         <a href="index.html" class="nav-link">Home</a>
-        <a href="menu.html" class="nav-link">Menu</a>
+        <a href="menu.html"  class="nav-link">Menu</a>
         <a href="about.html" class="nav-link">About</a>
         <a href="contact.html" class="nav-link">Contact</a>
         <a href="cart.html" class="nav-link cart-icon-wrapper">
@@ -34,47 +50,41 @@
   </header>
 
   <main style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:var(--space-8);background:var(--gray-50);">
-    <div class="card" style="max-width:420px;width:100%;padding:var(--space-8);">
+    <div class="card" style="max-width:440px;width:100%;padding:var(--space-8);">
 
       <!-- Logo inside card -->
       <div style="text-align:center;margin-bottom:24px;">
-        <div style="width:56px;height:56px;background:linear-gradient(135deg,#dc2626,#f97316);
-          border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <div style="width:56px;height:56px;background:linear-gradient(135deg,#dc2626,#f97316);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
           <i class="fas fa-utensils" style="color:white;font-size:24px;"></i>
         </div>
         <h1 id="page-title" style="font-size:1.5rem;margin-bottom:4px;">Welcome Back</h1>
         <p id="page-subtitle" style="color:var(--gray-500);font-size:0.875rem;">Sign in to your account</p>
       </div>
 
-      <!-- Login Form -->
+      <!-- ── LOGIN FORM ── -->
       <form id="login-form">
         <div class="form-group">
           <label class="form-label">Email</label>
           <input type="email" name="email" class="form-input" required placeholder="you@email.com">
         </div>
-
-        <!-- Login Password -->
-        <div class="form-group" style="margin-bottom: var(--space-4);">
-        <label class="form-label">Password</label>
-        <div class="password-wrapper">
-          <input type="password" name="password" id="login-password" 
-            class="form-input" required placeholder="Your password">
-          <button type="button" class="password-toggle" 
-            onclick="togglePassword('login-password','login-eye')">
-            <i id="login-eye" class="fa-regular fa-eye"></i>
-          </button>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="password-wrapper">
+            <input type="password" name="password" id="login-password" class="form-input" required placeholder="Your password">
+            <button type="button" class="password-toggle" onclick="togglePw('login-password','login-eye')">
+              <i id="login-eye" class="fa-regular fa-eye"></i>
+            </button>
+          </div>
         </div>
-      </div>
-
-        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;margin-top:4px;">
           <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>Sign In
         </button>
       </form>
 
-      <!-- Register Form -->
+      <!-- ── REGISTER FORM ── -->
       <form id="register-form" class="hidden">
         <div class="form-group">
-          <label class="form-label">Full Name</label>
+          <label class="form-label">Full Name *</label>
           <input type="text" name="fullName" class="form-input" required placeholder="Juan dela Cruz">
         </div>
         <div class="form-group">
@@ -82,24 +92,38 @@
           <input type="tel" name="phone" class="form-input" placeholder="+63 9XX XXX XXXX">
         </div>
         <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" name="email" class="form-input" required placeholder="you@email.com">
+          <label class="form-label">Email *</label>
+          <input type="email" name="email" id="reg-email" class="form-input" required placeholder="you@email.com">
+          <p id="email-hint" style="font-size:12px;color:var(--gray-400);margin-top:4px;display:none;">
+            <i class="fas fa-circle-check" style="color:#16a34a;margin-right:4px;"></i>Valid email format
+          </p>
         </div>
-
-        <!-- Register Password -->
         <div class="form-group">
-          <label class="form-label">Password</label>
+          <label class="form-label">Password *</label>
           <div class="password-wrapper">
-            <input type="password" name="password" id="register-password" 
-              class="form-input" required placeholder="Min. 6 characters">
-            <button type="button" class="password-toggle" 
-              onclick="togglePassword('register-password','register-eye')">
-              <i id="register-eye" class="fa-regular fa-eye"></i>
+            <input type="password" name="password" id="reg-password" class="form-input" required placeholder="Min. 6 characters"
+              oninput="checkPasswordStrength(this.value)">
+            <button type="button" class="password-toggle" onclick="togglePw('reg-password','reg-eye')">
+              <i id="reg-eye" class="fa-regular fa-eye"></i>
             </button>
           </div>
+          <div id="strength-bar" style="height:4px;border-radius:2px;margin-top:6px;background:#e5e7eb;overflow:hidden;display:none;">
+            <div id="strength-fill" style="height:100%;width:0%;border-radius:2px;transition:width .3s,background .3s;"></div>
+          </div>
+          <p id="strength-label" style="font-size:12px;margin-top:4px;display:none;"></p>
         </div>
-
-        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">
+        <div class="form-group">
+          <label class="form-label">Confirm Password *</label>
+          <div class="password-wrapper">
+            <input type="password" name="confirmPassword" id="confirm-password" class="form-input" required placeholder="Repeat password"
+              oninput="checkPasswordMatch()">
+            <button type="button" class="password-toggle" onclick="togglePw('confirm-password','confirm-eye')">
+              <i id="confirm-eye" class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+          <p id="match-hint" style="font-size:12px;margin-top:4px;display:none;"></p>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;margin-top:4px;">
           <i class="fas fa-user-plus" style="margin-right:8px;"></i>Create Account
         </button>
       </form>
@@ -108,6 +132,12 @@
         <button onclick="toggleMode()" class="btn btn-outline" style="width:100%;">
           <span id="toggle-text">Don't have an account? Register</span>
         </button>
+      </div>
+
+      <!-- Demo credentials hint -->
+      <div class="demo-box">
+        <strong><i class="fas fa-circle-info" style="margin-right:4px;"></i>Demo Login:</strong>
+        Email: admin@batangas.com &nbsp;|&nbsp; Password: admin
       </div>
 
     </div>
@@ -127,10 +157,8 @@
         <div>
           <h4>Quick Links</h4>
           <ul class="footer-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="menu.html">Menu</a></li>
-            <li><a href="about.html">About Us</a></li>
-            <li><a href="contact.html">Contact</a></li>
+            <li><a href="index.html">Home</a></li><li><a href="menu.html">Menu</a></li>
+            <li><a href="about.html">About Us</a></li><li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
         <div>
@@ -156,21 +184,59 @@
   <script src="js/api.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
-
   <script>
-    // Show/Hide Password
-    function togglePassword(inputId, iconId) {
-      const input = document.getElementById(inputId);
-      const icon = document.getElementById(iconId);
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.className = 'fa-regular fa-eye-slash';
-      } else {
-        input.type = 'password';
-        icon.className = 'fa-regular fa-eye';
-      }
-    }
-  </script>
+  function togglePw(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon  = document.getElementById(iconId);
+    if (input.type === 'password') { input.type = 'text'; icon.className = 'fa-regular fa-eye-slash'; }
+    else { input.type = 'password'; icon.className = 'fa-regular fa-eye'; }
+  }
 
+  // Password strength
+  function checkPasswordStrength(val) {
+    const bar = document.getElementById('strength-bar');
+    const fill = document.getElementById('strength-fill');
+    const label = document.getElementById('strength-label');
+    if (!val) { bar.style.display = 'none'; label.style.display = 'none'; return; }
+    bar.style.display = 'block'; label.style.display = 'block';
+    let score = 0;
+    if (val.length >= 6) score++;
+    if (val.length >= 10) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const levels = [
+      { w: '20%',  bg: '#ef4444', text: 'Very weak',   color: '#ef4444' },
+      { w: '40%',  bg: '#f97316', text: 'Weak',        color: '#f97316' },
+      { w: '60%',  bg: '#eab308', text: 'Fair',        color: '#eab308' },
+      { w: '80%',  bg: '#22c55e', text: 'Strong',      color: '#22c55e' },
+      { w: '100%', bg: '#16a34a', text: 'Very strong', color: '#16a34a' },
+    ];
+    const lvl = levels[Math.min(score - 1, 4)] || levels[0];
+    fill.style.width = lvl.w; fill.style.background = lvl.bg;
+    label.textContent = lvl.text; label.style.color = lvl.color;
+    checkPasswordMatch();
+  }
+
+  // Password match hint
+  function checkPasswordMatch() {
+    const pass    = document.getElementById('reg-password').value;
+    const confirm = document.getElementById('confirm-password').value;
+    const hint    = document.getElementById('match-hint');
+    if (!confirm) { hint.style.display = 'none'; return; }
+    hint.style.display = 'block';
+    if (pass === confirm) { hint.textContent = '✓ Passwords match'; hint.style.color = '#16a34a'; }
+    else { hint.textContent = '✕ Passwords do not match'; hint.style.color = '#dc2626'; }
+  }
+
+  // Email format validation feedback
+  document.getElementById('reg-email')?.addEventListener('input', function() {
+    const hint = document.getElementById('email-hint');
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value);
+    hint.style.display = this.value ? 'block' : 'none';
+    if (valid) { hint.innerHTML = '<i class="fas fa-circle-check" style="color:#16a34a;margin-right:4px;"></i>Valid email format'; hint.style.color = '#16a34a'; }
+    else { hint.innerHTML = '<i class="fas fa-circle-xmark" style="color:#dc2626;margin-right:4px;"></i>Invalid email format'; hint.style.color = '#dc2626'; }
+  });
+  </script>
 </body>
 </html>
