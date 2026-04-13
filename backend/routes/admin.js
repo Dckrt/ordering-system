@@ -9,7 +9,7 @@ router.get('/dashboard', async (req, res) => {
   try {
     conn = await getConnection();
     const [orders, customers, products] = await Promise.all([
-      conn.execute(`SELECT COUNT(*) AS "total", SUM(total) AS "revenue" FROM orders`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
+      conn.execute(`SELECT COUNT(*) AS "total", NVL(SUM(total),0) AS "revenue" FROM orders`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
       conn.execute(`SELECT COUNT(*) AS "total" FROM users WHERE role = 'customer'`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
       conn.execute(`SELECT COUNT(*) AS "total" FROM products`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
     ]);
@@ -29,13 +29,13 @@ router.get('/customers', async (req, res) => {
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT user_id    AS "user_id",
-              full_name  AS "full_name",
-              email      AS "email",
-              phone      AS "phone",
-              role       AS "role",
-              status     AS "status",
-              TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS "created_at"
+      `SELECT user_id   AS "user_id",
+              full_name AS "full_name",
+              email     AS "email",
+              phone     AS "phone",
+              role      AS "role",
+              NVL(status,'active') AS "status",
+              TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS "created_at"
        FROM users
        WHERE role = 'customer'
        ORDER BY created_at DESC`,
@@ -70,9 +70,9 @@ router.get('/categories', async (req, res) => {
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT category_id  AS "category_id",
-              name         AS "name",
-              description  AS "description"
+      `SELECT category_id AS "category_id",
+              name        AS "name",
+              description AS "description"
        FROM categories ORDER BY category_id`,
       {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
@@ -104,7 +104,7 @@ router.put('/categories/:id', async (req, res) => {
   try {
     conn = await getConnection();
     await conn.execute(
-      `UPDATE categories SET name = :name, description = :description WHERE category_id = :id`,
+      `UPDATE categories SET name=:name, description=:description WHERE category_id=:id`,
       { name, description: description || null, id: parseInt(req.params.id) }
     );
     await conn.commit();
@@ -118,7 +118,7 @@ router.delete('/categories/:id', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
-    await conn.execute(`DELETE FROM categories WHERE category_id = :id`, { id: parseInt(req.params.id) });
+    await conn.execute(`DELETE FROM categories WHERE category_id=:id`, { id: parseInt(req.params.id) });
     await conn.commit();
     res.json({ success: true });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
@@ -131,14 +131,14 @@ router.get('/reports', async (req, res) => {
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT oi.name           AS "product_name",
-              SUM(oi.quantity)  AS "total_sold",
-              SUM(oi.price * oi.quantity) AS "total_revenue"
+      `SELECT oi.name                         AS "product_name",
+              SUM(oi.quantity)                AS "total_sold",
+              SUM(oi.price * oi.quantity)     AS "total_revenue"
        FROM order_items oi
        JOIN orders o ON oi.order_id = o.order_id
        WHERE o.status != 'Cancelled'
        GROUP BY oi.name
-       ORDER BY total_sold DESC
+       ORDER BY SUM(oi.quantity) DESC
        FETCH FIRST 20 ROWS ONLY`,
       {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
