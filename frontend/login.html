@@ -6,49 +6,82 @@
   <title>Login - Batangas Premium Naga</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
-  <!-- Google Sign-In -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
-    .auth-wrap { min-height:80vh;display:flex;align-items:center;justify-content:center;padding:var(--space-8);background:var(--gray-50); }
-    .auth-card { max-width:440px;width:100%;background:white;border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);padding:var(--space-8); }
-    .auth-logo { text-align:center;margin-bottom:24px; }
-    .auth-logo-icon { width:56px;height:56px;background:linear-gradient(135deg,#dc2626,#f97316);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px; }
+    .auth-wrap {
+      min-height: 80vh; display: flex; align-items: center;
+      justify-content: center; padding: var(--space-8); background: var(--gray-50);
+    }
+    .auth-card {
+      max-width: 440px; width: 100%; background: white;
+      border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); padding: 36px 32px;
+    }
+    .auth-logo { text-align: center; margin-bottom: 28px; }
+    .auth-logo-icon {
+      width: 60px; height: 60px;
+      background: linear-gradient(135deg, #dc2626, #f97316);
+      border-radius: 16px; display: flex; align-items: center;
+      justify-content: center; margin: 0 auto 14px;
+    }
 
-    .password-wrapper { position:relative; }
-    .password-wrapper .form-input { padding-right:48px; }
-    .password-toggle { position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--gray-400);font-size:16px;padding:0;display:flex;align-items:center;z-index:2;transition:color .2s; }
-    .password-toggle:hover { color:var(--gray-700); }
+    /* Password toggle */
+    .pw-wrap { position: relative; }
+    .pw-wrap .form-input { padding-right: 48px; }
+    .pw-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--gray-400);
+      font-size: 16px; padding: 0; display: flex; align-items: center; z-index: 2;
+      transition: color .2s;
+    }
+    .pw-toggle:hover { color: var(--gray-700); }
 
     /* Password strength */
-    #strength-bar { height:4px;border-radius:2px;margin-top:6px;background:#e5e7eb;overflow:hidden;display:none; }
-    #strength-fill { height:100%;width:0%;border-radius:2px;transition:width .3s,background .3s; }
+    .strength-bar { height: 4px; border-radius: 2px; margin-top: 6px; background: #e5e7eb; overflow: hidden; }
+    .strength-fill { height: 100%; width: 0%; border-radius: 2px; transition: width .3s, background .3s; }
 
     /* Google button */
     .google-btn {
-      width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:var(--radius-lg);
-      background:white;display:flex;align-items:center;justify-content:center;gap:10px;
-      font-size:15px;font-weight:500;color:#374151;cursor:pointer;transition:all .2s;margin-bottom:16px;
+      width: 100%; padding: 12px 16px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+      background: white; display: flex; align-items: center; justify-content: center; gap: 10px;
+      font-size: 15px; font-weight: 500; color: #374151; cursor: pointer;
+      transition: all .2s; margin-bottom: 16px; font-family: inherit;
     }
-    .google-btn:hover { background:var(--gray-50);border-color:#9ca3af;box-shadow:var(--shadow-sm); }
-    .google-btn img { width:20px;height:20px; }
+    .google-btn:hover { background: #f9fafb; border-color: #9ca3af; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
 
-    .divider { display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--gray-400);font-size:13px; }
-    .divider::before,.divider::after { content:'';flex:1;height:1px;background:var(--gray-200); }
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--gray-400); font-size: 13px; margin: 16px 0;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--gray-200); }
 
-    .remember-row { display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;font-size:13px; }
-    .remember-check { display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--gray-600); }
-    .remember-check input { width:16px;height:16px;accent-color:#dc2626;cursor:pointer; }
-    .forgot-link { color:#dc2626;font-weight:500;cursor:pointer;background:none;border:none;font-size:13px;text-decoration:none; }
-    .forgot-link:hover { text-decoration:underline; }
+    .remember-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px; font-size: 13px;
+    }
+    .remember-label {
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; color: var(--gray-600); user-select: none;
+    }
+    .remember-label input { width: 16px; height: 16px; accent-color: #dc2626; cursor: pointer; }
+    .forgot-btn {
+      background: none; border: none; font-size: 13px;
+      color: #dc2626; font-weight: 500; cursor: pointer; padding: 0;
+    }
+    .forgot-btn:hover { text-decoration: underline; }
 
-    .demo-box { background:var(--blue-light);border:1px solid var(--blue);border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);margin-top:16px;font-size:13px;color:var(--blue); }
+    .hint { font-size: 12px; margin-top: 4px; display: none; }
+    .hint.show { display: block; }
 
-    /* Forgot password modal */
-    .fp-overlay { position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px; }
-    .fp-box { background:white;border-radius:16px;padding:32px;width:100%;max-width:400px; }
-
-    /* Email/password hints */
-    .hint-text { font-size:12px;margin-top:4px;display:none; }
+    /* Forgot modal */
+    .fp-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      z-index: 9999; display: flex; align-items: center;
+      justify-content: center; padding: 16px;
+    }
+    .fp-box {
+      background: white; border-radius: 16px; padding: 32px;
+      width: 100%; max-width: 400px;
+    }
   </style>
 </head>
 <body>
@@ -56,7 +89,10 @@
     <div class="container header-content">
       <a href="index.html" class="logo">
         <div class="logo-icon"><i class="fas fa-utensils"></i></div>
-        <div><div class="logo-text">Batangas Premium Naga</div><div class="logo-subtext">Noona's Food Station</div></div>
+        <div>
+          <div class="logo-text">Batangas Premium Naga</div>
+          <div class="logo-subtext">Noona's Food Station</div>
+        </div>
       </a>
       <nav class="nav">
         <a href="index.html" class="nav-link">Home</a>
@@ -78,14 +114,23 @@
     <div class="auth-card">
 
       <div class="auth-logo">
-        <div class="auth-logo-icon"><i class="fas fa-utensils" style="color:white;font-size:24px;"></i></div>
-        <h1 id="page-title" style="font-size:1.5rem;margin-bottom:4px;">Welcome Back</h1>
+        <div class="auth-logo-icon">
+          <i class="fas fa-utensils" style="color:white;font-size:26px;"></i>
+        </div>
+        <h1 id="page-title" style="font-size:1.5rem;font-weight:700;margin-bottom:4px;">Welcome Back</h1>
         <p id="page-subtitle" style="color:var(--gray-500);font-size:.875rem;">Sign in to your account</p>
       </div>
 
-      <!-- Google Sign-In -->
-      <button class="google-btn" onclick="signInWithGoogle()">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      <!-- ── Google Sign-In Button ── -->
+      <button class="google-btn" id="google-btn" onclick="signInWithGoogle()">
+        <!-- Official Google G logo SVG -->
+        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          <path fill="none" d="M0 0h48v48H0z"/>
+        </svg>
         Continue with Google
       </button>
 
@@ -95,29 +140,28 @@
       <form id="login-form">
         <div class="form-group">
           <label class="form-label">Email</label>
-          <input type="email" name="email" id="login-email" class="form-input" required placeholder="you@email.com"
-            oninput="validateEmail(this,'login-email-hint')">
-          <p id="login-email-hint" class="hint-text"></p>
+          <input type="email" name="email" id="login-email" class="form-input" required placeholder="you@email.com">
         </div>
+
         <div class="form-group" style="margin-bottom:8px;">
           <label class="form-label">Password</label>
-          <div class="password-wrapper">
-            <input type="password" name="password" id="login-password" class="form-input" required placeholder="Your password">
-            <button type="button" class="password-toggle" onclick="togglePw('login-password','login-eye')">
-              <i id="login-eye" class="fa-regular fa-eye"></i>
+          <div class="pw-wrap">
+            <input type="password" name="password" id="login-pass" class="form-input" required placeholder="Your password">
+            <button type="button" class="pw-toggle" onclick="togglePw('login-pass','eye-login')">
+              <i id="eye-login" class="fa-regular fa-eye"></i>
             </button>
           </div>
         </div>
 
-        <!-- Remember me + Forgot password -->
         <div class="remember-row">
-          <label class="remember-check">
-            <input type="checkbox" id="remember-me"> Remember me
+          <label class="remember-label">
+            <input type="checkbox" id="remember-me">
+            Remember me
           </label>
-          <button type="button" class="forgot-link" onclick="openForgotPassword()">Forgot your password?</button>
+          <button type="button" class="forgot-btn" onclick="openForgot()">Forgot your password?</button>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:13px;font-size:15px;">
           <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>Sign In
         </button>
       </form>
@@ -134,71 +178,72 @@
         </div>
         <div class="form-group">
           <label class="form-label">Email *</label>
-          <input type="email" name="email" id="reg-email" class="form-input" required placeholder="you@email.com"
-            oninput="validateEmail(this,'reg-email-hint')">
-          <p id="reg-email-hint" class="hint-text"></p>
+          <input type="email" name="email" class="form-input" required placeholder="you@email.com">
         </div>
         <div class="form-group">
           <label class="form-label">Password *</label>
-          <div class="password-wrapper">
-            <input type="password" name="password" id="reg-password" class="form-input" required placeholder="Min. 6 characters"
-              oninput="checkStrength(this.value);checkMatch()">
-            <button type="button" class="password-toggle" onclick="togglePw('reg-password','reg-eye')">
-              <i id="reg-eye" class="fa-regular fa-eye"></i>
+          <div class="pw-wrap">
+            <input type="password" name="password" id="reg-pass" class="form-input" required placeholder="Min. 6 characters"
+              oninput="checkStrength(this.value)">
+            <button type="button" class="pw-toggle" onclick="togglePw('reg-pass','eye-reg')">
+              <i id="eye-reg" class="fa-regular fa-eye"></i>
             </button>
           </div>
-          <div id="strength-bar"><div id="strength-fill"></div></div>
-          <p id="strength-label" class="hint-text"></p>
+          <div class="strength-bar" id="str-bar" style="display:none;">
+            <div class="strength-fill" id="str-fill"></div>
+          </div>
+          <p class="hint" id="str-label"></p>
         </div>
         <div class="form-group">
           <label class="form-label">Confirm Password *</label>
-          <div class="password-wrapper">
-            <input type="password" name="confirmPassword" id="confirm-password" class="form-input" required placeholder="Repeat password"
+          <div class="pw-wrap">
+            <input type="password" name="confirmPassword" id="confirm-pass" class="form-input" required placeholder="Repeat password"
               oninput="checkMatch()">
-            <button type="button" class="password-toggle" onclick="togglePw('confirm-password','confirm-eye')">
-              <i id="confirm-eye" class="fa-regular fa-eye"></i>
+            <button type="button" class="pw-toggle" onclick="togglePw('confirm-pass','eye-confirm')">
+              <i id="eye-confirm" class="fa-regular fa-eye"></i>
             </button>
           </div>
-          <p id="match-hint" class="hint-text"></p>
+          <p class="hint" id="match-hint"></p>
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:13px;font-size:15px;">
           <i class="fas fa-user-plus" style="margin-right:8px;"></i>Create Account
         </button>
       </form>
 
-      <div class="text-center mt-4">
-        <button onclick="toggleMode()" class="btn btn-outline" style="width:100%;">
+      <div style="margin-top:16px;">
+        <button onclick="toggleMode()" class="btn btn-outline" style="width:100%;padding:11px;">
           <span id="toggle-text">Don't have an account? Register</span>
         </button>
       </div>
 
-      <div class="demo-box">
+      <!-- Demo hint -->
+      <div style="background:#dbeafe;border:1px solid #2563eb;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:13px;color:#1d4ed8;">
         <strong><i class="fas fa-circle-info" style="margin-right:4px;"></i>Demo Login:</strong>
-        Email: admin@batangas.com &nbsp;|&nbsp; Password: admin
+        &nbsp;admin@batangas.com &nbsp;|&nbsp; password: admin
       </div>
+
     </div>
   </div>
 
-  <!-- Forgot Password Modal -->
+  <!-- ── Forgot Password Modal ── -->
   <div id="forgot-modal" style="display:none;">
-    <div class="fp-overlay" onclick="closeForgotPassword()">
+    <div class="fp-overlay" onclick="closeForgot()">
       <div class="fp-box" onclick="event.stopPropagation()">
         <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:8px;">Reset Password</h2>
         <p style="font-size:13px;color:var(--gray-500);margin-bottom:20px;">
-          Enter your registered email and we'll send you a reset link.<br>
-          <strong style="color:#dc2626;">Note:</strong> For this demo, contact admin directly.
+          Enter your registered email address. For this demo, please contact the admin directly.
         </p>
         <div class="form-group">
           <label class="form-label">Email Address</label>
           <input type="email" id="forgot-email" class="form-input" placeholder="you@email.com">
         </div>
         <div style="display:flex;gap:12px;margin-top:16px;">
-          <button onclick="submitForgotPassword()" class="btn btn-primary" style="flex:1;">
-            <i class="fas fa-paper-plane" style="margin-right:6px;"></i>Send Reset Link
+          <button onclick="submitForgot()" class="btn btn-primary" style="flex:1;">
+            <i class="fas fa-paper-plane" style="margin-right:6px;"></i>Send Link
           </button>
-          <button onclick="closeForgotPassword()" class="btn btn-outline" style="flex:1;">Cancel</button>
+          <button onclick="closeForgot()" class="btn btn-outline" style="flex:1;">Cancel</button>
         </div>
-        <div id="forgot-success" style="display:none;margin-top:14px;padding:12px;background:#dcfce7;border-radius:8px;font-size:13px;color:#15803d;">
+        <div id="forgot-ok" style="display:none;margin-top:14px;padding:12px;background:#dcfce7;border-radius:8px;font-size:13px;color:#15803d;">
           <i class="fas fa-circle-check" style="margin-right:6px;"></i>If this email is registered, a reset link has been sent.
         </div>
       </div>
@@ -229,78 +274,75 @@
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
   <script>
-  // ── Utilities
-  function togglePw(inputId, iconId) {
-    const input=document.getElementById(inputId), icon=document.getElementById(iconId);
-    if(input.type==='password'){input.type='text';icon.className='fa-regular fa-eye-slash';}
-    else{input.type='password';icon.className='fa-regular fa-eye';}
+  // ── Password toggle
+  function togglePw(id, iconId) {
+    const el = document.getElementById(id), ic = document.getElementById(iconId);
+    if (el.type === 'password') { el.type = 'text'; ic.className = 'fa-regular fa-eye-slash'; }
+    else { el.type = 'password'; ic.className = 'fa-regular fa-eye'; }
   }
 
-  function validateEmail(input, hintId) {
-    const hint=document.getElementById(hintId);
-    const valid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value);
-    hint.style.display=input.value?'block':'none';
-    if(valid){hint.innerHTML='<span style="color:#16a34a;"><i class="fas fa-circle-check" style="margin-right:4px;"></i>Valid email</span>';}
-    else{hint.innerHTML='<span style="color:#dc2626;"><i class="fas fa-circle-xmark" style="margin-right:4px;"></i>Invalid email format</span>';}
-  }
-
+  // ── Password strength (register only)
   function checkStrength(val) {
-    const bar=document.getElementById('strength-bar'), fill=document.getElementById('strength-fill'), label=document.getElementById('strength-label');
-    if(!val){bar.style.display='none';label.style.display='none';return;}
-    bar.style.display='block'; label.style.display='block';
-    let score=0;
-    if(val.length>=6)score++;if(val.length>=10)score++;
-    if(/[A-Z]/.test(val))score++;if(/[0-9]/.test(val))score++;if(/[^A-Za-z0-9]/.test(val))score++;
-    const levels=[{w:'20%',bg:'#ef4444',text:'Very weak',color:'#ef4444'},{w:'40%',bg:'#f97316',text:'Weak',color:'#f97316'},{w:'60%',bg:'#eab308',text:'Fair',color:'#eab308'},{w:'80%',bg:'#22c55e',text:'Strong',color:'#22c55e'},{w:'100%',bg:'#16a34a',text:'Very strong',color:'#16a34a'}];
-    const lvl=levels[Math.min(score-1,4)]||levels[0];
-    fill.style.width=lvl.w;fill.style.background=lvl.bg;
-    label.textContent=lvl.text;label.style.color=lvl.color;
+    const bar = document.getElementById('str-bar'), fill = document.getElementById('str-fill'), lbl = document.getElementById('str-label');
+    if (!val) { bar.style.display = 'none'; lbl.className = 'hint'; return; }
+    bar.style.display = 'block'; lbl.className = 'hint show';
+    let s = 0;
+    if (val.length >= 6) s++; if (val.length >= 10) s++;
+    if (/[A-Z]/.test(val)) s++; if (/[0-9]/.test(val)) s++; if (/[^A-Za-z0-9]/.test(val)) s++;
+    const lvls = [
+      { w: '20%', bg: '#ef4444', t: 'Very weak',   c: '#ef4444' },
+      { w: '40%', bg: '#f97316', t: 'Weak',        c: '#f97316' },
+      { w: '60%', bg: '#eab308', t: 'Fair',        c: '#eab308' },
+      { w: '80%', bg: '#22c55e', t: 'Strong',      c: '#22c55e' },
+      { w: '100%',bg: '#16a34a', t: 'Very strong', c: '#16a34a' },
+    ];
+    const l = lvls[Math.min(s - 1, 4)] || lvls[0];
+    fill.style.width = l.w; fill.style.background = l.bg;
+    lbl.textContent = l.t; lbl.style.color = l.c;
+    checkMatch();
   }
 
   function checkMatch() {
-    const pass=document.getElementById('reg-password').value, confirm=document.getElementById('confirm-password').value, hint=document.getElementById('match-hint');
-    if(!confirm){hint.style.display='none';return;}
-    hint.style.display='block';
-    if(pass===confirm){hint.innerHTML='<span style="color:#16a34a;">✓ Passwords match</span>';}
-    else{hint.innerHTML='<span style="color:#dc2626;">✕ Passwords do not match</span>';}
+    const p = document.getElementById('reg-pass').value, c = document.getElementById('confirm-pass').value, h = document.getElementById('match-hint');
+    if (!c) { h.className = 'hint'; return; }
+    h.className = 'hint show';
+    if (p === c) { h.innerHTML = '<span style="color:#16a34a;">✓ Passwords match</span>'; }
+    else { h.innerHTML = '<span style="color:#dc2626;">✕ Passwords do not match</span>'; }
   }
 
-  // ── Google Sign-In
+  // ── Google Sign-In using Google Identity Services
   function signInWithGoogle() {
-    // Initialize Google Identity Services
-    if (typeof google === 'undefined') {
-      Utils.showToast('Google Sign-In is loading. Please try again.', 'info');
+    // Load the Google Sign-In library if not already loaded
+    if (typeof google === 'undefined' || !google.accounts) {
+      Utils.showToast('Google Sign-In is not available. Please configure your Google Client ID.', 'error');
       return;
     }
     google.accounts.id.initialize({
-      client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
+      // ⚠️ REPLACE 'YOUR_GOOGLE_CLIENT_ID' with your actual Google OAuth 2.0 Client ID
+      // Get it from: https://console.cloud.google.com > APIs & Services > Credentials
+      client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
       callback: handleGoogleResponse,
       auto_select: false,
+      cancel_on_tap_outside: true,
     });
     google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        // Fallback: show one-tap or popup
-        google.accounts.id.renderButton(
-          document.createElement('div'),
-          { theme: 'outline', size: 'large' }
-        );
+      if (notification.isNotDisplayed()) {
+        Utils.showToast('Google Sign-In popup was blocked. Please allow popups.', 'error');
       }
     });
   }
 
-  async function handleGoogleResponse(response) {
+  async function handleGoogleResponse(credentialResponse) {
     try {
-      // Decode JWT credential
-      const base64Url = response.credential.split('.')[1];
-      const base64    = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const payload   = JSON.parse(window.atob(base64));
-      const { email, name, picture, sub: googleId } = payload;
+      // Decode JWT
+      const parts   = credentialResponse.credential.split('.');
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      const { email, name, picture } = payload;
 
-      // Register or login via backend
       const res = await fetch('http://localhost:3000/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, full_name: name, profile_image: picture, google_id: googleId })
+        body: JSON.stringify({ email, full_name: name, profile_image: picture })
       }).then(r => r.json());
 
       if (res.success) {
@@ -313,40 +355,35 @@
         Utils.showToast(res.message || 'Google sign-in failed', 'error');
       }
     } catch (err) {
-      Utils.showToast('Google sign-in error: ' + err.message, 'error');
+      Utils.showToast('Google sign-in error. Please try again.', 'error');
+      console.error(err);
     }
   }
 
-  // ── Forgot Password
-  function openForgotPassword() {
-    document.getElementById('forgot-modal').style.display = 'block';
-    document.getElementById('forgot-success').style.display = 'none';
-  }
-  function closeForgotPassword() {
-    document.getElementById('forgot-modal').style.display = 'none';
-  }
-  function submitForgotPassword() {
-    const email = document.getElementById('forgot-email').value;
+  // ── Forgot password modal
+  function openForgot()  { document.getElementById('forgot-modal').style.display = 'block'; document.getElementById('forgot-ok').style.display = 'none'; }
+  function closeForgot() { document.getElementById('forgot-modal').style.display = 'none'; }
+  function submitForgot() {
+    const email = document.getElementById('forgot-email').value.trim();
     if (!email) { Utils.showToast('Please enter your email', 'error'); return; }
-    // Show success message (in production, call /api/auth/forgot-password)
-    document.getElementById('forgot-success').style.display = 'block';
-    setTimeout(() => closeForgotPassword(), 3000);
+    // Show success (real implementation would call backend)
+    document.getElementById('forgot-ok').style.display = 'block';
+    setTimeout(closeForgot, 3000);
   }
 
-  // ── Remember Me
+  // ── Remember Me restore
   document.addEventListener('DOMContentLoaded', () => {
-    // Restore remembered email
     const remembered = localStorage.getItem('rememberedEmail');
     if (remembered) {
-      const emailInput = document.querySelector('#login-form input[name="email"]');
-      if (emailInput) emailInput.value = remembered;
+      const em = document.getElementById('login-email');
+      if (em) em.value = remembered;
       document.getElementById('remember-me').checked = true;
     }
   });
 
-  // Handle login form submit with remember me
+  // Override login form (need remember me logic)
   document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = e.target.querySelector('button[type=submit]');
       btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Signing in...';
@@ -354,12 +391,8 @@
       const d = new FormData(e.target);
       const email = d.get('email'), password = d.get('password');
 
-      // Remember me
-      if (document.getElementById('remember-me').checked) {
-        localStorage.setItem('rememberedEmail', email);
-      } else {
-        localStorage.removeItem('rememberedEmail');
-      }
+      if (document.getElementById('remember-me').checked) localStorage.setItem('rememberedEmail', email);
+      else localStorage.removeItem('rememberedEmail');
 
       const result = await Auth.login(email, password);
       if (result.success) {
@@ -373,7 +406,24 @@
         btn.disabled = false;
       }
     });
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const d = new FormData(e.target);
+      const pass = d.get('password'), confirm = d.get('confirmPassword');
+      if (pass !== confirm) { Utils.showToast('Passwords do not match', 'error'); return; }
+      if (pass.length < 6) { Utils.showToast('Password must be at least 6 characters', 'error'); return; }
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Creating...';
+      btn.disabled = true;
+      const result = await Auth.register({ full_name: d.get('fullName'), email: d.get('email'), phone: d.get('phone'), password: pass });
+      if (result.success) { Utils.showToast('Account created!', 'success'); setTimeout(() => goTo('index.html'), 700); }
+      else { Utils.showToast(result.message || 'Registration failed', 'error'); btn.innerHTML = '<i class="fas fa-user-plus" style="margin-right:8px;"></i>Create Account'; btn.disabled = false; }
+    });
   });
   </script>
+
+  <!-- Load Google Identity Services script -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </body>
 </html>
