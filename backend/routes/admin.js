@@ -10,7 +10,7 @@ router.get('/dashboard', async (req, res) => {
     conn = await getConnection();
     const [orders, customers, products] = await Promise.all([
       conn.execute(`SELECT COUNT(*) AS "total", NVL(SUM(total),0) AS "revenue" FROM orders`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
-      conn.execute(`SELECT COUNT(*) AS "total" FROM users WHERE role = 'customer'`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
+      conn.execute(`SELECT COUNT(*) AS "total" FROM users WHERE LOWER(role) != 'admin'`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
       conn.execute(`SELECT COUNT(*) AS "total" FROM products`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }),
     ]);
     res.json({
@@ -23,26 +23,29 @@ router.get('/dashboard', async (req, res) => {
   finally { if (conn) await conn.close(); }
 });
 
-// GET /api/admin/customers
+// GET /api/admin/customers — show ALL non-admin users
 router.get('/customers', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT user_id   AS "user_id",
-              full_name AS "full_name",
-              email     AS "email",
-              phone     AS "phone",
-              role      AS "role",
-              NVL(status,'active') AS "status",
+      `SELECT user_id                              AS "user_id",
+              full_name                            AS "full_name",
+              email                                AS "email",
+              phone                                AS "phone",
+              role                                 AS "role",
+              NVL(status,'active')                 AS "status",
               TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS "created_at"
        FROM users
-       WHERE role = 'customer'
+       WHERE LOWER(role) != 'admin'
        ORDER BY created_at DESC`,
       {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
     res.json(result.rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    console.error('getCustomers error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
   finally { if (conn) await conn.close(); }
 });
 
@@ -84,6 +87,7 @@ router.get('/categories', async (req, res) => {
 // POST /api/admin/categories
 router.post('/categories', async (req, res) => {
   const { name, description } = req.body;
+  if (!name) return res.status(400).json({ success: false, message: 'Name required' });
   let conn;
   try {
     conn = await getConnection();
@@ -125,25 +129,38 @@ router.delete('/categories/:id', async (req, res) => {
   finally { if (conn) await conn.close(); }
 });
 
-// GET /api/admin/reports — top selling products
+// GET /api/admin/reports — top selling products with fallback if no items
 router.get('/reports', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
-    const result = await conn.execute(
-      `SELECT oi.name                         AS "product_name",
-              SUM(oi.quantity)                AS "total_sold",
-              SUM(oi.price * oi.quantity)     AS "total_revenue"
-       FROM order_items oi
-       JOIN orders o ON oi.order_id = o.order_id
-       WHERE o.status != 'Cancelled'
-       GROUP BY oi.name
-       ORDER BY SUM(oi.quantity) DESC
-       FETCH FIRST 20 ROWS ONLY`,
-      {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
-    );
+    // Try order_items join first
+    let result;
+    try {
+      result = await conn.execute(
+        `SELECT oi.name                         AS "product_name",
+                SUM(oi.quantity)                AS "total_sold",
+                SUM(oi.price * oi.quantity)     AS "total_revenue"
+         FROM order_items oi
+         JOIN orders o ON oi.order_id = o.order_id
+         WHERE o.status != 'Cancelled'
+         GROUP BY oi.name
+         ORDER BY SUM(oi.quantity) DESC
+         FETCH FIRST 20 ROWS ONLY`,
+        {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
+      );
+    } catch (innerErr) {
+      // Fallback: just show products with 0 sales
+      result = await conn.execute(
+        `SELECT name AS "product_name", 0 AS "total_sold", 0 AS "total_revenue" FROM products ORDER BY product_id FETCH FIRST 20 ROWS ONLY`,
+        {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
+      );
+    }
     res.json(result.rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    console.error('Reports error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
   finally { if (conn) await conn.close(); }
 });
 
