@@ -1,19 +1,21 @@
 const express = require('express');
-const cors = require('cors');
-const path = require('path');
+const cors    = require('cors');
+const path    = require('path');
 require('dotenv').config();
 
 const app = express();
 
+// ── IMPORTANT: Increase body size limit for base64 images (products + profiles)
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '..')));
 
 // Test route
 app.get('/api/test', (req, res) => {
-  res.json({ message: 'Server is running!' });
+  res.json({ message: 'Server is running!', time: new Date().toISOString() });
 });
 
 // Routes
