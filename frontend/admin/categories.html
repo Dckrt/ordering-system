@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../css/style.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
   <style>
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;}
     .modal-box{background:white;border-radius:var(--radius-lg);padding:32px;width:100%;max-width:460px;}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
@@ -20,7 +20,7 @@
         <div class="logo-icon"><i class="fas fa-utensils"></i></div>
         <div>
           <div class="logo-text" style="color:white;">Batangas Premium Naga</div>
-          <div class="logo-subtext" style="color:rgba(255,255,255,0.7);">Admin Panel</div>
+          <div class="logo-subtext" style="color:rgba(255,255,255,.7);">Noona's Food Station</div>
         </div>
       </a>
     </div>
@@ -32,9 +32,7 @@
       <a href="customers.html"  class="admin-nav-item"><i class="fas fa-users"></i> Customers</a>
       <a href="reports.html"    class="admin-nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
       <a href="../index.html"   class="admin-nav-item" style="margin-top:auto;"><i class="fas fa-arrow-left"></i> Back to Site</a>
-      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;">
-        <i class="fas fa-sign-out-alt"></i> Sign Out
-      </button>
+      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
     </nav>
   </aside>
 
@@ -49,6 +47,12 @@
       </button>
     </div>
 
+    <!-- Search bar -->
+    <div style="margin-bottom:20px;">
+      <input id="search-input" type="text" placeholder="Search categories by name or description..."
+        class="form-input" style="max-width:420px;" oninput="filterCats()">
+    </div>
+
     <div class="table-container">
       <div id="loading" style="text-align:center;padding:48px;color:var(--gray-500);">
         <div style="width:32px;height:32px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>
@@ -56,21 +60,16 @@
       </div>
       <table class="table" id="cats-table" style="display:none;">
         <thead>
-          <tr>
-            <th>#</th>
-            <th>Category Name</th>
-            <th>Description</th>
-            <th>Products</th>
-            <th>Actions</th>
-          </tr>
+          <tr><th>#</th><th>Category Name</th><th>Description</th><th>Products</th><th>Actions</th></tr>
         </thead>
         <tbody id="cats-tbody"></tbody>
       </table>
+      <div id="no-results" style="display:none;text-align:center;padding:48px;color:var(--gray-500);">No categories found.</div>
     </div>
   </main>
 </div>
 
-<!-- Add / Edit Modal -->
+<!-- Add/Edit Modal -->
 <div id="modal" class="modal-overlay" style="display:none;">
   <div class="modal-box">
     <h2 id="modal-title" style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">Add Category</h2>
@@ -92,12 +91,10 @@
   </div>
 </div>
 
-<!-- Delete confirm -->
+<!-- Delete Confirm -->
 <div id="delete-modal" class="modal-overlay" style="display:none;">
   <div class="modal-box" style="max-width:400px;">
-    <h2 style="font-size:1.1rem;font-weight:700;color:#dc2626;margin-bottom:12px;">
-      <i class="fas fa-triangle-exclamation" style="margin-right:8px;"></i>Delete Category
-    </h2>
+    <h2 style="font-size:1.1rem;font-weight:700;color:#dc2626;margin-bottom:12px;"><i class="fas fa-triangle-exclamation" style="margin-right:8px;"></i>Delete Category</h2>
     <p style="color:var(--gray-600);margin-bottom:8px;">Are you sure you want to delete <strong id="delete-name"></strong>?</p>
     <p style="color:var(--gray-500);font-size:13px;margin-bottom:24px;">Products under this category will lose their category assignment.</p>
     <div style="display:flex;gap:12px;">
@@ -112,27 +109,25 @@
 <script src="../js/cart.js"></script>
 <script src="../js/app.js"></script>
 <script>
-let allCats = [], allProducts = [], deleteTargetId = null;
+let allCats=[], allProducts=[], deleteTargetId=null;
 
-async function loadAll() {
+async function loadAll(){
   try {
-    const [cats, products] = await Promise.all([api.getCategories_admin(), api.getProducts()]);
-    allCats = cats; allProducts = products;
-    document.getElementById('cat-count').textContent = `${cats.length} categor${cats.length!==1?'ies':'y'}`;
-    document.getElementById('loading').style.display = 'none';
-    renderTable();
-  } catch { document.getElementById('loading').textContent = 'Failed to load. Is the server running?'; }
+    const [cats,products]=await Promise.all([api.getCategories_admin(),api.getProducts()]);
+    allCats=cats; allProducts=products;
+    document.getElementById('cat-count').textContent=`${cats.length} categor${cats.length!==1?'ies':'y'}`;
+    document.getElementById('loading').style.display='none';
+    renderTable(allCats);
+  } catch{ document.getElementById('loading').textContent='Failed to load.'; }
 }
 
-function renderTable() {
-  const table = document.getElementById('cats-table');
-  const tbody = document.getElementById('cats-tbody');
-  table.style.display = 'table';
-  tbody.innerHTML = allCats.map(c => {
-    const id   = c.CATEGORY_ID || c.category_id;
-    const name = c.NAME || c.name;
-    const desc = c.DESCRIPTION || c.description || '—';
-    const count = allProducts.filter(p => p.category === name).length;
+function renderTable(cats){
+  const table=document.getElementById('cats-table'), tbody=document.getElementById('cats-tbody'), noRes=document.getElementById('no-results');
+  if(!cats.length){table.style.display='none';noRes.style.display='block';return;}
+  noRes.style.display='none';table.style.display='table';
+  tbody.innerHTML=cats.map(c=>{
+    const id=c.CATEGORY_ID||c.category_id, name=c.NAME||c.name, desc=c.DESCRIPTION||c.description||'—';
+    const count=allProducts.filter(p=>p.category===name).length;
     return `<tr>
       <td style="color:var(--gray-400);font-size:13px;">#${id}</td>
       <td><span style="font-weight:600;">${name}</span></td>
@@ -140,69 +135,52 @@ function renderTable() {
       <td><span class="badge badge-info">${count} product${count!==1?'s':''}</span></td>
       <td>
         <div class="table-actions">
-          <button class="icon-btn edit" onclick="editCat(${id},'${name.replace(/'/g,"\\'")}','${desc==='—'?'':desc.replace(/'/g,"\\'")}')">
-            <i class="fas fa-pen"></i>
-          </button>
-          <button class="icon-btn delete" onclick="confirmDelete(${id},'${name.replace(/'/g,"\\'")}')">
-            <i class="fas fa-trash"></i>
-          </button>
+          <button class="icon-btn edit" onclick="editCat(${id},'${name.replace(/'/g,"\\'")}','${desc==='—'?'':desc.replace(/'/g,"\\'")}')"><i class="fas fa-pen"></i></button>
+          <button class="icon-btn delete" onclick="confirmDelete(${id},'${name.replace(/'/g,"\\'")}')"><i class="fas fa-trash"></i></button>
         </div>
       </td>
     </tr>`;
   }).join('');
 }
 
-function openModal(id='', name='', desc='') {
-  document.getElementById('modal-title').textContent = id ? 'Edit Category' : 'Add Category';
-  document.getElementById('cat-id').value   = id;
-  document.getElementById('c-name').value   = name;
-  document.getElementById('c-desc').value   = desc;
-  document.getElementById('modal').style.display = 'flex';
+function filterCats(){
+  const q=document.getElementById('search-input').value.toLowerCase();
+  renderTable(allCats.filter(c=>(c.NAME||c.name||'').toLowerCase().includes(q)||(c.DESCRIPTION||c.description||'').toLowerCase().includes(q)));
 }
-function editCat(id, name, desc) { openModal(id, name, desc); }
-function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-document.getElementById('cat-form').addEventListener('submit', async (e) => {
+function openModal(id='',name='',desc=''){
+  document.getElementById('modal-title').textContent=id?'Edit Category':'Add Category';
+  document.getElementById('cat-id').value=id; document.getElementById('c-name').value=name; document.getElementById('c-desc').value=desc;
+  document.getElementById('modal').style.display='flex';
+}
+function editCat(id,name,desc){openModal(id,name,desc);}
+function closeModal(){document.getElementById('modal').style.display='none';}
+
+document.getElementById('cat-form').addEventListener('submit',async(e)=>{
   e.preventDefault();
-  const btn = document.getElementById('save-btn');
-  btn.textContent = 'Saving...'; btn.disabled = true;
-  const id   = document.getElementById('cat-id').value;
-  const data = { name: document.getElementById('c-name').value, description: document.getElementById('c-desc').value };
+  const btn=document.getElementById('save-btn'); btn.textContent='Saving...'; btn.disabled=true;
+  const id=document.getElementById('cat-id').value;
+  const data={name:document.getElementById('c-name').value, description:document.getElementById('c-desc').value};
   try {
-    const result = id ? await api.updateCategory(id, data) : await api.addCategory(data);
-    if (result.success || result.category_id) {
-      closeModal(); await loadAll();
-      Utils.showToast(id ? 'Category updated!' : 'Category added!', 'success');
-    } else { Utils.showToast(result.message || 'Failed', 'error'); }
-  } catch { Utils.showToast('Server error', 'error'); }
-  btn.textContent = 'Save'; btn.disabled = false;
+    const r=id?await api.updateCategory(id,data):await api.addCategory(data);
+    if(r.success||r.category_id){closeModal();await loadAll();Utils.showToast(id?'Category updated!':'Category added!','success');}
+    else{Utils.showToast(r.message||'Failed','error');}
+  }catch{Utils.showToast('Server error','error');}
+  btn.textContent='Save';btn.disabled=false;
 });
 
-function confirmDelete(id, name) {
-  deleteTargetId = id;
-  document.getElementById('delete-name').textContent = name;
-  document.getElementById('delete-modal').style.display = 'flex';
-}
-function closeDeleteModal() { document.getElementById('delete-modal').style.display = 'none'; deleteTargetId = null; }
-
-document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
-  if (!deleteTargetId) return;
-  try {
-    await api.deleteCategory(deleteTargetId);
-    closeDeleteModal(); await loadAll();
-    Utils.showToast('Category deleted', 'info');
-  } catch { Utils.showToast('Failed to delete', 'error'); }
+function confirmDelete(id,name){ deleteTargetId=id; document.getElementById('delete-name').textContent=name; document.getElementById('delete-modal').style.display='flex'; }
+function closeDeleteModal(){document.getElementById('delete-modal').style.display='none';deleteTargetId=null;}
+document.getElementById('confirm-delete-btn').addEventListener('click',async()=>{
+  if(!deleteTargetId)return;
+  try{await api.deleteCategory(deleteTargetId);closeDeleteModal();await loadAll();Utils.showToast('Category deleted','info');}
+  catch{Utils.showToast('Failed to delete','error');}
 });
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
 
-document.getElementById('modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('modal')) closeModal();
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
-  if (!user || (user.ROLE !== 'admin' && user.role !== 'admin')) {
-    window.location.href = '../login.html'; return;
-  }
+document.addEventListener('DOMContentLoaded',()=>{
+  const user=JSON.parse(localStorage.getItem('currentUser')||'null');
+  if(!user||(user.ROLE!=='admin'&&user.role!=='admin')){window.location.href='../login.html';return;}
   loadAll();
 });
 </script>

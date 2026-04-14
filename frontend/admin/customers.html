@@ -7,14 +7,28 @@
   <link rel="stylesheet" href="../css/style.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
   <style>
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;}
-    .modal-box{background:white;border-radius:var(--radius-lg);padding:32px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;}
+    .modal-box{background:white;border-radius:var(--radius-lg);padding:32px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
     .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#dc2626,#f97316);display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:700;flex-shrink:0;}
-    .badge-blocked{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;}
-    .badge-active{background:#dcfce7;color:#16a34a;border:1px solid #86efac;}
-    .password-wrapper{position:relative;}
-    .password-wrapper .form-input{padding-right:44px;}
+    .avatar.admin-av{background:linear-gradient(135deg,#1d4ed8,#7c3aed);}
+    .badge-blocked{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;}
+    .badge-active{background:#dcfce7;color:#16a34a;border:1px solid #86efac;display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;}
+    .badge-admin{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;}
+    .pw-wrap{position:relative;}
+    .pw-wrap .form-input{padding-right:44px;}
     .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;font-size:15px;}
+    /* Inline action buttons */
+    .action-btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:32px;height:32px;border-radius:8px;border:1px solid;
+      cursor:pointer;font-size:13px;background:white;transition:all .15s;
+    }
+    .action-btn.view-btn{color:#2563eb;border-color:#bfdbfe;}
+    .action-btn.view-btn:hover{background:#dbeafe;}
+    .action-btn.block-btn{color:#dc2626;border-color:#fca5a5;}
+    .action-btn.block-btn:hover{background:#fee2e2;}
+    .action-btn.unblock-btn{color:#16a34a;border-color:#86efac;}
+    .action-btn.unblock-btn:hover{background:#dcfce7;}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
@@ -26,7 +40,7 @@
         <div class="logo-icon"><i class="fas fa-utensils"></i></div>
         <div>
           <div class="logo-text" style="color:white;">Batangas Premium Naga</div>
-          <div class="logo-subtext" style="color:rgba(255,255,255,0.7);">Noona's Food Station</div>
+          <div class="logo-subtext" style="color:rgba(255,255,255,.7);">Noona's Food Station</div>
         </div>
       </a>
     </div>
@@ -38,9 +52,7 @@
       <a href="customers.html"  class="admin-nav-item active"><i class="fas fa-users"></i> Customers</a>
       <a href="reports.html"    class="admin-nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
       <a href="../index.html"   class="admin-nav-item" style="margin-top:auto;"><i class="fas fa-arrow-left"></i> Back to Site</a>
-      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;">
-        <i class="fas fa-sign-out-alt"></i> Sign Out
-      </button>
+      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
     </nav>
   </aside>
 
@@ -55,20 +67,27 @@
       </button>
     </div>
 
+    <!-- Stats -->
     <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
-      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-total" style="font-size:1.5rem;">0</div><div class="stats-label">Total</div></div><div class="stats-icon blue"><i class="fas fa-users"></i></div></div></div>
+      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-total" style="font-size:1.5rem;">0</div><div class="stats-label">Total Users</div></div><div class="stats-icon blue"><i class="fas fa-users"></i></div></div></div>
       <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-new" style="font-size:1.5rem;">0</div><div class="stats-label">New This Month</div></div><div class="stats-icon green"><i class="fas fa-user-plus"></i></div></div></div>
       <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-ordered" style="font-size:1.5rem;">0</div><div class="stats-label">With Orders</div></div><div class="stats-icon orange"><i class="fas fa-bag-shopping"></i></div></div></div>
       <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-blocked" style="font-size:1.5rem;">0</div><div class="stats-label">Blocked</div></div><div class="stats-icon red"><i class="fas fa-ban"></i></div></div></div>
     </div>
 
     <!-- Search + filter -->
-    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-      <input id="search-input" type="text" placeholder="Search name, email or phone..." class="form-input" style="max-width:320px;" oninput="filterCustomers()">
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <input id="search-input" type="text" placeholder="Search name, email or phone..."
+        class="form-input" style="max-width:340px;" oninput="filterCustomers()">
       <select id="status-filter" class="form-select" style="max-width:160px;" onchange="filterCustomers()">
         <option value="">All Status</option>
         <option value="active">Active</option>
         <option value="blocked">Blocked</option>
+      </select>
+      <select id="role-filter" class="form-select" style="max-width:140px;" onchange="filterCustomers()">
+        <option value="">All Roles</option>
+        <option value="customer">Customers</option>
+        <option value="admin">Admins</option>
       </select>
     </div>
 
@@ -79,7 +98,10 @@
       </div>
       <table class="table" id="cust-table" style="display:none;">
         <thead>
-          <tr><th>Customer</th><th>Email</th><th>Phone</th><th>Registered</th><th>Orders</th><th>Status</th><th>Actions</th></tr>
+          <tr>
+            <th>Customer</th><th>Email</th><th>Phone</th>
+            <th>Registered</th><th>Orders</th><th>Role</th><th>Status</th><th>Actions</th>
+          </tr>
         </thead>
         <tbody id="cust-tbody"></tbody>
       </table>
@@ -88,7 +110,7 @@
   </main>
 </div>
 
-<!-- View / Edit customer modal -->
+<!-- View modal -->
 <div id="view-modal" class="modal-overlay" style="display:none;">
   <div class="modal-box">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
@@ -102,7 +124,7 @@
 <!-- Add customer modal -->
 <div id="add-modal" class="modal-overlay" style="display:none;">
   <div class="modal-box" style="max-width:460px;">
-    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">Add New Customer</h2>
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">Add New User</h2>
     <form id="add-form">
       <div class="form-group">
         <label class="form-label">Full Name *</label>
@@ -118,9 +140,11 @@
       </div>
       <div class="form-group">
         <label class="form-label">Password *</label>
-        <div class="password-wrapper">
+        <div class="pw-wrap">
           <input type="password" id="a-pass" class="form-input" required placeholder="Min. 6 characters">
-          <button type="button" class="pw-toggle" onclick="togglePw('a-pass','a-eye')"><i id="a-eye" class="fa-regular fa-eye"></i></button>
+          <button type="button" class="pw-toggle" onclick="togglePw('a-pass','a-eye')">
+            <i id="a-eye" class="fa-regular fa-eye"></i>
+          </button>
         </div>
       </div>
       <div class="form-group">
@@ -132,7 +156,7 @@
       </div>
       <div style="display:flex;gap:12px;margin-top:20px;">
         <button type="submit" class="btn btn-primary" id="add-btn" style="flex:1;">
-          <i class="fas fa-user-plus" style="margin-right:6px;"></i>Add Customer
+          <i class="fas fa-user-plus" style="margin-right:6px;"></i>Add User
         </button>
         <button type="button" onclick="closeAddModal()" class="btn btn-outline" style="flex:1;">Cancel</button>
       </div>
@@ -145,165 +169,199 @@
 <script src="../js/cart.js"></script>
 <script src="../js/app.js"></script>
 <script>
-let allCustomers = [], allOrders = [];
+let allCustomers=[], allOrders=[];
 
-function togglePw(inputId, iconId) {
-  const input = document.getElementById(inputId), icon = document.getElementById(iconId);
-  if (input.type === 'password') { input.type = 'text'; icon.className = 'fa-regular fa-eye-slash'; }
-  else { input.type = 'password'; icon.className = 'fa-regular fa-eye'; }
+function togglePw(id,iconId){
+  const el=document.getElementById(id),ic=document.getElementById(iconId);
+  if(el.type==='password'){el.type='text';ic.className='fa-regular fa-eye-slash';}
+  else{el.type='password';ic.className='fa-regular fa-eye';}
 }
 
-async function loadAll() {
+async function loadAll(){
   try {
-    const [customers, orders] = await Promise.all([api.getCustomers(), api.getAllOrders()]);
-    allCustomers = customers; allOrders = orders;
-    const now = new Date();
-    const thisMonth = customers.filter(c => {
-      const d = new Date(c.CREATED_AT || c.created_at);
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    // Get ALL users (not just customers) — call the all-users endpoint
+    const [customers, orders]=await Promise.all([api.getAllUsers(), api.getAllOrders()]);
+    allCustomers=customers; allOrders=orders;
+    const now=new Date();
+    const thisMonth=customers.filter(c=>{
+      const d=new Date(c.CREATED_AT||c.created_at);
+      return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
     }).length;
-    const withOrders = new Set(orders.map(o => o.USER_ID || o.user_id).filter(Boolean)).size;
-    const blocked = customers.filter(c => (c.STATUS || c.status) === 'blocked').length;
-    document.getElementById('stat-total').textContent   = customers.length;
-    document.getElementById('stat-new').textContent     = thisMonth;
-    document.getElementById('stat-ordered').textContent = withOrders;
-    document.getElementById('stat-blocked').textContent = blocked;
-    document.getElementById('cust-count').textContent   = `${customers.length} registered customer${customers.length !== 1 ? 's' : ''}`;
-    document.getElementById('loading').style.display = 'none';
+    const withOrders=new Set(orders.map(o=>o.USER_ID||o.user_id).filter(Boolean)).size;
+    const blocked=customers.filter(c=>(c.STATUS||c.status||'active')==='blocked').length;
+    document.getElementById('stat-total').textContent   =customers.length;
+    document.getElementById('stat-new').textContent     =thisMonth;
+    document.getElementById('stat-ordered').textContent =withOrders;
+    document.getElementById('stat-blocked').textContent =blocked;
+    document.getElementById('cust-count').textContent   =`${customers.length} registered user${customers.length!==1?'s':''}`;
+    document.getElementById('loading').style.display    ='none';
     renderTable(customers);
-  } catch { document.getElementById('loading').textContent = 'Failed to load.'; }
+  }catch(e){ console.error(e); document.getElementById('loading').textContent='Failed to load. Is the server running?'; }
 }
 
-function renderTable(customers) {
-  const table = document.getElementById('cust-table'), tbody = document.getElementById('cust-tbody'), noRes = document.getElementById('no-results');
-  if (!customers.length) { table.style.display = 'none'; noRes.style.display = 'block'; return; }
-  noRes.style.display = 'none'; table.style.display = 'table';
-  tbody.innerHTML = customers.map(c => {
-    const id       = c.USER_ID || c.user_id;
-    const name     = c.FULL_NAME || c.full_name || '—';
-    const email    = c.EMAIL    || c.email    || '—';
-    const phone    = c.PHONE    || c.phone    || '—';
-    const status   = (c.STATUS  || c.status   || 'active').toLowerCase();
-    const date     = new Date(c.CREATED_AT || c.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
-    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-    const orderCount = allOrders.filter(o => (o.USER_ID || o.user_id) === id).length;
-    const isBlocked  = status === 'blocked';
-    return `<tr style="${isBlocked ? 'opacity:.65;' : ''}">
-      <td><div style="display:flex;align-items:center;gap:10px;"><div class="avatar">${initials}</div><span style="font-weight:600;">${name}</span></div></td>
+function renderTable(customers){
+  const table=document.getElementById('cust-table'), tbody=document.getElementById('cust-tbody'), noRes=document.getElementById('no-results');
+  if(!customers.length){table.style.display='none';noRes.style.display='block';return;}
+  noRes.style.display='none';table.style.display='table';
+  tbody.innerHTML=customers.map(c=>{
+    const id      =c.USER_ID||c.user_id;
+    const name    =c.FULL_NAME||c.full_name||'—';
+    const email   =c.EMAIL||c.email||'—';
+    const phone   =c.PHONE||c.phone||'—';
+    const role    =(c.ROLE||c.role||'customer').toLowerCase();
+    const status  =(c.STATUS||c.status||'active').toLowerCase();
+    const date    =new Date(c.CREATED_AT||c.created_at).toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'});
+    const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+    const orderCount=allOrders.filter(o=>(o.USER_ID||o.user_id)===id).length;
+    const isBlocked=status==='blocked';
+    const isAdmin  =role==='admin';
+
+    return `<tr style="${isBlocked?'opacity:.65;':''}">
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar ${isAdmin?'admin-av':''}">${initials}</div>
+          <span style="font-weight:600;">${name}</span>
+        </div>
+      </td>
       <td style="color:var(--gray-600);font-size:13px;">${email}</td>
       <td style="font-size:13px;">${phone}</td>
       <td style="font-size:13px;color:var(--gray-500);">${date}</td>
-      <td><span class="badge badge-info">${orderCount} order${orderCount !== 1 ? 's' : ''}</span></td>
-      <td><span class="badge ${isBlocked ? 'badge-blocked' : 'badge-active'}">${isBlocked ? 'Blocked' : 'Active'}</span></td>
       <td>
-        <div class="table-actions">
-          <button class="btn btn-outline btn-sm" onclick="viewCustomer(${id})" title="View"><i class="fas fa-eye"></i></button>
-          <button class="btn btn-outline btn-sm" onclick="toggleBlock(${id},'${status}')" title="${isBlocked ? 'Unblock' : 'Block'}"
-            style="${isBlocked ? 'color:#16a34a;border-color:#86efac;' : 'color:#dc2626;border-color:#fca5a5;'}">
-            <i class="fas ${isBlocked ? 'fa-unlock' : 'fa-ban'}"></i>
+        <span class="badge badge-info" style="padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;">
+          ${orderCount} order${orderCount!==1?'s':''}
+        </span>
+      </td>
+      <td>
+        ${isAdmin
+          ? '<span class="badge-admin">Admin</span>'
+          : '<span style="font-size:13px;color:var(--gray-500);">Customer</span>'}
+      </td>
+      <td>
+        <span class="${isBlocked?'badge-blocked':'badge-active'}">${isBlocked?'Blocked':'Active'}</span>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <!-- View button -->
+          <button class="action-btn view-btn" onclick="viewCustomer(${id})" title="View details">
+            <i class="fas fa-eye"></i>
           </button>
+          <!-- Block/Unblock button — only for non-admins -->
+          ${!isAdmin ? `
+          <button class="action-btn ${isBlocked?'unblock-btn':'block-btn'}" onclick="toggleBlock(${id},'${status}')"
+            title="${isBlocked?'Unblock':'Block'} this user">
+            <i class="fas ${isBlocked?'fa-unlock':'fa-ban'}"></i>
+          </button>` : `<span style="font-size:11px;color:#9ca3af;">admin</span>`}
         </div>
       </td>
     </tr>`;
   }).join('');
 }
 
-function filterCustomers() {
-  const q  = document.getElementById('search-input').value.toLowerCase();
-  const st = document.getElementById('status-filter').value;
-  renderTable(allCustomers.filter(c => {
-    const matchQ  = !q  || (c.FULL_NAME || c.full_name || '').toLowerCase().includes(q) || (c.EMAIL || c.email || '').toLowerCase().includes(q) || (c.PHONE || c.phone || '').toLowerCase().includes(q);
-    const matchSt = !st || (c.STATUS || c.status || 'active').toLowerCase() === st;
-    return matchQ && matchSt;
+function filterCustomers(){
+  const q   =(document.getElementById('search-input').value||'').toLowerCase();
+  const st  =document.getElementById('status-filter').value;
+  const role=document.getElementById('role-filter').value;
+  renderTable(allCustomers.filter(c=>{
+    const matchQ  =!q||(c.FULL_NAME||c.full_name||'').toLowerCase().includes(q)||(c.EMAIL||c.email||'').toLowerCase().includes(q)||(c.PHONE||c.phone||'').toLowerCase().includes(q);
+    const matchSt =!st||(c.STATUS||c.status||'active').toLowerCase()===st;
+    const matchRole=!role||(c.ROLE||c.role||'customer').toLowerCase()===role;
+    return matchQ&&matchSt&&matchRole;
   }));
 }
 
-async function toggleBlock(id, currentStatus) {
-  const isBlocked = currentStatus === 'blocked';
-  const action    = isBlocked ? 'unblock' : 'block';
-  if (!confirm(`Are you sure you want to ${action} this customer?`)) return;
+async function toggleBlock(id,currentStatus){
+  const isBlocked=currentStatus==='blocked';
+  const action=isBlocked?'unblock':'block';
+  if(!confirm(`Are you sure you want to ${action} this customer?`))return;
   try {
-    const res = await fetch(`http://localhost:3000/api/admin/customers/${id}/status`, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: isBlocked ? 'active' : 'blocked' })
-    }).then(r => r.json());
-    if (res.success) { Utils.showToast(`Customer ${action}ed`, 'success'); await loadAll(); }
-    else { Utils.showToast(res.message || 'Failed', 'error'); }
-  } catch { Utils.showToast('Server error', 'error'); }
+    const res=await fetch(`http://localhost:3000/api/admin/customers/${id}/status`,{
+      method:'PUT',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({status:isBlocked?'active':'blocked'})
+    }).then(r=>r.json());
+    if(res.success){Utils.showToast(`Customer ${action}ed`,'success');await loadAll();}
+    else{Utils.showToast(res.message||'Failed','error');}
+  }catch{Utils.showToast('Server error','error');}
 }
 
-function viewCustomer(id) {
-  const c = allCustomers.find(x => (x.USER_ID || x.user_id) === id); if (!c) return;
-  const orders = allOrders.filter(o => (o.USER_ID || o.user_id) === id);
-  const name  = c.FULL_NAME || c.full_name || '—';
-  const email = c.EMAIL    || c.email    || '—';
-  const phone = c.PHONE    || c.phone    || '—';
-  const status = (c.STATUS || c.status || 'active').toLowerCase();
-  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  const totalSpent = orders.filter(o => (o.STATUS || o.status) !== 'Cancelled').reduce((s, o) => s + parseFloat(o.TOTAL || o.total || 0), 0);
-  const statusColors = { Pending:'badge-warning', Confirmed:'badge-info', Preparing:'badge-info', Ready:'badge-success', Delivered:'badge-success', Cancelled:'badge-danger' };
-  document.getElementById('view-content').innerHTML = `
+function viewCustomer(id){
+  const c=allCustomers.find(x=>(x.USER_ID||x.user_id)===id);if(!c)return;
+  const orders=allOrders.filter(o=>(o.USER_ID||o.user_id)===id);
+  const name  =c.FULL_NAME||c.full_name||'—';
+  const email =c.EMAIL||c.email||'—';
+  const phone =c.PHONE||c.phone||'—';
+  const role  =(c.ROLE||c.role||'customer').toLowerCase();
+  const status=(c.STATUS||c.status||'active').toLowerCase();
+  const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+  const totalSpent=orders.filter(o=>(o.STATUS||o.status)!=='Cancelled').reduce((s,o)=>s+parseFloat(o.TOTAL||o.total||0),0);
+  const sc={Pending:'background:#fef3c7;color:#92400e;',Confirmed:'background:#dbeafe;color:#1e40af;',Preparing:'background:#ede9fe;color:#5b21b6;',Ready:'background:#d1fae5;color:#065f46;',Delivered:'background:#dcfce7;color:#14532d;',Cancelled:'background:#fee2e2;color:#7f1d1d;'};
+
+  document.getElementById('view-content').innerHTML=`
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--gray-200);">
-      <div class="avatar" style="width:56px;height:56px;font-size:18px;">${initials}</div>
+      <div class="avatar ${role==='admin'?'admin-av':''}" style="width:56px;height:56px;font-size:18px;">${initials}</div>
       <div style="flex:1;">
-        <p style="font-size:1.125rem;font-weight:700;">${name}</p>
+        <p style="font-size:1.125rem;font-weight:700;margin-bottom:2px;">${name}</p>
         <p style="color:var(--gray-500);font-size:13px;">${email}</p>
         <p style="color:var(--gray-500);font-size:13px;">${phone}</p>
       </div>
-      <span class="badge ${status === 'blocked' ? 'badge-blocked' : 'badge-active'}">${status === 'blocked' ? 'Blocked' : 'Active'}</span>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        ${role==='admin'?'<span class="badge-admin">Admin</span>':''}
+        <span class="${status==='blocked'?'badge-blocked':'badge-active'}">${status==='blocked'?'Blocked':'Active'}</span>
+      </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px;">
       <div style="background:var(--gray-50);border-radius:8px;padding:14px;"><p style="font-size:12px;color:var(--gray-500);margin-bottom:4px;">Total Orders</p><p style="font-size:1.5rem;font-weight:700;">${orders.length}</p></div>
       <div style="background:var(--gray-50);border-radius:8px;padding:14px;"><p style="font-size:12px;color:var(--gray-500);margin-bottom:4px;">Total Spent</p><p style="font-size:1.5rem;font-weight:700;color:#dc2626;">₱${totalSpent.toFixed(2)}</p></div>
     </div>
-    ${orders.length ? `
+    ${orders.length?`
     <h3 style="font-size:15px;margin-bottom:12px;">Order History</h3>
     <div style="display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;">
-      ${orders.map(o => { const oid = o.ORDER_ID || o.order_id, ostatus = o.STATUS || o.status; return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--gray-50);border-radius:8px;font-size:13px;">
+      ${orders.map(o=>{const oid=o.ORDER_ID||o.order_id,ostatus=o.STATUS||o.status;return`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--gray-50);border-radius:8px;font-size:13px;">
         <div><span style="font-weight:600;">ORD-${String(oid).padStart(4,'0')}</span><span style="color:var(--gray-500);margin-left:8px;">${new Date(o.CREATED_AT||o.created_at).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})}</span></div>
-        <div style="display:flex;align-items:center;gap:8px;"><span class="badge ${statusColors[ostatus]||'badge-info'}">${ostatus}</span><span style="font-weight:700;color:#dc2626;">₱${parseFloat(o.TOTAL||o.total||0).toFixed(2)}</span></div>
-      </div>`; }).join('')}
-    </div>` : '<p style="color:var(--gray-500);font-size:13px;">No orders yet.</p>'}
-    <div style="display:flex;gap:10px;margin-top:20px;">
-      <button onclick="toggleBlock(${id},'${status}');closeViewModal();" class="btn ${status === 'blocked' ? 'btn-outline' : 'btn-primary'}" style="${status !== 'blocked' ? 'background:#dc2626;' : ''}flex:1;">
-        <i class="fas ${status === 'blocked' ? 'fa-unlock' : 'fa-ban'}" style="margin-right:6px;"></i>${status === 'blocked' ? 'Unblock' : 'Block'} Customer
+        <div style="display:flex;align-items:center;gap:8px;"><span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;${sc[ostatus]||''}">${ostatus}</span><span style="font-weight:700;color:#dc2626;">₱${parseFloat(o.TOTAL||o.total||0).toFixed(2)}</span></div>
+      </div>`;}).join('')}
+    </div>`:
+    '<p style="color:var(--gray-500);font-size:13px;">No orders yet.</p>'}
+    ${role!=='admin'?`
+    <div style="margin-top:20px;">
+      <button onclick="toggleBlock(${id},'${status}');closeViewModal();" class="btn btn-primary" style="${status!=='blocked'?'background:#dc2626;':''}width:100%;">
+        <i class="fas ${status==='blocked'?'fa-unlock':'fa-ban'}" style="margin-right:8px;"></i>${status==='blocked'?'Unblock':'Block'} Customer
       </button>
-    </div>`;
-  document.getElementById('view-modal').style.display = 'flex';
+    </div>`:``}`;
+  document.getElementById('view-modal').style.display='flex';
 }
 
-function closeViewModal() { document.getElementById('view-modal').style.display = 'none'; }
+function closeViewModal(){document.getElementById('view-modal').style.display='none';}
 
 // Add customer
-function openAddModal() { document.getElementById('add-modal').style.display = 'flex'; }
-function closeAddModal() { document.getElementById('add-modal').style.display = 'none'; document.getElementById('add-form').reset(); }
+function openAddModal(){document.getElementById('add-modal').style.display='flex';}
+function closeAddModal(){document.getElementById('add-modal').style.display='none';document.getElementById('add-form').reset();}
 
-document.getElementById('add-form').addEventListener('submit', async (e) => {
+document.getElementById('add-form').addEventListener('submit',async(e)=>{
   e.preventDefault();
-  const btn = document.getElementById('add-btn');
-  btn.textContent = 'Adding...'; btn.disabled = true;
-  const pass = document.getElementById('a-pass').value;
-  if (pass.length < 6) { Utils.showToast('Password must be at least 6 characters', 'error'); btn.textContent = 'Add Customer'; btn.disabled = false; return; }
+  const btn=document.getElementById('add-btn');
+  btn.innerHTML='<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Adding...';btn.disabled=true;
+  const pass=document.getElementById('a-pass').value;
+  if(pass.length<6){Utils.showToast('Password must be at least 6 characters','error');btn.innerHTML='<i class="fas fa-user-plus" style="margin-right:6px;"></i>Add User';btn.disabled=false;return;}
   try {
-    const res = await fetch('http://localhost:3000/api/auth/register', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        full_name: document.getElementById('a-name').value,
-        email:     document.getElementById('a-email').value,
-        phone:     document.getElementById('a-phone').value,
-        password:  pass,
-        role:      document.getElementById('a-role').value,
+    const res=await fetch('http://localhost:3000/api/auth/register',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        full_name:document.getElementById('a-name').value,
+        email    :document.getElementById('a-email').value,
+        phone    :document.getElementById('a-phone').value,
+        password :pass,
+        role     :document.getElementById('a-role').value,
       })
-    }).then(r => r.json());
-    if (res.success) { closeAddModal(); await loadAll(); Utils.showToast('Customer added!', 'success'); }
-    else { Utils.showToast(res.message || 'Failed', 'error'); }
-  } catch { Utils.showToast('Server error', 'error'); }
-  btn.innerHTML = '<i class="fas fa-user-plus" style="margin-right:6px;"></i>Add Customer'; btn.disabled = false;
+    }).then(r=>r.json());
+    if(res.success){closeAddModal();await loadAll();Utils.showToast('User added!','success');}
+    else{Utils.showToast(res.message||'Failed','error');}
+  }catch{Utils.showToast('Server error','error');}
+  btn.innerHTML='<i class="fas fa-user-plus" style="margin-right:6px;"></i>Add User';btn.disabled=false;
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
-  if (!user || (user.ROLE !== 'admin' && user.role !== 'admin')) { window.location.href = '../login.html'; return; }
+document.addEventListener('DOMContentLoaded',()=>{
+  const user=JSON.parse(localStorage.getItem('currentUser')||'null');
+  if(!user||(user.ROLE!=='admin'&&user.role!=='admin')){window.location.href='../login.html';return;}
   loadAll();
 });
 </script>
