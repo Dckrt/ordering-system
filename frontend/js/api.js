@@ -40,13 +40,24 @@ const api = {
     fetch(`${API_BASE}/admin/dashboard`)
       .then(r => r.json()),
 
+  // getCustomers — returns non-admin users only (used in customers.html)
   getCustomers: () =>
     fetch(`${API_BASE}/admin/customers`)
-      .then(r => r.json()),
+      .then(r => r.json())
+      .then(data => Array.isArray(data) ? data : []),
 
+  // getAllUsers — returns ALL users including admins (also used in customers.html)
+  getAllUsers: () =>
+    fetch(`${API_BASE}/admin/all-users`)
+      .then(r => r.json())
+      .then(data => Array.isArray(data) ? data : []),
+
+  // getReports — ALWAYS returns an array, never throws
   getReports: () =>
     fetch(`${API_BASE}/admin/reports`)
-      .then(r => r.json()),
+      .then(r => r.json())
+      .then(data => Array.isArray(data) ? data : [])
+      .catch(() => []),
 
   // ── ADMIN CATEGORIES ──────────────────────────────────────
   getCategories_admin: () =>
