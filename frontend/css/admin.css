@@ -1,0 +1,217 @@
+/* ============================================================
+   ADMIN RESPONSIVE CSS
+   Save as: frontend/css/admin.css
+   ============================================================ */
+
+/* ── Base reset for admin ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Hamburger button (hidden on desktop) ── */
+.sb-toggle {
+  display: none;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 12000;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #dc2626;
+  border: none;
+  color: white;
+  font-size: 19px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(220,38,38,.35);
+  transition: transform .15s;
+}
+.sb-toggle:active { transform: scale(.93); }
+
+/* ── Backdrop ── */
+.sb-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 9990;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.sb-backdrop.on { display: block; }
+
+/* ── Sidebar slide-in on mobile ── */
+.admin-sidebar {
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Mobile top bar (shows page title + toggle on mobile) ── */
+.admin-topbar {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 60px;
+  background: white;
+  border-bottom: 1px solid #f3f4f6;
+  z-index: 9000;
+  align-items: center;
+  padding: 0 16px 0 68px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.admin-topbar-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #111;
+}
+
+/* ─────────────────────────────────────────────
+   BREAKPOINTS
+   ───────────────────────────────────────────── */
+
+/* ── Tablet (≤1024px) ── */
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    width: 220px !important;
+    min-width: 220px !important;
+  }
+}
+
+/* ── Mobile (≤768px) ── */
+@media (max-width: 768px) {
+
+  /* Show toggle + topbar */
+  .sb-toggle    { display: flex; }
+  .admin-topbar { display: flex; }
+
+  /* Layout becomes single column */
+  .admin-layout {
+    display: block !important;
+    min-height: 100vh;
+  }
+
+  /* Sidebar offscreen by default */
+  .admin-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 11000 !important;
+    width: 270px !important;
+    min-width: unset !important;
+    transform: translateX(-100%) !important;
+    overflow-y: auto !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,.15);
+  }
+  .admin-sidebar.sb-open {
+    transform: translateX(0) !important;
+  }
+
+  /* Content full-width, offset by topbar */
+  .admin-content {
+    padding: 76px 14px 28px !important;
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* ── Stats — 2 col on phone ── */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .stats-card { padding: 14px !important; }
+  .stats-value { font-size: 1.4rem !important; }
+  .stats-icon {
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 16px !important;
+  }
+
+  /* ── Headings ── */
+  h1 { font-size: 1.25rem !important; }
+  h2 { font-size: 1.1rem !important; }
+
+  /* ── Tables ── */
+  .table-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+  }
+  .table { font-size: 13px !important; }
+  .table th, .table td { padding: 10px 10px !important; white-space: nowrap; }
+
+  /* ── Modals — slide up from bottom ── */
+  .modal-overlay {
+    padding: 0 !important;
+    align-items: flex-end !important;
+  }
+  .modal-box {
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 92vh !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 24px 20px !important;
+  }
+
+  /* ── Form inputs bigger touch targets ── */
+  .form-input, .form-select, .form-textarea {
+    font-size: 16px !important; /* prevents iOS zoom */
+    padding: 12px 14px !important;
+  }
+
+  /* ── Buttons ── */
+  .btn { padding: 12px 16px !important; font-size: 14px !important; }
+  .btn-sm { padding: 8px 12px !important; font-size: 13px !important; }
+
+  /* ── Flex row → wrap ── */
+  .admin-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  /* ── Filter row stacks ── */
+  .filter-row {
+    flex-direction: column !important;
+  }
+  .filter-row .form-input,
+  .filter-row .form-select {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* ── Grids ── */
+  .grid.grid-cols-2  { grid-template-columns: 1fr !important; }
+  .grid.grid-cols-3  { grid-template-columns: 1fr !important; }
+  .grid.grid-cols-4  { grid-template-columns: repeat(2,1fr) !important; }
+  .charts-2col       { grid-template-columns: 1fr !important; }
+
+  /* ── Hide some desktop-only cols ── */
+  .hide-mobile { display: none !important; }
+
+  /* ── Card padding ── */
+  .card-content { padding: 14px !important; }
+
+  /* ── Upload area ── */
+  .upload-area { padding: 16px !important; }
+
+  /* ── Report cards ── */
+  .report-card { padding: 14px !important; }
+}
+
+/* ── Extra small phones (≤380px) ── */
+@media (max-width: 380px) {
+  .admin-content { padding: 72px 10px 24px !important; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+  .stats-card { padding: 12px !important; }
+  .stats-value { font-size: 1.2rem !important; }
+  .grid.grid-cols-4 { grid-template-columns: repeat(2,1fr) !important; }
+  .btn { padding: 10px 14px !important; }
+  h1 { font-size: 1.1rem !important; }
+}
+
+/* ── Print ── */
+@media print {
+  .admin-sidebar, .sb-toggle, .sb-backdrop, .admin-topbar, .print-hide { display: none !important; }
+  .admin-content { padding: 0 !important; }
+  body { background: white !important; }
+}

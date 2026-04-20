@@ -2,37 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Orders - Admin | Batangas Premium Naga</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
   <style>
-    .sidebar-toggle{display:none;position:fixed;top:12px;left:12px;z-index:11000;width:44px;height:44px;border-radius:10px;background:#dc2626;border:none;color:white;font-size:18px;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.2);}
-    .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;}
-    .sidebar-backdrop.active{display:block;}
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;}
-    .modal-box{background:white;border-radius:var(--radius-lg);padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    @media(max-width:768px){
-      .sidebar-toggle{display:flex;}
-      .admin-layout{display:block!important;}
-      .admin-sidebar{position:fixed!important;left:-280px;top:0;height:100vh;z-index:9999;transition:left .25s ease;width:260px!important;overflow-y:auto;}
-      .admin-sidebar.open{left:0;}
-      .admin-content{padding:70px 14px 24px!important;}
-      .stats-grid{grid-template-columns:repeat(2,1fr)!important;}
-      .table-container{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-      .search-bar{flex-direction:column!important;}
-      .search-bar input,.search-bar select{max-width:100%!important;width:100%!important;}
-      .modal-overlay{align-items:flex-end!important;padding:0!important;}
-      .modal-box{border-radius:16px 16px 0 0!important;max-width:100%!important;}
-      h1{font-size:1.3rem!important;}
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:13000;display:flex;align-items:flex-end;justify-content:center;padding:0;}
+    .modal-box{background:white;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;}
+
+    /* Order cards for mobile view */
+    .order-card-mobile {
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+      padding: 14px;
+      margin-bottom: 10px;
+      border-left: 4px solid #dc2626;
     }
+    .order-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .order-card-id { font-weight:800; font-size:15px; color:#dc2626; }
+    .order-card-body { font-size:13px; color:#374151; }
+    .order-card-body p { margin:3px 0; }
+    .order-card-footer { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
   </style>
 </head>
 <body>
 
-<button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+<div class="admin-topbar">
+  <span class="admin-topbar-title">Orders</span>
+</div>
+<button class="sb-toggle" onclick="sbOpen()"><i class="fas fa-bars"></i></button>
+<div class="sb-backdrop" id="sbBackdrop" onclick="sbClose()"></div>
 
 <div class="admin-layout">
   <aside class="admin-sidebar" id="adminSidebar">
@@ -40,47 +42,48 @@
       <a href="../index.html" class="logo" style="text-decoration:none;">
         <div class="logo-icon"><i class="fas fa-utensils"></i></div>
         <div>
-          <div class="logo-text" style="color:white;">Batangas Premium Naga</div>
+          <div class="logo-text" style="color:white;font-size:13px;">Batangas Premium Naga</div>
           <div class="logo-subtext" style="color:rgba(255,255,255,.7);">Admin Panel</div>
         </div>
       </a>
     </div>
     <nav class="admin-sidebar-nav">
-      <a href="dashboard.html" class="admin-nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
-      <a href="orders.html"    class="admin-nav-item active"><i class="fas fa-list-check"></i> Orders</a>
-      <a href="products.html"  class="admin-nav-item"><i class="fas fa-box"></i> Products</a>
+      <a href="dashboard.html"  class="admin-nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+      <a href="orders.html"     class="admin-nav-item active"><i class="fas fa-list-check"></i> Orders</a>
+      <a href="products.html"   class="admin-nav-item"><i class="fas fa-box"></i> Products</a>
       <a href="categories.html" class="admin-nav-item"><i class="fas fa-tags"></i> Categories</a>
-      <a href="customers.html" class="admin-nav-item"><i class="fas fa-users"></i> Customers</a>
-      <a href="reports.html"   class="admin-nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
-      <a href="../index.html"  class="admin-nav-item" style="margin-top:auto;"><i class="fas fa-arrow-left"></i> Back to Site</a>
-      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+      <a href="customers.html"  class="admin-nav-item"><i class="fas fa-users"></i> Customers</a>
+      <a href="reports.html"    class="admin-nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
+      <a href="../index.html"   class="admin-nav-item" style="margin-top:auto;"><i class="fas fa-arrow-left"></i> Back to Site</a>
+      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;font-size:inherit;"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
     </nav>
   </aside>
 
   <main class="admin-content">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+
+    <div class="admin-header-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
       <div>
-        <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:4px;">Orders</h1>
-        <p style="color:var(--gray-500);font-size:14px;" id="order-count">Loading...</p>
+        <h1 style="font-size:1.6rem;font-weight:700;margin-bottom:2px;">Orders</h1>
+        <p style="color:var(--gray-500);font-size:13px;" id="order-sub">Loading...</p>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:12px;color:var(--gray-400);" id="last-refresh"></span>
-        <button onclick="loadOrders()" class="btn btn-outline btn-sm"><i class="fas fa-rotate-right"></i></button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="loadOrders()" class="btn btn-outline btn-sm" title="Refresh"><i class="fas fa-rotate-right"></i></button>
+        <span style="font-size:11px;color:#9ca3af;" id="last-refresh"></span>
       </div>
     </div>
 
     <!-- Stats -->
-    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
-      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="s-total" style="font-size:1.4rem;">0</div><div class="stats-label">Total</div></div><div class="stats-icon blue"><i class="fas fa-bag-shopping"></i></div></div></div>
-      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="s-pending" style="font-size:1.4rem;">0</div><div class="stats-label">Pending</div></div><div class="stats-icon orange"><i class="fas fa-clock"></i></div></div></div>
-      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="s-delivered" style="font-size:1.4rem;">0</div><div class="stats-label">Delivered</div></div><div class="stats-icon green"><i class="fas fa-check"></i></div></div></div>
-      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="s-revenue" style="font-size:1.1rem;color:#dc2626;">₱0</div><div class="stats-label">Revenue</div></div><div class="stats-icon red"><i class="fas fa-peso-sign"></i></div></div></div>
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
+      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="s-total" style="font-size:1.3rem;">0</div><div class="stats-label" style="font-size:11px;">Total</div></div><div class="stats-icon blue" style="width:36px;height:36px;font-size:14px;"><i class="fas fa-bag-shopping"></i></div></div></div>
+      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="s-pending" style="font-size:1.3rem;">0</div><div class="stats-label" style="font-size:11px;">Pending</div></div><div class="stats-icon orange" style="width:36px;height:36px;font-size:14px;"><i class="fas fa-clock"></i></div></div></div>
+      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="s-done" style="font-size:1.3rem;">0</div><div class="stats-label" style="font-size:11px;">Delivered</div></div><div class="stats-icon green" style="width:36px;height:36px;font-size:14px;"><i class="fas fa-check"></i></div></div></div>
+      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="s-rev" style="font-size:.95rem;color:#dc2626;">₱0</div><div class="stats-label" style="font-size:11px;">Revenue</div></div><div class="stats-icon red" style="width:36px;height:36px;font-size:14px;"><i class="fas fa-peso-sign"></i></div></div></div>
     </div>
 
     <!-- Search + filter -->
-    <div class="search-bar" style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-      <input id="search-input" type="text" placeholder="Search order#, customer, email..." class="form-input" style="flex:1;min-width:180px;" oninput="filterOrders()">
-      <select id="status-filter" class="form-select" style="max-width:160px;" onchange="filterOrders()">
+    <div class="filter-row" style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <input id="search-input" type="text" placeholder="Search order #, name, email..." class="form-input" style="flex:1;min-width:160px;" oninput="filterOrders()">
+      <select id="status-filter" class="form-select" style="max-width:150px;" onchange="filterOrders()">
         <option value="">All Status</option>
         <option value="Pending">Pending</option>
         <option value="Confirmed">Confirmed</option>
@@ -91,28 +94,38 @@
       </select>
     </div>
 
-    <div class="table-container">
-      <div id="loading" style="text-align:center;padding:48px;color:var(--gray-500);">
-        <div style="width:28px;height:28px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>
-        Loading orders...
-      </div>
-      <table class="table" id="orders-table" style="display:none;min-width:560px;">
+    <!-- Loading -->
+    <div id="loading" style="text-align:center;padding:48px;color:#9ca3af;">
+      <div style="width:26px;height:26px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>
+      Loading orders...
+    </div>
+
+    <!-- Desktop table -->
+    <div class="table-container" id="table-wrap" style="display:none;">
+      <table class="table" style="min-width:600px;">
         <thead>
-          <tr><th>Order #</th><th>Customer</th><th>Type</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+          <tr><th>Order #</th><th>Customer</th><th>Items</th><th>Type</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr>
         </thead>
         <tbody id="orders-tbody"></tbody>
       </table>
-      <div id="no-results" style="display:none;text-align:center;padding:48px;color:var(--gray-400);">No orders found.</div>
     </div>
+
+    <!-- Mobile card view -->
+    <div id="mobile-cards" style="display:none;"></div>
+
+    <div id="no-results" style="display:none;text-align:center;padding:48px;color:#9ca3af;">
+      <i class="fas fa-inbox" style="font-size:40px;margin-bottom:12px;display:block;opacity:.3;"></i>No orders found
+    </div>
+
   </main>
 </div>
 
 <!-- Order detail modal -->
-<div id="detail-modal" class="modal-overlay" style="display:none;">
+<div id="detail-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
-      <h2 style="font-size:1.1rem;font-weight:700;margin:0;" id="modal-order-num">Order Details</h2>
-      <button onclick="closeModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);">✕</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <h2 style="font-size:1.1rem;font-weight:700;margin:0;" id="modal-title">Order Details</h2>
+      <button onclick="closeModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#9ca3af;line-height:1;">✕</button>
     </div>
     <div id="modal-content"></div>
   </div>
@@ -123,75 +136,74 @@
 <script src="../js/cart.js"></script>
 <script src="../js/app.js"></script>
 <script>
-function toggleSidebar(){document.getElementById('adminSidebar').classList.toggle('open');document.getElementById('sidebarBackdrop').classList.toggle('active');}
-function closeSidebar(){document.getElementById('adminSidebar').classList.remove('open');document.getElementById('sidebarBackdrop').classList.remove('active');}
-function closeModal(){document.getElementById('detail-modal').style.display='none';}
+function sbOpen(){ document.getElementById('adminSidebar').classList.add('sb-open'); document.getElementById('sbBackdrop').classList.add('on'); }
+function sbClose(){ document.getElementById('adminSidebar').classList.remove('sb-open'); document.getElementById('sbBackdrop').classList.remove('on'); }
+function closeModal(){ document.getElementById('detail-modal').style.display='none'; }
 
-let allOrders=[];
-const SC={Pending:'badge-warning',Confirmed:'badge-info',Preparing:'badge-info',Ready:'badge-success',Delivered:'badge-success',Cancelled:'badge-danger'};
+const SC = { Pending:'badge-warning',Confirmed:'badge-info',Preparing:'badge-info',Ready:'badge-success',Delivered:'badge-success',Cancelled:'badge-danger' };
+const SB = { Pending:'#fef3c7;color:#92400e',Confirmed:'#dbeafe;color:#1e40af',Preparing:'#ede9fe;color:#5b21b6',Ready:'#d1fae5;color:#065f46',Delivered:'#dcfce7;color:#14532d',Cancelled:'#fee2e2;color:#7f1d1d' };
 
-async function loadOrders(){
-  try{
-    allOrders=await api.getAllOrders();
-    const pending=allOrders.filter(o=>o.status==='Pending').length;
-    const delivered=allOrders.filter(o=>o.status==='Delivered').length;
-    const revenue=allOrders.filter(o=>o.status!=='Cancelled').reduce((s,o)=>s+parseFloat(o.total||0),0);
-    document.getElementById('s-total').textContent=allOrders.length;
-    document.getElementById('s-pending').textContent=pending;
-    document.getElementById('s-delivered').textContent=delivered;
-    document.getElementById('s-revenue').textContent='₱'+revenue.toFixed(2);
-    document.getElementById('order-count').textContent=allOrders.length+' total orders';
-    document.getElementById('last-refresh').textContent='Updated '+new Date().toLocaleTimeString();
-    document.getElementById('loading').style.display='none';
+let allOrders = [];
+const isMobile = () => window.innerWidth <= 768;
+
+async function loadOrders() {
+  try {
+    allOrders = await api.getAllOrders();
+    const pending   = allOrders.filter(o=>o.status==='Pending').length;
+    const delivered = allOrders.filter(o=>o.status==='Delivered').length;
+    const revenue   = allOrders.filter(o=>o.status!=='Cancelled').reduce((s,o)=>s+parseFloat(o.total||0),0);
+    document.getElementById('s-total').textContent   = allOrders.length;
+    document.getElementById('s-pending').textContent = pending;
+    document.getElementById('s-done').textContent    = delivered;
+    document.getElementById('s-rev').textContent     = '₱'+revenue.toFixed(2);
+    document.getElementById('order-sub').textContent = allOrders.length+' total orders';
+    document.getElementById('last-refresh').textContent = new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('loading').style.display = 'none';
     filterOrders();
-  }catch(e){document.getElementById('loading').innerHTML='<p style="color:#dc2626;padding:20px;">Failed to load. Is the server running?</p>';}
+  } catch(e) {
+    document.getElementById('loading').innerHTML = '<p style="color:#dc2626;font-size:13px;">Failed to load. Is the server running?</p>';
+  }
 }
 
-function filterOrders(){
-  const q=(document.getElementById('search-input').value||'').toLowerCase();
-  const st=document.getElementById('status-filter').value;
-  const filtered=allOrders.filter(o=>{
-    const matchQ=!q||
-      ('ORD-'+String(o.order_id).padStart(4,'0')).toLowerCase().includes(q)||
-      (o.full_name||'').toLowerCase().includes(q)||
-      (o.email||'').toLowerCase().includes(q)||
-      (o.phone||'').toLowerCase().includes(q);
-    const matchSt=!st||o.status===st;
-    return matchQ&&matchSt;
+function filterOrders() {
+  const q  = (document.getElementById('search-input').value||'').toLowerCase();
+  const st = document.getElementById('status-filter').value;
+  const filtered = allOrders.filter(o=>{
+    const matchQ = !q||('ORD-'+String(o.order_id).padStart(4,'0')).toLowerCase().includes(q)||(o.full_name||'').toLowerCase().includes(q)||(o.email||'').toLowerCase().includes(q)||(o.phone||'').toLowerCase().includes(q);
+    return matchQ && (!st||o.status===st);
   });
-  renderTable(filtered);
+  if (isMobile()) renderCards(filtered);
+  else renderTable(filtered);
 }
 
-function renderTable(orders){
-  const table=document.getElementById('orders-table');
-  const tbody=document.getElementById('orders-tbody');
-  const noRes=document.getElementById('no-results');
-  if(!orders.length){table.style.display='none';noRes.style.display='block';return;}
-  noRes.style.display='none';table.style.display='table';
-  tbody.innerHTML=orders.map(o=>{
-    const id=o.order_id, date=o.created_at?new Date(o.created_at).toLocaleDateString('en-PH',{month:'short',day:'numeric'}):'-';
+window.addEventListener('resize', () => filterOrders());
+
+function renderTable(orders) {
+  document.getElementById('mobile-cards').style.display  = 'none';
+  const wrap  = document.getElementById('table-wrap');
+  const tbody = document.getElementById('orders-tbody');
+  const noRes = document.getElementById('no-results');
+  if (!orders.length) { wrap.style.display='none'; noRes.style.display='block'; return; }
+  noRes.style.display='none'; wrap.style.display='block';
+  tbody.innerHTML = orders.map(o=>{
+    const id=o.order_id, items=(o.items||[]), date=o.created_at?new Date(o.created_at).toLocaleDateString('en-PH',{month:'short',day:'numeric'}):'-';
     return `<tr>
-      <td style="font-weight:600;color:#dc2626;white-space:nowrap;">ORD-${String(id).padStart(4,'0')}</td>
+      <td style="font-weight:700;color:#dc2626;font-size:13px;">ORD-${String(id).padStart(4,'0')}</td>
       <td>
-        <div style="font-weight:500;">${o.full_name||'—'}</div>
-        <div style="font-size:12px;color:var(--gray-400);">${o.phone||''}</div>
+        <div style="font-weight:500;font-size:13px;">${o.full_name||'—'}</div>
+        <div style="font-size:11px;color:#9ca3af;">${o.phone||''}</div>
       </td>
-      <td><span style="font-size:12px;">${o.order_type||'—'}</span></td>
-      <td style="font-weight:600;">₱${parseFloat(o.total||0).toFixed(2)}</td>
-      <td><span class="badge ${SC[o.status]||'badge-info'}">${o.status||'Pending'}</span></td>
-      <td style="font-size:12px;color:var(--gray-500);">${date}</td>
+      <td style="font-size:12px;">${items.slice(0,2).map(i=>`${i.name}×${i.quantity}`).join(', ')}${items.length>2?' …':''}</td>
+      <td><span style="font-size:11px;background:${(o.order_type||'Delivery')==='Delivery'?'#dbeafe;color:#1e40af':'#fef3c7;color:#92400e'};padding:3px 8px;border-radius:999px;font-weight:600;">${o.order_type||'Delivery'}</span></td>
+      <td style="font-weight:600;font-size:13px;">₱${parseFloat(o.total||0).toFixed(2)}</td>
+      <td><span class="badge ${SC[o.status]||'badge-info'}" style="font-size:11px;">${o.status||'Pending'}</span></td>
+      <td style="font-size:12px;color:#9ca3af;">${date}</td>
       <td>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-outline btn-sm" onclick="viewOrder(${id})" style="padding:4px 10px;">
-            <i class="fas fa-eye"></i>
-          </button>
-          <select onchange="changeStatus(${id},this.value);this.value=''" class="form-select" style="font-size:12px;padding:4px 8px;max-width:110px;">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn btn-outline btn-sm" onclick="viewOrder(${id})" style="padding:4px 10px;font-size:12px;"><i class="fas fa-eye"></i></button>
+          <select onchange="changeStatus(${id},this.value);this.value=''" class="form-select" style="font-size:12px;padding:4px 8px;max-width:100px;">
             <option value="">Update</option>
-            <option value="Confirmed">Confirmed</option>
-            <option value="Preparing">Preparing</option>
-            <option value="Ready">Ready</option>
-            <option value="Delivered">Delivered</option>
-            <option value="Cancelled">Cancelled</option>
+            ${['Confirmed','Preparing','Ready','Delivered','Cancelled'].map(s=>`<option value="${s}">${s}</option>`).join('')}
           </select>
         </div>
       </td>
@@ -199,55 +211,102 @@ function renderTable(orders){
   }).join('');
 }
 
-async function changeStatus(id,status){
-  if(!status)return;
-  try{
-    const res=await api.updateOrderStatus(id,status);
-    if(res.success){
-      // notify buyer
-      try{await fetch(`http://localhost:3000/api/orders/${id}/notify`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});}catch(e){}
-      Utils.showToast('Status updated to '+status,'success');
-      await loadOrders();
-    }else{Utils.showToast(res.message||'Failed','error');}
-  }catch{Utils.showToast('Server error','error');}
+function renderCards(orders) {
+  document.getElementById('table-wrap').style.display   = 'none';
+  const cards = document.getElementById('mobile-cards');
+  const noRes = document.getElementById('no-results');
+  if (!orders.length) { cards.style.display='none'; noRes.style.display='block'; return; }
+  noRes.style.display='none'; cards.style.display='block';
+  const bgColor = { Pending:'#fef3c7',Confirmed:'#dbeafe',Preparing:'#ede9fe',Ready:'#d1fae5',Delivered:'#dcfce7',Cancelled:'#fee2e2' };
+  const txColor = { Pending:'#92400e',Confirmed:'#1e40af',Preparing:'#5b21b6',Ready:'#065f46',Delivered:'#14532d',Cancelled:'#7f1d1d' };
+  cards.innerHTML = orders.map(o=>{
+    const id=o.order_id, items=(o.items||[]), st=o.status||'Pending';
+    const date=o.created_at?new Date(o.created_at).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'-';
+    return `<div class="order-card-mobile">
+      <div class="order-card-header">
+        <span class="order-card-id">ORD-${String(id).padStart(4,'0')}</span>
+        <span style="background:${bgColor[st]||'#f3f4f6'};color:${txColor[st]||'#374151'};padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;">${st}</span>
+      </div>
+      <div class="order-card-body">
+        <p><i class="fas fa-user" style="color:#9ca3af;width:14px;"></i> <strong>${o.full_name||'—'}</strong> · ${o.phone||''}</p>
+        <p><i class="fas fa-location-dot" style="color:#9ca3af;width:14px;"></i> ${o.order_type||'Delivery'}${o.address?' · '+o.address:''}</p>
+        <p><i class="fas fa-box-open" style="color:#9ca3af;width:14px;"></i> ${items.length?items.map(i=>`${i.name}×${i.quantity}`).join(', '):'No items'}</p>
+        <p><i class="fas fa-peso-sign" style="color:#9ca3af;width:14px;"></i> <strong style="color:#dc2626;">₱${parseFloat(o.total||0).toFixed(2)}</strong> · ${o.payment_method||'Cash'}</p>
+        <p><i class="fas fa-clock" style="color:#9ca3af;width:14px;"></i> ${date}</p>
+      </div>
+      <div class="order-card-footer">
+        <button onclick="viewOrder(${id})" class="btn btn-outline btn-sm" style="flex:1;font-size:13px;"><i class="fas fa-eye" style="margin-right:5px;"></i>Details</button>
+        <select onchange="changeStatus(${id},this.value);this.value=''" class="form-select" style="flex:2;font-size:13px;">
+          <option value="">Update Status…</option>
+          ${['Confirmed','Preparing','Ready','Delivered','Cancelled'].map(s=>`<option value="${s}">${s}</option>`).join('')}
+        </select>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function viewOrder(id){
-  const o=allOrders.find(x=>x.order_id===id);if(!o)return;
-  document.getElementById('modal-order-num').textContent='ORD-'+String(id).padStart(4,'0');
-  const items=(o.items||[]);
-  document.getElementById('modal-content').innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-      <div style="background:#f9fafb;padding:12px;border-radius:8px;"><p style="font-size:11px;color:#9ca3af;margin-bottom:3px;">CUSTOMER</p><p style="font-weight:600;">${o.full_name||'—'}</p><p style="font-size:13px;color:#6b7280;">${o.phone||''}</p><p style="font-size:13px;color:#6b7280;">${o.email||''}</p></div>
-      <div style="background:#f9fafb;padding:12px;border-radius:8px;"><p style="font-size:11px;color:#9ca3af;margin-bottom:3px;">ORDER INFO</p><p style="font-weight:600;">${o.order_type||'—'}</p><p style="font-size:13px;color:#6b7280;">${o.payment_method||''}</p>${o.address?`<p style="font-size:12px;color:#6b7280;">${o.address}, ${o.city||''}</p>`:''}</div>
+async function changeStatus(id, status) {
+  if (!status) return;
+  try {
+    const res = await api.updateOrderStatus(id, status);
+    if (res.success) {
+      try { await fetch(`http://localhost:3000/api/orders/${id}/notify`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})}); } catch(e){}
+      Utils.showToast('Status → '+status, 'success');
+      await loadOrders();
+    } else { Utils.showToast(res.message||'Failed','error'); }
+  } catch { Utils.showToast('Server error','error'); }
+}
+
+function viewOrder(id) {
+  const o = allOrders.find(x=>x.order_id===id); if(!o) return;
+  document.getElementById('modal-title').textContent = 'ORD-'+String(id).padStart(4,'0');
+  const items = (o.items||[]);
+  const sbg = SB[o.status]||'#f3f4f6;color:#374151';
+  document.getElementById('modal-content').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span style="background:${sbg.split(';color:')[0]};color:${sbg.split(';color:')[1]};padding:5px 14px;border-radius:999px;font-size:13px;font-weight:700;">${o.status}</span>
+      <span style="font-size:13px;color:#9ca3af;">${o.created_at?new Date(o.created_at).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div style="background:#f9fafb;padding:12px;border-radius:10px;">
+        <p style="font-size:11px;color:#9ca3af;margin-bottom:5px;">CUSTOMER</p>
+        <p style="font-weight:600;font-size:13px;">${o.full_name||'—'}</p>
+        <p style="font-size:12px;color:#6b7280;">${o.phone||''}</p>
+        <p style="font-size:12px;color:#6b7280;">${o.email||''}</p>
+      </div>
+      <div style="background:#f9fafb;padding:12px;border-radius:10px;">
+        <p style="font-size:11px;color:#9ca3af;margin-bottom:5px;">ORDER</p>
+        <p style="font-weight:600;font-size:13px;">${o.order_type||'Delivery'}</p>
+        <p style="font-size:12px;color:#6b7280;">${o.payment_method||''}</p>
+        ${o.address?`<p style="font-size:12px;color:#6b7280;">${o.address}, ${o.city||''}</p>`:''}
+      </div>
     </div>
     <div style="margin-bottom:16px;">
-      <p style="font-size:11px;color:#9ca3af;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Items</p>
-      ${items.map(i=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f3f4f6;font-size:13px;">
-        <span>${i.name} <span style="color:#9ca3af;">×${i.quantity}</span></span>
+      <p style="font-size:11px;color:#9ca3af;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Items Ordered</p>
+      ${items.map(i=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f9fafb;font-size:13px;">
+        <span style="color:#374151;">${i.name} <span style="color:#9ca3af;">×${i.quantity}</span></span>
         <span style="font-weight:600;">₱${(parseFloat(i.price)*i.quantity).toFixed(2)}</span>
       </div>`).join('')}
-      <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:15px;">
+      <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:15px;font-weight:700;">
         <span>Total</span><span style="color:#dc2626;">₱${parseFloat(o.total||0).toFixed(2)}</span>
       </div>
     </div>
     <div>
-      <p style="font-size:12px;font-weight:600;margin-bottom:8px;">Update Status:</p>
+      <p style="font-size:12px;font-weight:600;margin-bottom:8px;color:#374151;">Change Status:</p>
       <div style="display:flex;flex-wrap:wrap;gap:8px;">
         ${['Confirmed','Preparing','Ready','Delivered','Cancelled'].map(s=>`
-          <button onclick="changeStatus(${id},'${s}');closeModal();" class="btn btn-sm" style="background:${o.status===s?'#dc2626':'#f3f4f6'};color:${o.status===s?'white':'#374151'};border:1px solid ${o.status===s?'#dc2626':'#e5e7eb'};">${s}</button>
+          <button onclick="changeStatus(${id},'${s}');closeModal();" class="btn btn-sm" style="background:${o.status===s?'#dc2626':'#f3f4f6'};color:${o.status===s?'white':'#374151'};border:1px solid ${o.status===s?'#dc2626':'#e5e7eb'};font-size:12px;">${s}</button>
         `).join('')}
       </div>
     </div>`;
-  document.getElementById('detail-modal').style.display='flex';
+  document.getElementById('detail-modal').style.display = 'flex';
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  const user=JSON.parse(localStorage.getItem('currentUser')||'null');
-  if(!user||(user.ROLE!=='admin'&&user.role!=='admin')){window.location.href='../login.html';return;}
+document.addEventListener('DOMContentLoaded', () => {
+  const user = JSON.parse(localStorage.getItem('currentUser')||'null');
+  if (!user||(user.ROLE!=='admin'&&user.role!=='admin')) { window.location.href='../login.html'; return; }
   loadOrders();
-  // Auto-refresh every 30 seconds
-  setInterval(loadOrders,30000);
+  setInterval(loadOrders, 30000);
 });
 </script>
 </body>
