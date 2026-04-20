@@ -8,22 +8,39 @@
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
-    @keyframes spin { to { transform:rotate(360deg) } }
-    .report-card { background:white;border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-md);margin-bottom:24px; }
-    .report-card h3 { font-size:1rem;font-weight:600;margin-bottom:16px;color:var(--gray-700); }
-    .empty-chart { display:flex;align-items:center;justify-content:center;height:160px;color:var(--gray-400);font-size:14px;flex-direction:column;gap:8px; }
-    @media print { .admin-sidebar,.print-hide{display:none!important;} .admin-content{padding:0;} body{background:white;} }
+    .sidebar-toggle{display:none;position:fixed;top:12px;left:12px;z-index:11000;width:44px;height:44px;border-radius:10px;background:#dc2626;border:none;color:white;font-size:18px;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.2);}
+    .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;}
+    .sidebar-backdrop.active{display:block;}
+    .report-card{background:white;border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-md);margin-bottom:20px;}
+    .report-card h3{font-size:.95rem;font-weight:600;margin-bottom:14px;color:var(--gray-700);}
+    .empty-chart{display:flex;align-items:center;justify-content:center;height:140px;color:var(--gray-400);font-size:13px;flex-direction:column;gap:8px;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:768px){
+      .sidebar-toggle{display:flex;}
+      .admin-layout{display:block!important;}
+      .admin-sidebar{position:fixed!important;left:-280px;top:0;height:100vh;z-index:9999;transition:left .25s ease;width:260px!important;overflow-y:auto;}
+      .admin-sidebar.open{left:0;}
+      .admin-content{padding:70px 14px 24px!important;}
+      .stats-grid{grid-template-columns:repeat(2,1fr)!important;}
+      .charts-grid{grid-template-columns:1fr!important;}
+      .table-container{overflow-x:auto;}
+      h1{font-size:1.3rem!important;}
+    }
+    @media print{.admin-sidebar,.sidebar-toggle,.print-hide{display:none!important;}.admin-content{padding:0!important;}body{background:white;}}
   </style>
 </head>
 <body>
+<button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
 <div class="admin-layout">
-  <aside class="admin-sidebar">
+  <aside class="admin-sidebar" id="adminSidebar">
     <div class="admin-sidebar-header">
       <a href="../index.html" class="logo" style="text-decoration:none;">
         <div class="logo-icon"><i class="fas fa-utensils"></i></div>
         <div>
           <div class="logo-text" style="color:white;">Batangas Premium Naga</div>
-          <div class="logo-subtext" style="color:rgba(255,255,255,0.7);">Noona's Food Station</div>
+          <div class="logo-subtext" style="color:rgba(255,255,255,.7);">Admin Panel</div>
         </div>
       </a>
     </div>
@@ -35,88 +52,81 @@
       <a href="customers.html"  class="admin-nav-item"><i class="fas fa-users"></i> Customers</a>
       <a href="reports.html"    class="admin-nav-item active"><i class="fas fa-chart-bar"></i> Reports</a>
       <a href="../index.html"   class="admin-nav-item" style="margin-top:auto;"><i class="fas fa-arrow-left"></i> Back to Site</a>
-      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;">
-        <i class="fas fa-sign-out-alt"></i> Sign Out
-      </button>
+      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
     </nav>
   </aside>
 
   <main class="admin-content">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
       <div>
         <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:4px;">Sales & Reports</h1>
         <p style="color:var(--gray-500);font-size:14px;" id="report-date">Loading...</p>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;" class="print-hide">
-        <select id="period-select" class="form-select" style="max-width:180px;" onchange="loadReport()">
+        <select id="period-select" class="form-select" style="max-width:160px;" onchange="loadReport()">
           <option value="today">Today</option>
           <option value="week">This Week</option>
           <option value="month" selected>This Month</option>
           <option value="all">All Time</option>
         </select>
-        <button onclick="window.print()" class="btn btn-outline btn-sm">
-          <i class="fas fa-print" style="margin-right:6px;"></i>Print Report
-        </button>
+        <button onclick="window.print()" class="btn btn-outline btn-sm"><i class="fas fa-print" style="margin-right:6px;"></i>Print</button>
       </div>
     </div>
 
-    <!-- Loading -->
     <div id="loading" style="text-align:center;padding:60px;color:var(--gray-500);">
-      <div style="width:32px;height:32px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>
+      <div style="width:28px;height:28px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>
       Loading report data...
     </div>
 
     <div id="report-content" style="display:none;">
-
       <!-- Summary stats -->
-      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
-        <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="r-revenue" style="font-size:1.3rem;color:#dc2626;">₱0</div><div class="stats-label">Total Revenue</div></div><div class="stats-icon green"><i class="fas fa-peso-sign"></i></div></div></div>
-        <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="r-orders" style="font-size:1.5rem;">0</div><div class="stats-label">Completed Orders</div></div><div class="stats-icon blue"><i class="fas fa-check-double"></i></div></div></div>
-        <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="r-avg" style="font-size:1.3rem;">₱0</div><div class="stats-label">Avg Order Value</div></div><div class="stats-icon orange"><i class="fas fa-calculator"></i></div></div></div>
-        <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="r-items" style="font-size:1.5rem;">0</div><div class="stats-label">Items Sold</div></div><div class="stats-icon red"><i class="fas fa-box-open"></i></div></div></div>
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+        <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="r-revenue" style="font-size:1.1rem;color:#dc2626;">₱0</div><div class="stats-label">Revenue</div></div><div class="stats-icon green"><i class="fas fa-peso-sign"></i></div></div></div>
+        <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="r-orders" style="font-size:1.4rem;">0</div><div class="stats-label">Orders</div></div><div class="stats-icon blue"><i class="fas fa-check-double"></i></div></div></div>
+        <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="r-avg" style="font-size:1.1rem;">₱0</div><div class="stats-label">Avg Order</div></div><div class="stats-icon orange"><i class="fas fa-calculator"></i></div></div></div>
+        <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="r-items" style="font-size:1.4rem;">0</div><div class="stats-label">Items Sold</div></div><div class="stats-icon red"><i class="fas fa-box-open"></i></div></div></div>
       </div>
 
-      <!-- Charts row 1 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+      <!-- Charts -->
+      <div class="charts-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
         <div class="report-card">
-          <h3><i class="fas fa-chart-line" style="margin-right:8px;color:#dc2626;"></i>Daily Sales</h3>
-          <div id="daily-chart-wrap"><canvas id="daily-chart" height="200"></canvas></div>
+          <h3><i class="fas fa-chart-line" style="margin-right:7px;color:#dc2626;"></i>Daily Sales</h3>
+          <div id="daily-wrap"><canvas id="daily-chart" height="200"></canvas></div>
         </div>
         <div class="report-card">
-          <h3><i class="fas fa-trophy" style="margin-right:8px;color:#f97316;"></i>Top Products</h3>
-          <div id="products-chart-wrap"><canvas id="products-chart" height="200"></canvas></div>
-        </div>
-      </div>
-
-      <!-- Charts row 2 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
-        <div class="report-card">
-          <h3><i class="fas fa-chart-pie" style="margin-right:8px;color:#2563eb;"></i>Order Type</h3>
-          <canvas id="type-chart" height="180"></canvas>
-        </div>
-        <div class="report-card">
-          <h3><i class="fas fa-credit-card" style="margin-right:8px;color:#16a34a;"></i>Payment Method</h3>
-          <canvas id="payment-chart" height="180"></canvas>
+          <h3><i class="fas fa-trophy" style="margin-right:7px;color:#f97316;"></i>Top Products</h3>
+          <div id="products-wrap"><canvas id="products-chart" height="200"></canvas></div>
         </div>
       </div>
 
-      <!-- Product breakdown table -->
+      <div class="charts-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+        <div class="report-card">
+          <h3><i class="fas fa-chart-pie" style="margin-right:7px;color:#2563eb;"></i>Order Type</h3>
+          <div id="type-wrap"><canvas id="type-chart" height="180"></canvas></div>
+        </div>
+        <div class="report-card">
+          <h3><i class="fas fa-credit-card" style="margin-right:7px;color:#16a34a;"></i>Payment Method</h3>
+          <div id="payment-wrap"><canvas id="payment-chart" height="180"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Product table -->
       <div class="report-card">
-        <h3><i class="fas fa-list-ol" style="margin-right:8px;color:#dc2626;"></i>Product Sales Breakdown</h3>
-        <div id="product-table-wrap">
-          <table class="table" id="product-sales-table">
+        <h3><i class="fas fa-list-ol" style="margin-right:7px;color:#dc2626;"></i>Product Breakdown</h3>
+        <div class="table-container">
+          <table class="table" style="min-width:380px;">
             <thead><tr><th>Rank</th><th>Product</th><th>Qty Sold</th><th>Revenue</th><th>Share</th></tr></thead>
             <tbody id="product-sales-tbody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Daily summary table -->
+      <!-- Daily table -->
       <div class="report-card">
-        <h3><i class="fas fa-calendar-days" style="margin-right:8px;color:#dc2626;"></i>Daily Summary</h3>
-        <div id="daily-table-wrap">
-          <table class="table">
-            <thead><tr><th>Date</th><th>Orders</th><th>Revenue</th><th>Avg Order</th></tr></thead>
+        <h3><i class="fas fa-calendar-days" style="margin-right:7px;color:#dc2626;"></i>Daily Summary</h3>
+        <div class="table-container">
+          <table class="table" style="min-width:320px;">
+            <thead><tr><th>Date</th><th>Orders</th><th>Revenue</th><th>Avg</th></tr></thead>
             <tbody id="daily-tbody"></tbody>
           </table>
         </div>
@@ -130,179 +140,97 @@
 <script src="../js/cart.js"></script>
 <script src="../js/app.js"></script>
 <script>
-let dailyChart, productsChart, typeChart, paymentChart;
+function toggleSidebar(){document.getElementById('adminSidebar').classList.toggle('open');document.getElementById('sidebarBackdrop').classList.toggle('active');}
+function closeSidebar(){document.getElementById('adminSidebar').classList.remove('open');document.getElementById('sidebarBackdrop').classList.remove('active');}
 
-function getPeriodRange(period) {
-  const now = new Date(), start = new Date();
-  if (period === 'today')  { start.setHours(0,0,0,0); }
-  else if (period === 'week')  { start.setDate(now.getDate()-6); start.setHours(0,0,0,0); }
-  else if (period === 'month') { start.setDate(1); start.setHours(0,0,0,0); }
-  else { return null; }
-  return { start, end: now };
-}
+let dailyChart,productsChart,typeChart,paymentChart;
 
-function emptyChart(canvasId, message = 'No data yet') {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-  const wrap = canvas.parentElement;
-  canvas.style.display = 'none';
-  if (!wrap.querySelector('.empty-chart')) {
-    wrap.innerHTML += `<div class="empty-chart"><i class="fas fa-chart-bar" style="font-size:32px;color:#e5e7eb;"></i><span>${message}</span></div>`;
+function getPeriodRange(p){const now=new Date(),s=new Date();if(p==='today'){s.setHours(0,0,0,0);}else if(p==='week'){s.setDate(now.getDate()-6);s.setHours(0,0,0,0);}else if(p==='month'){s.setDate(1);s.setHours(0,0,0,0);}else return null;return{start:s,end:now};}
+
+function emptyChart(wrapId,msg='No data yet'){const w=document.getElementById(wrapId);if(!w)return;w.innerHTML=`<div class="empty-chart"><i class="fas fa-chart-bar" style="font-size:28px;color:#e5e7eb;"></i><span>${msg}</span></div>`;}
+
+async function loadReport(){
+  const period=document.getElementById('period-select').value;
+  const range=getPeriodRange(period);
+  const labels={today:'Today',week:'This Week',month:'This Month',all:'All Time'};
+  document.getElementById('report-date').textContent=labels[period]+' — Generated '+new Date().toLocaleString('en-PH');
+  document.getElementById('loading').style.display='block';
+  document.getElementById('report-content').style.display='none';
+
+  try{
+    let orders=[], productSales=[];
+    try{orders=await api.getAllOrders();}catch(e){orders=[];}
+    try{productSales=await api.getReports();}catch(e){productSales=[];}
+    // Ensure arrays
+    if(!Array.isArray(orders))orders=[];
+    if(!Array.isArray(productSales))productSales=[];
+
+    const filtered=range?orders.filter(o=>{const d=new Date(o.created_at||o.CREATED_AT);return d>=range.start&&d<=range.end;}):orders;
+    const completed=filtered.filter(o=>!['Cancelled'].includes(o.status||o.STATUS));
+    const revenue=completed.reduce((s,o)=>s+parseFloat(o.total||o.TOTAL||0),0);
+    const itemsSold=completed.reduce((s,o)=>s+(o.items||[]).reduce((si,i)=>si+(i.quantity||0),0),0);
+    const avgOrder=completed.length?revenue/completed.length:0;
+
+    document.getElementById('r-revenue').textContent='₱'+revenue.toFixed(2);
+    document.getElementById('r-orders').textContent=completed.length;
+    document.getElementById('r-avg').textContent='₱'+avgOrder.toFixed(2);
+    document.getElementById('r-items').textContent=itemsSold;
+
+    // Daily chart
+    const dailyMap={};
+    completed.forEach(o=>{const d=new Date(o.created_at||o.CREATED_AT).toLocaleDateString('en-PH',{month:'short',day:'numeric'});if(!dailyMap[d])dailyMap[d]={count:0,revenue:0};dailyMap[d].count++;dailyMap[d].revenue+=parseFloat(o.total||0);});
+    const dailyDates=Object.keys(dailyMap);
+    if(dailyChart)dailyChart.destroy();
+    if(dailyDates.length){
+      document.getElementById('daily-wrap').innerHTML='<canvas id="daily-chart" height="200"></canvas>';
+      dailyChart=new Chart(document.getElementById('daily-chart'),{type:'bar',data:{labels:dailyDates,datasets:[{label:'Revenue (₱)',data:dailyDates.map(d=>+dailyMap[d].revenue.toFixed(2)),backgroundColor:'rgba(220,38,38,0.7)',borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'₱'+v}}}}});
+    }else{emptyChart('daily-wrap','No orders in this period');}
+
+    // Products chart
+    const topProducts=productSales.slice(0,8);
+    if(productsChart)productsChart.destroy();
+    if(topProducts.length&&topProducts.some(p=>(p.total_sold||0)>0)){
+      document.getElementById('products-wrap').innerHTML='<canvas id="products-chart" height="200"></canvas>';
+      productsChart=new Chart(document.getElementById('products-chart'),{type:'bar',data:{labels:topProducts.map(p=>(p.product_name||'').slice(0,15)),datasets:[{label:'Qty Sold',data:topProducts.map(p=>p.total_sold||0),backgroundColor:'rgba(249,115,22,0.7)',borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
+    }else{emptyChart('products-wrap','No sales data yet');}
+
+    // Pie charts
+    const delivery=completed.filter(o=>(o.order_type||'Delivery')==='Delivery').length;
+    const pickup=completed.filter(o=>(o.order_type||'')===('Pick-up')).length;
+    if(typeChart)typeChart.destroy();
+    if(delivery+pickup>0){document.getElementById('type-wrap').innerHTML='<canvas id="type-chart" height="180"></canvas>';typeChart=new Chart(document.getElementById('type-chart'),{type:'doughnut',data:{labels:['Delivery','Pick-up'],datasets:[{data:[delivery,pickup],backgroundColor:['#dc2626','#f97316'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});}
+    else{emptyChart('type-wrap','No orders yet');}
+
+    const cash=completed.filter(o=>(o.payment_method||o.PAYMENT_METHOD)==='Cash').length;
+    const online=completed.filter(o=>(o.payment_method||o.PAYMENT_METHOD)==='Online Transfer').length;
+    if(paymentChart)paymentChart.destroy();
+    if(cash+online>0){document.getElementById('payment-wrap').innerHTML='<canvas id="payment-chart" height="180"></canvas>';paymentChart=new Chart(document.getElementById('payment-chart'),{type:'doughnut',data:{labels:['Cash','Online Transfer'],datasets:[{data:[cash,online],backgroundColor:['#16a34a','#2563eb'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});}
+    else{emptyChart('payment-wrap','No payment data yet');}
+
+    // Product table
+    const medals=['🥇','🥈','🥉'];
+    const totalRev=revenue||1;
+    document.getElementById('product-sales-tbody').innerHTML=topProducts.length?topProducts.map((p,i)=>{
+      const pRev=parseFloat(p.total_revenue||0), pSold=p.total_sold||0, share=((pRev/totalRev)*100).toFixed(1);
+      return `<tr><td style="font-size:16px;">${medals[i]||'#'+(i+1)}</td><td style="font-weight:600;font-size:13px;">${p.product_name||'—'}</td><td>${pSold}</td><td style="font-weight:600;color:#dc2626;">₱${pRev.toFixed(2)}</td><td>
+        <div style="display:flex;align-items:center;gap:6px;"><div style="flex:1;height:5px;background:#f3f4f6;border-radius:3px;overflow:hidden;"><div style="height:100%;background:linear-gradient(90deg,#dc2626,#f97316);width:${share}%;"></div></div><span style="font-size:11px;color:#9ca3af;">${share}%</span></div>
+      </td></tr>`;
+    }).join(''):`<tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:20px;">No product sales data yet.</td></tr>`;
+
+    // Daily table
+    document.getElementById('daily-tbody').innerHTML=dailyDates.length?[...dailyDates].reverse().map(d=>{const r=dailyMap[d];return`<tr><td style="font-weight:500;font-size:13px;">${d}</td><td>${r.count}</td><td style="font-weight:600;color:#dc2626;">₱${r.revenue.toFixed(2)}</td><td style="color:var(--gray-500);">₱${r.count?(r.revenue/r.count).toFixed(2):'0.00'}</td></tr>`;}).join(''):`<tr><td colspan="4" style="text-align:center;color:var(--gray-400);padding:20px;">No orders in this period.</td></tr>`;
+
+    document.getElementById('loading').style.display='none';
+    document.getElementById('report-content').style.display='block';
+  }catch(err){
+    console.error('Report error:',err);
+    document.getElementById('loading').innerHTML=`<div style="text-align:center;padding:40px;"><i class="fas fa-exclamation-circle" style="font-size:40px;color:#fca5a5;margin-bottom:12px;display:block;"></i><p style="color:#888;margin-bottom:16px;">Could not load: ${err.message}</p><button onclick="loadReport()" class="btn btn-primary">Try Again</button></div>`;
   }
 }
 
-async function loadReport() {
-  const period = document.getElementById('period-select').value;
-  const range  = getPeriodRange(period);
-  const labels = { today:'Today', week:'This Week', month:'This Month', all:'All Time' };
-  document.getElementById('report-date').textContent = `${labels[period]} — Generated ${new Date().toLocaleString('en-PH')}`;
-  document.getElementById('loading').style.display = 'block';
-  document.getElementById('report-content').style.display = 'none';
-
-  try {
-    // Fetch orders and product sales in parallel — both are non-fatal if empty
-    let orders = [], productSales = [];
-    try { orders = await api.getAllOrders(); } catch(e) { orders = []; }
-    try { productSales = await api.getReports(); } catch(e) { productSales = []; }
-
-    // Filter by period
-    const filtered = range
-      ? orders.filter(o => { const d = new Date(o.created_at||o.CREATED_AT); return d >= range.start && d <= range.end; })
-      : orders;
-
-    const completed = filtered.filter(o => !['Cancelled'].includes(o.status||o.STATUS));
-    const revenue   = completed.reduce((s,o) => s + parseFloat(o.total||o.TOTAL||0), 0);
-    const itemsSold = completed.reduce((s,o) => s + (o.items||[]).reduce((si,i) => si + (i.quantity||i.QUANTITY||0), 0), 0);
-    const avgOrder  = completed.length ? revenue / completed.length : 0;
-
-    document.getElementById('r-revenue').textContent = `₱${revenue.toFixed(2)}`;
-    document.getElementById('r-orders').textContent  = completed.length;
-    document.getElementById('r-avg').textContent     = `₱${avgOrder.toFixed(2)}`;
-    document.getElementById('r-items').textContent   = itemsSold;
-
-    // ── Daily breakdown
-    const dailyMap = {};
-    completed.forEach(o => {
-      const d = new Date(o.created_at||o.CREATED_AT).toLocaleDateString('en-PH',{month:'short',day:'numeric'});
-      if (!dailyMap[d]) dailyMap[d] = { count:0, revenue:0 };
-      dailyMap[d].count++;
-      dailyMap[d].revenue += parseFloat(o.total||o.TOTAL||0);
-    });
-    const dailyDates = Object.keys(dailyMap);
-    const dailyRevs  = dailyDates.map(d => +dailyMap[d].revenue.toFixed(2));
-
-    if (dailyChart) dailyChart.destroy();
-    if (dailyDates.length) {
-      document.getElementById('daily-chart').style.display = '';
-      dailyChart = new Chart(document.getElementById('daily-chart'), {
-        type: 'bar',
-        data: { labels: dailyDates, datasets: [{ label:'Revenue (₱)', data: dailyRevs, backgroundColor:'rgba(220,38,38,0.7)', borderRadius:4 }] },
-        options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{callback:v=>'₱'+v}}} }
-      });
-    } else { emptyChart('daily-chart','No orders in this period'); }
-
-    // ── Top products chart
-    const topProducts = (productSales||[]).slice(0,8);
-    if (productsChart) productsChart.destroy();
-    if (topProducts.length && topProducts.some(p => (p.total_sold||p.TOTAL_SOLD||0) > 0)) {
-      document.getElementById('products-chart').style.display = '';
-      productsChart = new Chart(document.getElementById('products-chart'), {
-        type: 'bar',
-        data: {
-          labels: topProducts.map(p => (p.product_name||p.PRODUCT_NAME||'').slice(0,18)),
-          datasets: [{ label:'Qty Sold', data: topProducts.map(p => p.total_sold||p.TOTAL_SOLD||0), backgroundColor:'rgba(249,115,22,0.7)', borderRadius:4 }]
-        },
-        options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true}} }
-      });
-    } else { emptyChart('products-chart','No sales data yet'); }
-
-    // ── Order type pie
-    const delivery = completed.filter(o=>(o.order_type||o.ORDER_TYPE)==='Delivery').length;
-    const pickup   = completed.filter(o=>(o.order_type||o.ORDER_TYPE)==='Pick-up').length;
-    if (typeChart) typeChart.destroy();
-    if (delivery + pickup > 0) {
-      typeChart = new Chart(document.getElementById('type-chart'), {
-        type:'doughnut',
-        data:{ labels:['Delivery','Pick-up'], datasets:[{ data:[delivery,pickup], backgroundColor:['#dc2626','#f97316'], borderWidth:0 }] },
-        options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
-      });
-    } else { emptyChart('type-chart','No orders yet'); }
-
-    // ── Payment method pie
-    const cash   = completed.filter(o=>(o.payment_method||o.PAYMENT_METHOD)==='Cash').length;
-    const online = completed.filter(o=>(o.payment_method||o.PAYMENT_METHOD)==='Online Transfer').length;
-    if (paymentChart) paymentChart.destroy();
-    if (cash + online > 0) {
-      paymentChart = new Chart(document.getElementById('payment-chart'), {
-        type:'doughnut',
-        data:{ labels:['Cash','Online Transfer'], datasets:[{ data:[cash,online], backgroundColor:['#16a34a','#2563eb'], borderWidth:0 }] },
-        options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
-      });
-    } else { emptyChart('payment-chart','No payment data yet'); }
-
-    // ── Product table
-    const totalRev = revenue || 1;
-    if (topProducts.length) {
-      const medals = ['🥇','🥈','🥉'];
-      document.getElementById('product-sales-tbody').innerHTML = topProducts.map((p,i) => {
-        const pRev  = parseFloat(p.total_revenue||p.TOTAL_REVENUE||0);
-        const pSold = p.total_sold||p.TOTAL_SOLD||0;
-        const share = ((pRev/totalRev)*100).toFixed(1);
-        return `<tr>
-          <td style="font-size:18px;">${medals[i]||`#${i+1}`}</td>
-          <td style="font-weight:600;">${p.product_name||p.PRODUCT_NAME||'—'}</td>
-          <td>${pSold}</td>
-          <td style="font-weight:600;color:#dc2626;">₱${pRev.toFixed(2)}</td>
-          <td>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <div style="flex:1;height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden;">
-                <div style="height:100%;background:linear-gradient(90deg,#dc2626,#f97316);width:${share}%;border-radius:3px;"></div>
-              </div>
-              <span style="font-size:12px;color:var(--gray-500);width:40px;">${share}%</span>
-            </div>
-          </td>
-        </tr>`;
-      }).join('');
-    } else {
-      document.getElementById('product-sales-tbody').innerHTML =
-        `<tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:24px;">No product sales data yet. Orders will appear here.</td></tr>`;
-    }
-
-    // ── Daily summary table
-    if (dailyDates.length) {
-      document.getElementById('daily-tbody').innerHTML = [...dailyDates].reverse().map(d => {
-        const row = dailyMap[d];
-        return `<tr>
-          <td style="font-weight:500;">${d}</td>
-          <td>${row.count}</td>
-          <td style="font-weight:600;color:#dc2626;">₱${row.revenue.toFixed(2)}</td>
-          <td style="color:var(--gray-500);">₱${row.count ? (row.revenue/row.count).toFixed(2) : '0.00'}</td>
-        </tr>`;
-      }).join('');
-    } else {
-      document.getElementById('daily-tbody').innerHTML =
-        `<tr><td colspan="4" style="text-align:center;color:var(--gray-400);padding:24px;">No orders in this period.</td></tr>`;
-    }
-
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('report-content').style.display = 'block';
-
-  } catch (err) {
-    console.error('Report error:', err);
-    document.getElementById('loading').innerHTML =
-      `<div style="text-align:center;padding:40px;">
-        <i class="fas fa-exclamation-circle" style="font-size:40px;color:#fca5a5;margin-bottom:12px;display:block;"></i>
-        <p style="color:#888;margin-bottom:16px;">Could not load report: ${err.message}</p>
-        <button onclick="loadReport()" class="btn btn-primary">Try Again</button>
-      </div>`;
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
-  if (!user || (user.ROLE !== 'admin' && user.role !== 'admin')) {
-    window.location.href = '../login.html'; return;
-  }
+document.addEventListener('DOMContentLoaded',()=>{
+  const user=JSON.parse(localStorage.getItem('currentUser')||'null');
+  if(!user||(user.ROLE!=='admin'&&user.role!=='admin')){window.location.href='../login.html';return;}
   loadReport();
 });
 </script>
