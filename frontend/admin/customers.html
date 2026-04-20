@@ -2,43 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Customers - Admin | Batangas Premium Naga</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
   <style>
-    .sidebar-toggle{display:none;position:fixed;top:12px;left:12px;z-index:11000;width:44px;height:44px;border-radius:10px;background:#dc2626;border:none;color:white;font-size:18px;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.2);}
-    .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;}
-    .sidebar-backdrop.active{display:block;}
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;}
-    .modal-box{background:white;border-radius:var(--radius-lg);padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:13000;display:flex;align-items:flex-end;justify-content:center;padding:0;}
+    .modal-box{background:white;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;}
     .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#dc2626,#f97316);display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:700;flex-shrink:0;}
-    .avatar.admin-av{background:linear-gradient(135deg,#1d4ed8,#7c3aed);}
-    .badge-blocked{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;}
-    .badge-active{background:#dcfce7;color:#16a34a;border:1px solid #86efac;display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;}
-    .badge-admin{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;}
-    .action-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;border:1px solid;cursor:pointer;font-size:13px;background:white;transition:all .15s;}
-    .action-btn.view-btn{color:#2563eb;border-color:#bfdbfe;} .action-btn.view-btn:hover{background:#dbeafe;}
-    .action-btn.block-btn{color:#dc2626;border-color:#fca5a5;} .action-btn.block-btn:hover{background:#fee2e2;}
-    .action-btn.unblock-btn{color:#16a34a;border-color:#86efac;} .action-btn.unblock-btn:hover{background:#dcfce7;}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    @media(max-width:768px){
-      .sidebar-toggle{display:flex;}
-      .admin-layout{display:block!important;}
-      .admin-sidebar{position:fixed!important;left:-280px;top:0;height:100vh;z-index:9999;transition:left .25s ease;width:260px!important;overflow-y:auto;}
-      .admin-sidebar.open{left:0;}
-      .admin-content{padding:70px 14px 24px!important;}
-      .stats-grid{grid-template-columns:repeat(2,1fr)!important;}
-      .table-container{overflow-x:auto;}
-      .modal-overlay{align-items:flex-end!important;padding:0!important;}
-      .modal-box{border-radius:16px 16px 0 0!important;max-width:100%!important;}
-      h1{font-size:1.3rem!important;}
-    }
+    .avatar.adm{background:linear-gradient(135deg,#1d4ed8,#7c3aed);}
+    .badge-blocked{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;display:inline-block;}
+    .badge-active{background:#dcfce7;color:#16a34a;border:1px solid #86efac;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;display:inline-block;}
+    .badge-adm{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;display:inline-block;}
+    /* Mobile customer cards */
+    .cust-card{background:white;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.07);padding:14px;margin-bottom:10px;}
+    .cust-card-row{display:flex;align-items:center;gap:12px;}
+    .cust-card-body{flex:1;min-width:0;}
+    .cust-card-actions{display:flex;gap:8px;margin-top:10px;}
   </style>
 </head>
 <body>
-<button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
+<div class="admin-topbar"><span class="admin-topbar-title">Customers</span></div>
+<button class="sb-toggle" onclick="sbOpen()"><i class="fas fa-bars"></i></button>
+<div class="sb-backdrop" id="sbBackdrop" onclick="sbClose()"></div>
 
 <div class="admin-layout">
   <aside class="admin-sidebar" id="adminSidebar">
@@ -46,7 +35,7 @@
       <a href="../index.html" class="logo" style="text-decoration:none;">
         <div class="logo-icon"><i class="fas fa-utensils"></i></div>
         <div>
-          <div class="logo-text" style="color:white;">Batangas Premium Naga</div>
+          <div class="logo-text" style="color:white;font-size:13px;">Batangas Premium Naga</div>
           <div class="logo-subtext" style="color:rgba(255,255,255,.7);">Admin Panel</div>
         </div>
       </a>
@@ -59,75 +48,70 @@
       <a href="customers.html"  class="admin-nav-item active"><i class="fas fa-users"></i> Customers</a>
       <a href="reports.html"    class="admin-nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
       <a href="../index.html"   class="admin-nav-item" style="margin-top:auto;"><i class="fas fa-arrow-left"></i> Back to Site</a>
-      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;font-size:inherit;"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
     </nav>
   </aside>
 
   <main class="admin-content">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div class="admin-header-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
       <div>
-        <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:4px;">Customers</h1>
-        <p style="color:var(--gray-500);font-size:14px;" id="cust-count">Loading...</p>
+        <h1 style="font-size:1.6rem;font-weight:700;margin-bottom:2px;">Customers</h1>
+        <p style="color:var(--gray-500);font-size:13px;" id="cust-count">Loading...</p>
       </div>
-      <button onclick="openAddModal()" class="btn btn-primary">
-        <i class="fas fa-user-plus" style="margin-right:6px;"></i>Add Customer
-      </button>
+      <button onclick="openAddModal()" class="btn btn-primary"><i class="fas fa-user-plus" style="margin-right:6px;"></i>Add Customer</button>
     </div>
 
     <!-- Stats -->
-    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
-      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-total" style="font-size:1.4rem;">0</div><div class="stats-label">Total Users</div></div><div class="stats-icon blue"><i class="fas fa-users"></i></div></div></div>
-      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-new" style="font-size:1.4rem;">0</div><div class="stats-label">New This Month</div></div><div class="stats-icon green"><i class="fas fa-user-plus"></i></div></div></div>
-      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-ordered" style="font-size:1.4rem;">0</div><div class="stats-label">With Orders</div></div><div class="stats-icon orange"><i class="fas fa-bag-shopping"></i></div></div></div>
-      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="stat-blocked" style="font-size:1.4rem;">0</div><div class="stats-label">Blocked</div></div><div class="stats-icon red"><i class="fas fa-ban"></i></div></div></div>
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
+      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="s-total" style="font-size:1.3rem;">0</div><div class="stats-label" style="font-size:11px;">Total</div></div><div class="stats-icon blue" style="width:36px;height:36px;font-size:14px;"><i class="fas fa-users"></i></div></div></div>
+      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="s-new" style="font-size:1.3rem;">0</div><div class="stats-label" style="font-size:11px;">This Month</div></div><div class="stats-icon green" style="width:36px;height:36px;font-size:14px;"><i class="fas fa-user-plus"></i></div></div></div>
+      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="s-ord" style="font-size:1.3rem;">0</div><div class="stats-label" style="font-size:11px;">With Orders</div></div><div class="stats-icon orange" style="width:36px;height:36px;font-size:14px;"><i class="fas fa-bag-shopping"></i></div></div></div>
+      <div class="stats-card"><div class="stats-header"><div><div class="stats-value" id="s-blk" style="font-size:1.3rem;">0</div><div class="stats-label" style="font-size:11px;">Blocked</div></div><div class="stats-icon red" style="width:36px;height:36px;font-size:14px;"><i class="fas fa-ban"></i></div></div></div>
     </div>
 
-    <!-- Search + filter -->
-    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-      <input id="search-input" type="text" placeholder="Search name, email or phone..." class="form-input" style="flex:1;min-width:160px;" oninput="filterCustomers()">
-      <select id="status-filter" class="form-select" style="max-width:140px;" onchange="filterCustomers()">
-        <option value="">All Status</option>
-        <option value="active">Active</option>
-        <option value="blocked">Blocked</option>
-      </select>
-      <select id="role-filter" class="form-select" style="max-width:130px;" onchange="filterCustomers()">
-        <option value="">All Roles</option>
-        <option value="customer">Customers</option>
-        <option value="admin">Admins</option>
-      </select>
+    <!-- Filters -->
+    <div class="filter-row" style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <input id="search-input" type="text" placeholder="Search name, email, phone..." class="form-input" style="flex:1;min-width:140px;" oninput="filterCustomers()">
+      <select id="status-filter" class="form-select" style="max-width:130px;" onchange="filterCustomers()"><option value="">All Status</option><option value="active">Active</option><option value="blocked">Blocked</option></select>
+      <select id="role-filter" class="form-select" style="max-width:120px;" onchange="filterCustomers()"><option value="">All Roles</option><option value="customer">Customers</option><option value="admin">Admins</option></select>
     </div>
 
-    <div class="table-container">
-      <div id="loading" style="text-align:center;padding:48px;color:var(--gray-500);">
-        <div style="width:28px;height:28px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>
-        Loading customers...
-      </div>
-      <table class="table" id="cust-table" style="display:none;min-width:520px;">
-        <thead>
-          <tr><th>Customer</th><th>Contact</th><th>Role</th><th>Status</th><th>Orders</th><th>Actions</th></tr>
-        </thead>
+    <div id="loading" style="text-align:center;padding:48px;color:#9ca3af;">
+      <div style="width:26px;height:26px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>
+      Loading customers...
+    </div>
+
+    <!-- Desktop table -->
+    <div class="table-container" id="table-wrap" style="display:none;">
+      <table class="table" style="min-width:520px;">
+        <thead><tr><th>Customer</th><th>Contact</th><th>Role</th><th>Status</th><th>Orders</th><th>Actions</th></tr></thead>
         <tbody id="cust-tbody"></tbody>
       </table>
-      <div id="no-results" style="display:none;text-align:center;padding:48px;color:var(--gray-400);">No customers found.</div>
     </div>
+
+    <!-- Mobile cards -->
+    <div id="mobile-cards" style="display:none;"></div>
+    <div id="no-results" style="display:none;text-align:center;padding:48px;color:#9ca3af;">No customers found.</div>
   </main>
 </div>
 
 <!-- View modal -->
-<div id="view-modal" class="modal-overlay" style="display:none;">
+<div id="view-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeViewModal()">
   <div class="modal-box">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+    <div style="width:40px;height:4px;background:#e5e7eb;border-radius:2px;margin:0 auto 16px;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <h2 style="font-size:1.1rem;font-weight:700;margin:0;">Customer Details</h2>
-      <button onclick="closeViewModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);">✕</button>
+      <button onclick="closeViewModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#9ca3af;line-height:1;">✕</button>
     </div>
     <div id="view-content"></div>
   </div>
 </div>
 
-<!-- Add customer modal -->
-<div id="add-modal" class="modal-overlay" style="display:none;">
-  <div class="modal-box" style="max-width:440px;">
-    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">Add New User</h2>
+<!-- Add modal -->
+<div id="add-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal-box" style="max-width:460px;">
+    <div style="width:40px;height:4px;background:#e5e7eb;border-radius:2px;margin:0 auto 16px;"></div>
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:18px;">Add New User</h2>
     <form id="add-form">
       <div class="form-group"><label class="form-label">Full Name *</label><input type="text" id="a-name" class="form-input" required placeholder="Juan dela Cruz"></div>
       <div class="form-group"><label class="form-label">Email *</label><input type="email" id="a-email" class="form-input" required placeholder="user@email.com"></div>
@@ -135,16 +119,13 @@
       <div class="form-group">
         <label class="form-label">Password *</label>
         <div style="position:relative;">
-          <input type="password" id="a-pass" class="form-input" required placeholder="Min. 6 characters" style="padding-right:44px;">
-          <button type="button" onclick="togglePw('a-pass','a-eye')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;"><i id="a-eye" class="fa-regular fa-eye"></i></button>
+          <input type="password" id="a-pass" class="form-input" required placeholder="Min. 6 characters" style="padding-right:48px;">
+          <button type="button" onclick="togglePw('a-pass','a-eye')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;"><i id="a-eye" class="fa-regular fa-eye"></i></button>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Role</label>
-        <select id="a-role" class="form-select"><option value="customer">Customer</option><option value="admin">Admin</option></select>
-      </div>
+      <div class="form-group"><label class="form-label">Role</label><select id="a-role" class="form-select"><option value="customer">Customer</option><option value="admin">Admin</option></select></div>
       <div style="display:flex;gap:10px;margin-top:16px;">
-        <button type="submit" class="btn btn-primary" id="add-btn" style="flex:1;"><i class="fas fa-user-plus" style="margin-right:6px;"></i>Add User</button>
+        <button type="submit" id="add-btn" class="btn btn-primary" style="flex:1;"><i class="fas fa-user-plus" style="margin-right:6px;"></i>Add User</button>
         <button type="button" onclick="closeAddModal()" class="btn btn-outline" style="flex:1;">Cancel</button>
       </div>
     </form>
@@ -156,11 +137,12 @@
 <script src="../js/cart.js"></script>
 <script src="../js/app.js"></script>
 <script>
-function toggleSidebar(){document.getElementById('adminSidebar').classList.toggle('open');document.getElementById('sidebarBackdrop').classList.toggle('active');}
-function closeSidebar(){document.getElementById('adminSidebar').classList.remove('open');document.getElementById('sidebarBackdrop').classList.remove('active');}
-function togglePw(id,iconId){const el=document.getElementById(id),ic=document.getElementById(iconId);if(el.type==='password'){el.type='text';ic.className='fa-regular fa-eye-slash';}else{el.type='password';ic.className='fa-regular fa-eye';}}
+function sbOpen(){ document.getElementById('adminSidebar').classList.add('sb-open'); document.getElementById('sbBackdrop').classList.add('on'); }
+function sbClose(){ document.getElementById('adminSidebar').classList.remove('sb-open'); document.getElementById('sbBackdrop').classList.remove('on'); }
+function togglePw(id,iconId){const el=document.getElementById(id),ic=document.getElementById(iconId);el.type=el.type==='password'?'text':'password';ic.className=el.type==='text'?'fa-regular fa-eye-slash':'fa-regular fa-eye';}
 
 let allCustomers=[], allOrders=[];
+const isMobile = () => window.innerWidth <= 768;
 
 async function loadAll(){
   try{
@@ -170,20 +152,36 @@ async function loadAll(){
     const thisMonth=customers.filter(c=>{const d=new Date(c.CREATED_AT||c.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
     const withOrders=new Set(orders.map(o=>o.USER_ID||o.user_id).filter(Boolean)).size;
     const blocked=customers.filter(c=>(c.STATUS||c.status||'active')==='blocked').length;
-    document.getElementById('stat-total').textContent   =customers.length;
-    document.getElementById('stat-new').textContent     =thisMonth;
-    document.getElementById('stat-ordered').textContent =withOrders;
-    document.getElementById('stat-blocked').textContent =blocked;
-    document.getElementById('cust-count').textContent   =customers.length+' registered users';
-    document.getElementById('loading').style.display    ='none';
-    renderTable(customers);
-  }catch(e){console.error(e);document.getElementById('loading').textContent='Failed to load. Is the server running?';}
+    document.getElementById('s-total').textContent=customers.length;
+    document.getElementById('s-new').textContent=thisMonth;
+    document.getElementById('s-ord').textContent=withOrders;
+    document.getElementById('s-blk').textContent=blocked;
+    document.getElementById('cust-count').textContent=customers.length+' registered users';
+    document.getElementById('loading').style.display='none';
+    filterCustomers();
+  }catch(e){document.getElementById('loading').textContent='Failed to load. Is the server running?';}
 }
 
+function filterCustomers(){
+  const q=(document.getElementById('search-input').value||'').toLowerCase();
+  const st=document.getElementById('status-filter').value;
+  const role=document.getElementById('role-filter').value;
+  const filtered=allCustomers.filter(c=>{
+    const matchQ=!q||(c.FULL_NAME||c.full_name||'').toLowerCase().includes(q)||(c.EMAIL||c.email||'').toLowerCase().includes(q)||(c.PHONE||c.phone||'').toLowerCase().includes(q);
+    const matchSt=!st||(c.STATUS||c.status||'active').toLowerCase()===st;
+    const matchRole=!role||(c.ROLE||c.role||'customer').toLowerCase()===role;
+    return matchQ&&matchSt&&matchRole;
+  });
+  if(isMobile()) renderCards(filtered); else renderTable(filtered);
+}
+
+window.addEventListener('resize',()=>filterCustomers());
+
 function renderTable(customers){
-  const table=document.getElementById('cust-table'),tbody=document.getElementById('cust-tbody'),noRes=document.getElementById('no-results');
-  if(!customers.length){table.style.display='none';noRes.style.display='block';return;}
-  noRes.style.display='none';table.style.display='table';
+  document.getElementById('mobile-cards').style.display='none';
+  const wrap=document.getElementById('table-wrap'),tbody=document.getElementById('cust-tbody'),noRes=document.getElementById('no-results');
+  if(!customers.length){wrap.style.display='none';noRes.style.display='block';return;}
+  noRes.style.display='none';wrap.style.display='block';
   tbody.innerHTML=customers.map(c=>{
     const id=c.USER_ID||c.user_id, name=c.FULL_NAME||c.full_name||'—', email=c.EMAIL||c.email||'—', phone=c.PHONE||c.phone||'—';
     const role=(c.ROLE||c.role||'customer').toLowerCase(), status=(c.STATUS||c.status||'active').toLowerCase();
@@ -191,39 +189,50 @@ function renderTable(customers){
     const orderCount=allOrders.filter(o=>(o.USER_ID||o.user_id)===id).length;
     const isBlocked=status==='blocked', isAdmin=role==='admin';
     return `<tr style="${isBlocked?'opacity:.65;':''}">
-      <td>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="avatar ${isAdmin?'admin-av':''}">${initials}</div>
-          <div>
-            <div style="font-weight:600;font-size:14px;">${name}</div>
-            <div style="font-size:11px;color:var(--gray-400);">${email}</div>
-          </div>
-        </div>
-      </td>
-      <td style="font-size:13px;color:var(--gray-500);">${phone}</td>
-      <td>${isAdmin?'<span class="badge-admin">Admin</span>':'<span style="font-size:12px;color:var(--gray-500);">Customer</span>'}</td>
+      <td><div style="display:flex;align-items:center;gap:10px;"><div class="avatar ${isAdmin?'adm':''}">${initials}</div><div><div style="font-weight:600;font-size:13px;">${name}</div><div style="font-size:11px;color:#9ca3af;">${email}</div></div></div></td>
+      <td style="font-size:13px;color:#6b7280;">${phone}</td>
+      <td>${isAdmin?'<span class="badge-adm">Admin</span>':'<span style="font-size:12px;color:#6b7280;">Customer</span>'}</td>
       <td><span class="${isBlocked?'badge-blocked':'badge-active'}">${isBlocked?'Blocked':'Active'}</span></td>
-      <td><span class="badge badge-info" style="font-size:12px;">${orderCount}</span></td>
-      <td>
-        <div style="display:flex;gap:6px;">
-          <button class="action-btn view-btn" onclick="viewCustomer(${id})" title="View"><i class="fas fa-eye"></i></button>
-          ${!isAdmin?`<button class="action-btn ${isBlocked?'unblock-btn':'block-btn'}" onclick="toggleBlock(${id},'${status}')" title="${isBlocked?'Unblock':'Block'}"><i class="fas ${isBlocked?'fa-unlock':'fa-ban'}"></i></button>`:''}
-        </div>
-      </td>
+      <td><span class="badge badge-info" style="font-size:11px;">${orderCount}</span></td>
+      <td><div style="display:flex;gap:6px;">
+        <button style="width:30px;height:30px;border-radius:8px;border:1px solid #bfdbfe;background:white;color:#2563eb;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;" onclick="viewCustomer(${id})" title="View"><i class="fas fa-eye"></i></button>
+        ${!isAdmin?`<button style="width:30px;height:30px;border-radius:8px;border:1px solid ${isBlocked?'#86efac':'#fca5a5'};background:white;color:${isBlocked?'#16a34a':'#dc2626'};cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;" onclick="toggleBlock(${id},'${status}')" title="${isBlocked?'Unblock':'Block'}"><i class="fas ${isBlocked?'fa-unlock':'fa-ban'}"></i></button>`:''}
+      </div></td>
     </tr>`;
   }).join('');
 }
 
-function filterCustomers(){
-  const q=(document.getElementById('search-input').value||'').toLowerCase();
-  const st=document.getElementById('status-filter').value;
-  const role=document.getElementById('role-filter').value;
-  renderTable(allCustomers.filter(c=>{
-    const matchQ=!q||(c.FULL_NAME||c.full_name||'').toLowerCase().includes(q)||(c.EMAIL||c.email||'').toLowerCase().includes(q)||(c.PHONE||c.phone||'').toLowerCase().includes(q);
-    const matchSt=!st||(c.STATUS||c.status||'active').toLowerCase()===st;
-    const matchRole=!role||(c.ROLE||c.role||'customer').toLowerCase()===role;
-    return matchQ&&matchSt&&matchRole;
-  }));
+function renderCards(customers){
+  document.getElementById('table-wrap').style.display='none';
+  const cards=document.getElementById('mobile-cards'),noRes=document.getElementById('no-results');
+  if(!customers.length){cards.style.display='none';noRes.style.display='block';return;}
+  noRes.style.display='none';cards.style.display='block';
+  cards.innerHTML=customers.map(c=>{
+    const id=c.USER_ID||c.user_id, name=c.FULL_NAME||c.full_name||'—', email=c.EMAIL||c.email||'—', phone=c.PHONE||c.phone||'—';
+    const role=(c.ROLE||c.role||'customer').toLowerCase(), status=(c.STATUS||c.status||'active').toLowerCase();
+    const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+    const orderCount=allOrders.filter(o=>(o.USER_ID||o.user_id)===id).length;
+    const isBlocked=status==='blocked', isAdmin=role==='admin';
+    return `<div class="cust-card" style="${isBlocked?'opacity:.65;':''}">
+      <div class="cust-card-row">
+        <div class="avatar ${isAdmin?'adm':''}" style="width:44px;height:44px;font-size:15px;">${initials}</div>
+        <div class="cust-card-body">
+          <div style="font-weight:700;font-size:14px;">${name}</div>
+          <div style="font-size:12px;color:#9ca3af;">${email}</div>
+          <div style="font-size:12px;color:#9ca3af;">${phone}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          ${isAdmin?'<span class="badge-adm">Admin</span>':''}
+          <span class="${isBlocked?'badge-blocked':'badge-active'}">${isBlocked?'Blocked':'Active'}</span>
+          <span style="font-size:11px;color:#9ca3af;">${orderCount} order${orderCount!==1?'s':''}</span>
+        </div>
+      </div>
+      <div class="cust-card-actions">
+        <button onclick="viewCustomer(${id})" class="btn btn-outline btn-sm" style="flex:1;font-size:13px;"><i class="fas fa-eye" style="margin-right:5px;"></i>View</button>
+        ${!isAdmin?`<button onclick="toggleBlock(${id},'${status}')" class="btn btn-sm" style="flex:1;font-size:13px;background:${isBlocked?'#dcfce7':'#fee2e2'};color:${isBlocked?'#16a34a':'#dc2626'};border:1px solid ${isBlocked?'#86efac':'#fca5a5'};"><i class="fas ${isBlocked?'fa-unlock':'fa-ban'}" style="margin-right:5px;"></i>${isBlocked?'Unblock':'Block'}</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 async function toggleBlock(id,currentStatus){
@@ -243,37 +252,34 @@ function viewCustomer(id){
   const role=(c.ROLE||c.role||'customer').toLowerCase(), status=(c.STATUS||c.status||'active').toLowerCase();
   const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
   const totalSpent=orders.filter(o=>(o.STATUS||o.status)!=='Cancelled').reduce((s,o)=>s+parseFloat(o.TOTAL||o.total||0),0);
-  const sc={Pending:'#fef3c7;color:#92400e',Confirmed:'#dbeafe;color:#1e40af',Preparing:'#ede9fe;color:#5b21b6',Ready:'#d1fae5;color:#065f46',Delivered:'#dcfce7;color:#14532d',Cancelled:'#fee2e2;color:#7f1d1d'};
   document.getElementById('view-content').innerHTML=`
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--gray-200);">
-      <div class="avatar ${role==='admin'?'admin-av':''}" style="width:52px;height:52px;font-size:17px;">${initials}</div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid #f3f4f6;">
+      <div class="avatar ${role==='admin'?'adm':''}" style="width:52px;height:52px;font-size:17px;">${initials}</div>
       <div style="flex:1;">
-        <p style="font-size:1rem;font-weight:700;margin-bottom:2px;">${name}</p>
-        <p style="color:var(--gray-500);font-size:13px;">${email}</p>
-        <p style="color:var(--gray-500);font-size:13px;">${phone}</p>
+        <p style="font-weight:700;font-size:15px;margin-bottom:2px;">${name}</p>
+        <p style="color:#6b7280;font-size:13px;">${email}</p>
+        <p style="color:#6b7280;font-size:13px;">${phone}</p>
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
-        ${role==='admin'?'<span class="badge-admin">Admin</span>':''}
+        ${role==='admin'?'<span class="badge-adm">Admin</span>':''}
         <span class="${status==='blocked'?'badge-blocked':'badge-active'}">${status==='blocked'?'Blocked':'Active'}</span>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-      <div style="background:#f9fafb;border-radius:8px;padding:12px;"><p style="font-size:11px;color:var(--gray-400);margin-bottom:3px;">Total Orders</p><p style="font-size:1.4rem;font-weight:700;">${orders.length}</p></div>
-      <div style="background:#f9fafb;border-radius:8px;padding:12px;"><p style="font-size:11px;color:var(--gray-400);margin-bottom:3px;">Total Spent</p><p style="font-size:1.4rem;font-weight:700;color:#dc2626;">₱${totalSpent.toFixed(2)}</p></div>
+      <div style="background:#f9fafb;border-radius:10px;padding:12px;"><p style="font-size:11px;color:#9ca3af;margin-bottom:3px;">Total Orders</p><p style="font-size:1.4rem;font-weight:700;">${orders.length}</p></div>
+      <div style="background:#f9fafb;border-radius:10px;padding:12px;"><p style="font-size:11px;color:#9ca3af;margin-bottom:3px;">Total Spent</p><p style="font-size:1.4rem;font-weight:700;color:#dc2626;">₱${totalSpent.toFixed(2)}</p></div>
     </div>
-    ${orders.length?`<h3 style="font-size:14px;margin-bottom:10px;">Order History</h3>
-    <div style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;">
-      ${orders.map(o=>{const oid=o.ORDER_ID||o.order_id,ost=o.STATUS||o.status;return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:8px;font-size:12px;">
-        <div><span style="font-weight:600;">ORD-${String(oid).padStart(4,'0')}</span></div>
+    ${orders.length?`<p style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px;">Order History</p>
+    <div style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+      ${orders.map(o=>{const oid=o.ORDER_ID||o.order_id,ost=o.STATUS||o.status;return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:8px;font-size:13px;">
+        <span style="font-weight:600;">ORD-${String(oid).padStart(4,'0')}</span>
         <div style="display:flex;align-items:center;gap:6px;">
-          <span style="padding:2px 8px;border-radius:999px;font-size:11px;background:${(sc[ost]||'#f3f4f6;color:#374151').split(';color:')[0]};color:${(sc[ost]||'#f3f4f6;color:#374151').split(';color:')[1]||'#374151'};">${ost}</span>
+          <span style="font-size:11px;color:#9ca3af;">${ost}</span>
           <span style="font-weight:700;color:#dc2626;">₱${parseFloat(o.TOTAL||o.total||0).toFixed(2)}</span>
         </div>
       </div>`;}).join('')}
-    </div>`:'<p style="color:var(--gray-400);font-size:13px;">No orders yet.</p>'}
-    ${role!=='admin'?`<button onclick="toggleBlock(${id},'${status}');closeViewModal();" class="btn ${status==='blocked'?'btn-primary':'btn-primary'}" style="${status!=='blocked'?'background:#dc2626;':''}width:100%;margin-top:16px;">
-      <i class="fas ${status==='blocked'?'fa-unlock':'fa-ban'}" style="margin-right:8px;"></i>${status==='blocked'?'Unblock Customer':'Block Customer'}
-    </button>`:''}`;
+    </div>`:'<p style="color:#9ca3af;font-size:13px;">No orders yet.</p>'}
+    ${role!=='admin'?`<button onclick="toggleBlock(${id},'${status}');closeViewModal();" class="btn ${status==='blocked'?'btn-primary':'btn-primary'}" style="${status!=='blocked'?'background:#dc2626;':'background:#16a34a;'}width:100%;margin-top:16px;"><i class="fas ${status==='blocked'?'fa-unlock':'fa-ban'}" style="margin-right:8px;"></i>${status==='blocked'?'Unblock Customer':'Block Customer'}</button>`:''}`;
   document.getElementById('view-modal').style.display='flex';
 }
 function closeViewModal(){document.getElementById('view-modal').style.display='none';}
