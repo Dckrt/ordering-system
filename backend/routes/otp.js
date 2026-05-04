@@ -1,8 +1,7 @@
 // ============================================================
-// backend/routes/otp.js — FIXED VERSION
+// backend/routes/otp.js — FINAL FIXED VERSION
+// Fix: ORA-00933 — replaced FETCH FIRST with ROWNUM subquery
 // ============================================================
-
-require('dotenv').config({ path: require('path').join(__dirname, '../../.env') });
 
 const express    = require('express');
 const router     = express.Router();
@@ -10,9 +9,7 @@ const oracledb   = require('oracledb');
 const nodemailer = require('nodemailer');
 const { getConnection } = require('../db');
 
-// ── Create transporter fresh every time (ensures .env is loaded) ──
 function getTransporter() {
-  console.log('📧 Creating transporter with:', process.env.GMAIL_USER);
   return nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -22,7 +19,6 @@ function getTransporter() {
   });
 }
 
-// ── Generate 6-digit OTP ─────────────────────────────────────
 function generateOTP() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
@@ -32,14 +28,12 @@ function generateOTP() {
 // ============================================================
 router.post('/send', async (req, res) => {
   const { email } = req.body;
-  console.log('📨 Send OTP request for:', email);
 
   if (!email || !email.includes('@')) {
     return res.status(400).json({ success: false, message: 'Please provide a valid email address.' });
   }
 
   if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-    console.error('❌ Gmail not configured. GMAIL_USER:', process.env.GMAIL_USER);
     return res.status(500).json({ success: false, message: 'Email service not configured.' });
   }
 
@@ -56,18 +50,16 @@ router.post('/send', async (req, res) => {
       { email }
     );
 
-    // Insert new OTP using sequence
+    // Insert new OTP
     await conn.execute(
       `INSERT INTO otp_tokens (id, email, otp_code, expires_at, used)
        VALUES (otp_tokens_seq.NEXTVAL, :email, :otp_code, SYSDATE + :mins/1440, 0)`,
       { email, otp_code: otp, mins: expiryMins }
     );
     await conn.commit();
-    console.log(`✅ OTP saved to DB: ${otp} for ${email}`);
 
     // Send email
-    const transporter = getTransporter();
-    await transporter.sendMail({
+    await getTransporter().sendMail({
       from:    `"Batangas Premium Naga" <${process.env.GMAIL_USER}>`,
       to:      email,
       subject: '🔐 Your OTP Verification Code — Batangas Premium Naga',
@@ -93,17 +85,12 @@ router.post('/send', async (req, res) => {
       `,
     });
 
-    console.log(`✅ OTP email sent to ${email}`);
+    console.log(`✅ OTP sent to ${email}: ${otp}`);
     res.json({ success: true, message: `OTP sent to ${email}. Expires in ${expiryMins} minutes.` });
 
   } catch (err) {
     console.error('❌ Send OTP error:', err.message);
-    console.error('Full error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to send OTP. See server console for details.',
-      debug:   err.message,
-    });
+    res.status(500).json({ success: false, message: 'Failed to send OTP. See server console.', debug: err.message });
   } finally {
     if (conn) await conn.close();
   }
@@ -112,18 +99,16 @@ router.post('/send', async (req, res) => {
 
 // ============================================================
 // POST /api/otp/verify
+// FIX: Use ROWNUM subquery instead of FETCH FIRST (ORA-00933)
 // ============================================================
 router.post('/verify', async (req, res) => {
   const { email, otp } = req.body;
-  console.log('🔍 Verify OTP request — email:', email, '| otp:', otp);
 
   if (!email || !otp) {
     return res.status(400).json({ success: false, message: 'Email and OTP are required.' });
   }
 
-  // Clean the OTP — remove spaces and non-digits
   const cleanOTP = String(otp).replace(/\D/g, '').trim();
-  console.log('🔢 Cleaned OTP:', cleanOTP);
 
   if (cleanOTP.length !== 6) {
     return res.status(400).json({ success: false, message: 'OTP must be a 6-digit number.' });
@@ -133,25 +118,26 @@ router.post('/verify', async (req, res) => {
   try {
     conn = await getConnection();
 
-    // Get the latest OTP for this email
+    // ── FIX: Use ROWNUM subquery (Oracle XE compatible) ──
+    // FETCH FIRST causes ORA-00933 when combined with ORDER BY in some Oracle versions
     const result = await conn.execute(
-      `SELECT id           AS "id",
-              otp_code     AS "otp_code",
-              expires_at   AS "expires_at",
-              used         AS "used"
-       FROM otp_tokens
-       WHERE LOWER(email) = LOWER(:email)
-       ORDER BY created_at DESC
-       FETCH FIRST 1 ROWS ONLY`,
+      `SELECT id         AS "id",
+              otp_code   AS "otp_code",
+              expires_at AS "expires_at",
+              used       AS "used"
+       FROM (
+         SELECT id, otp_code, expires_at, used
+         FROM otp_tokens
+         WHERE LOWER(email) = LOWER(:email)
+         ORDER BY created_at DESC
+       )
+       WHERE ROWNUM = 1`,
       { email },
       { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
 
-    console.log('📋 DB result rows:', result.rows.length);
-
     // No OTP found
     if (!result.rows.length) {
-      console.log('❌ No OTP found for email:', email);
       return res.status(404).json({
         success: false,
         message: 'No OTP found for this email. Please request a new one.',
@@ -159,12 +145,6 @@ router.post('/verify', async (req, res) => {
     }
 
     const record = result.rows[0];
-    console.log('📋 Found OTP record:', {
-      id:         record.id,
-      otp_code:   record.otp_code,
-      used:       record.used,
-      expires_at: record.expires_at,
-    });
 
     // Already used
     if (record.used === 1) {
@@ -174,11 +154,9 @@ router.post('/verify', async (req, res) => {
       });
     }
 
-    // Check expiry
+    // Expired
     const now = new Date();
     const exp = new Date(record.expires_at);
-    console.log('⏰ Now:', now, '| Expires:', exp, '| Expired?', now > exp);
-
     if (now > exp) {
       return res.status(400).json({
         success: false,
@@ -186,10 +164,8 @@ router.post('/verify', async (req, res) => {
       });
     }
 
-    // Check OTP code
+    // Wrong code
     const storedOTP = String(record.otp_code).trim();
-    console.log('🔢 Comparing — stored:', storedOTP, '| entered:', cleanOTP, '| match:', storedOTP === cleanOTP);
-
     if (storedOTP !== cleanOTP) {
       return res.status(400).json({
         success: false,
@@ -197,24 +173,19 @@ router.post('/verify', async (req, res) => {
       });
     }
 
-    // ✅ SUCCESS — mark as used
+    // ✅ Mark as used
     await conn.execute(
       `UPDATE otp_tokens SET used = 1 WHERE id = :id`,
       { id: record.id }
     );
     await conn.commit();
-    console.log('✅ OTP verified successfully for:', email);
 
+    console.log(`✅ OTP verified for: ${email}`);
     res.json({ success: true, message: 'Email verified successfully! ✅' });
 
   } catch (err) {
     console.error('❌ Verify OTP error:', err.message);
-    console.error('Full error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Server error. Please try again.',
-      debug:   err.message,
-    });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.', debug: err.message });
   } finally {
     if (conn) await conn.close();
   }

@@ -1,5 +1,5 @@
 // ============================================================
-// backend/routes/auth.js  (updated — OTP integrated into register)
+// backend/routes/auth.js
 // ============================================================
 
 const express  = require('express');
@@ -17,11 +17,11 @@ router.post('/login', async (req, res) => {
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT user_id             AS "user_id",
-              full_name           AS "full_name",
-              email               AS "email",
-              phone               AS "phone",
-              role                AS "role",
+      `SELECT user_id              AS "user_id",
+              full_name            AS "full_name",
+              email                AS "email",
+              phone                AS "phone",
+              role                 AS "role",
               NVL(status,'active') AS "status"
        FROM users
        WHERE LOWER(email) = LOWER(:email) AND password = :password`,
@@ -29,11 +29,11 @@ router.post('/login', async (req, res) => {
       { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
     if (!result.rows.length)
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
 
     const user = result.rows[0];
     if (user.status === 'blocked')
-      return res.status(403).json({ success: false, message: 'Your account has been blocked.' });
+      return res.status(403).json({ success: false, message: 'Your account has been blocked. Contact support.' });
 
     res.json({ success: true, user });
   } catch (err) {
@@ -46,20 +46,18 @@ router.post('/login', async (req, res) => {
 
 
 // ── POST /api/auth/register ──────────────────────────────────
-// OTP integration: before creating the account, we check that
-// the user's email OTP has already been verified (used=1, not expired).
+// OTP must be verified before registering
 // Frontend flow:
-//   1. User fills form → clicks "Send OTP" → POST /api/otp/send
-//   2. User enters OTP → clicks "Verify OTP" → POST /api/otp/verify
-//   3. On success → frontend calls POST /api/auth/register
+//   1. Fill form → POST /api/otp/send
+//   2. Enter OTP → POST /api/otp/verify
+//   3. POST /api/auth/register (with skip_otp_check: true)
 router.post('/register', async (req, res) => {
   const { full_name, email, phone, password, role, skip_otp_check } = req.body;
 
   if (!full_name || !email || !password)
     return res.status(400).json({ success: false, message: 'Name, email, and password required' });
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email))
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     return res.status(400).json({ success: false, message: 'Invalid email format' });
 
   if (password.length < 6)
@@ -69,20 +67,19 @@ router.post('/register', async (req, res) => {
   try {
     conn = await getConnection();
 
-    // ── Optional OTP check (set skip_otp_check=true to bypass) ──
-    // By default we require OTP to have been verified for this email.
+    // ── Check OTP was verified (unless skipped) ──────────────
     if (!skip_otp_check) {
       const otpCheck = await conn.execute(
-        `SELECT id FROM otp_tokens
-         WHERE LOWER(email) = LOWER(:email)
-           AND used = 1
-           AND expires_at > SYSDATE - 10/1440
-         ORDER BY created_at DESC
-         FETCH FIRST 1 ROWS ONLY`,
+        `SELECT id FROM (
+           SELECT id FROM otp_tokens
+           WHERE LOWER(email) = LOWER(:email)
+             AND used = 1
+             AND expires_at > SYSDATE - 10/1440
+           ORDER BY created_at DESC
+         ) WHERE ROWNUM = 1`,
         { email },
         { outFormat: oracledb.OUT_FORMAT_OBJECT }
       );
-      // 10/1440 = 10 minutes grace period after OTP was used (prevents race conditions)
       if (!otpCheck.rows.length) {
         return res.status(403).json({
           success: false,
@@ -94,10 +91,11 @@ router.post('/register', async (req, res) => {
     // ── Check if email already registered ───────────────────
     const check = await conn.execute(
       `SELECT user_id FROM users WHERE LOWER(email) = LOWER(:email)`,
-      { email }, { outFormat: oracledb.OUT_FORMAT_OBJECT }
+      { email },
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
     if (check.rows.length > 0)
-      return res.status(409).json({ success: false, message: 'Email already registered' });
+      return res.status(409).json({ success: false, message: 'Email already registered. Please sign in.' });
 
     // ── Insert new user ──────────────────────────────────────
     const userRole = role || 'customer';
@@ -108,15 +106,17 @@ router.post('/register', async (req, res) => {
       {
         full_name,
         email,
-        phone:    phone || null,
+        phone:   phone || null,
         password,
-        role:     userRole,
-        user_id:  { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+        role:    userRole,
+        user_id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
       }
     );
     await conn.commit();
 
     const userId = insert.outBinds.user_id[0];
+    console.log(`✅ New user registered: ${email} (ID: ${userId})`);
+
     res.json({
       success: true,
       user: { user_id: userId, full_name, email, phone: phone || null, role: userRole, status: 'active' }
@@ -130,7 +130,7 @@ router.post('/register', async (req, res) => {
 });
 
 
-// ── POST /api/auth/google ────────────────────────────────────
+// ── POST /api/auth/google ─────────────────────────────────────
 router.post('/google', async (req, res) => {
   const { email, full_name } = req.body;
   if (!email) return res.status(400).json({ success: false, message: 'Email required' });
@@ -142,24 +142,31 @@ router.post('/google', async (req, res) => {
       `SELECT user_id AS "user_id", full_name AS "full_name", email AS "email",
               phone AS "phone", role AS "role", NVL(status,'active') AS "status"
        FROM users WHERE LOWER(email) = LOWER(:email)`,
-      { email }, { outFormat: oracledb.OUT_FORMAT_OBJECT }
+      { email },
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
     if (check.rows.length > 0) {
       const user = check.rows[0];
       if (user.status === 'blocked')
-        return res.status(403).json({ success: false, message: 'Account blocked.' });
+        return res.status(403).json({ success: false, message: 'Your account has been blocked.' });
       return res.json({ success: true, user });
     }
     const insert = await conn.execute(
       `INSERT INTO users (full_name, email, phone, password, role, status)
        VALUES (:full_name, :email, NULL, :password, 'customer', 'active')
        RETURNING user_id INTO :user_id`,
-      { full_name: full_name || email.split('@')[0], email, password: 'google_'+Date.now(), user_id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER } }
+      {
+        full_name: full_name || email.split('@')[0],
+        email,
+        password:  'google_' + Date.now(),
+        user_id:   { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+      }
     );
     await conn.commit();
     const userId = insert.outBinds.user_id[0];
-    res.json({ success: true, user: { user_id: userId, full_name: full_name||email, email, phone: null, role: 'customer', status: 'active' } });
+    res.json({ success: true, user: { user_id: userId, full_name: full_name || email, email, phone: null, role: 'customer', status: 'active' } });
   } catch (err) {
+    console.error('Google auth error:', err.message);
     res.status(500).json({ success: false, message: err.message });
   } finally {
     if (conn) await conn.close();
@@ -191,6 +198,7 @@ router.put('/profile/:userId', async (req, res) => {
     await conn.commit();
     res.json({ success: true });
   } catch (err) {
+    console.error('Profile update error:', err.message);
     res.status(500).json({ success: false, message: err.message });
   } finally {
     if (conn) await conn.close();
