@@ -1,5 +1,5 @@
 // ============================================================
-// backend/routes/auth.js
+// backend/routes/auth.js — Updated with super_admin support
 // ============================================================
 
 const express  = require('express');
@@ -17,12 +17,13 @@ router.post('/login', async (req, res) => {
   try {
     conn = await getConnection();
     const result = await conn.execute(
-      `SELECT user_id              AS "user_id",
-              full_name            AS "full_name",
-              email                AS "email",
-              phone                AS "phone",
-              role                 AS "role",
-              NVL(status,'active') AS "status"
+      `SELECT user_id                    AS "user_id",
+              full_name                  AS "full_name",
+              email                      AS "email",
+              phone                      AS "phone",
+              role                       AS "role",
+              NVL(status,'active')       AS "status",
+              NVL(is_super_admin, 0)     AS "is_super_admin"
        FROM users
        WHERE LOWER(email) = LOWER(:email) AND password = :password`,
       { email, password },
@@ -46,11 +47,6 @@ router.post('/login', async (req, res) => {
 
 
 // ── POST /api/auth/register ──────────────────────────────────
-// OTP must be verified before registering
-// Frontend flow:
-//   1. Fill form → POST /api/otp/send
-//   2. Enter OTP → POST /api/otp/verify
-//   3. POST /api/auth/register (with skip_otp_check: true)
 router.post('/register', async (req, res) => {
   const { full_name, email, phone, password, role, skip_otp_check } = req.body;
 
@@ -67,7 +63,7 @@ router.post('/register', async (req, res) => {
   try {
     conn = await getConnection();
 
-    // ── Check OTP was verified (unless skipped) ──────────────
+    // Check OTP verified (unless skipped by admin adding user)
     if (!skip_otp_check) {
       const otpCheck = await conn.execute(
         `SELECT id FROM (
@@ -88,24 +84,22 @@ router.post('/register', async (req, res) => {
       }
     }
 
-    // ── Check if email already registered ───────────────────
+    // Check if email already registered
     const check = await conn.execute(
       `SELECT user_id FROM users WHERE LOWER(email) = LOWER(:email)`,
-      { email },
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+      { email }, { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
     if (check.rows.length > 0)
       return res.status(409).json({ success: false, message: 'Email already registered. Please sign in.' });
 
-    // ── Insert new user ──────────────────────────────────────
+    // Insert new user
     const userRole = role || 'customer';
     const insert = await conn.execute(
-      `INSERT INTO users (full_name, email, phone, password, role, status)
-       VALUES (:full_name, :email, :phone, :password, :role, 'active')
+      `INSERT INTO users (full_name, email, phone, password, role, status, is_super_admin)
+       VALUES (:full_name, :email, :phone, :password, :role, 'active', 0)
        RETURNING user_id INTO :user_id`,
       {
-        full_name,
-        email,
+        full_name, email,
         phone:   phone || null,
         password,
         role:    userRole,
@@ -113,13 +107,12 @@ router.post('/register', async (req, res) => {
       }
     );
     await conn.commit();
-
     const userId = insert.outBinds.user_id[0];
     console.log(`✅ New user registered: ${email} (ID: ${userId})`);
 
     res.json({
       success: true,
-      user: { user_id: userId, full_name, email, phone: phone || null, role: userRole, status: 'active' }
+      user: { user_id: userId, full_name, email, phone: phone || null, role: userRole, status: 'active', is_super_admin: 0 }
     });
   } catch (err) {
     console.error('Register error:', err.message);
@@ -140,10 +133,10 @@ router.post('/google', async (req, res) => {
     conn = await getConnection();
     const check = await conn.execute(
       `SELECT user_id AS "user_id", full_name AS "full_name", email AS "email",
-              phone AS "phone", role AS "role", NVL(status,'active') AS "status"
+              phone AS "phone", role AS "role", NVL(status,'active') AS "status",
+              NVL(is_super_admin,0) AS "is_super_admin"
        FROM users WHERE LOWER(email) = LOWER(:email)`,
-      { email },
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+      { email }, { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
     if (check.rows.length > 0) {
       const user = check.rows[0];
@@ -152,19 +145,14 @@ router.post('/google', async (req, res) => {
       return res.json({ success: true, user });
     }
     const insert = await conn.execute(
-      `INSERT INTO users (full_name, email, phone, password, role, status)
-       VALUES (:full_name, :email, NULL, :password, 'customer', 'active')
+      `INSERT INTO users (full_name, email, phone, password, role, status, is_super_admin)
+       VALUES (:full_name, :email, NULL, :password, 'customer', 'active', 0)
        RETURNING user_id INTO :user_id`,
-      {
-        full_name: full_name || email.split('@')[0],
-        email,
-        password:  'google_' + Date.now(),
-        user_id:   { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
-      }
+      { full_name: full_name || email.split('@')[0], email, password: 'google_'+Date.now(), user_id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER } }
     );
     await conn.commit();
     const userId = insert.outBinds.user_id[0];
-    res.json({ success: true, user: { user_id: userId, full_name: full_name || email, email, phone: null, role: 'customer', status: 'active' } });
+    res.json({ success: true, user: { user_id: userId, full_name: full_name||email, email, phone: null, role: 'customer', status: 'active', is_super_admin: 0 } });
   } catch (err) {
     console.error('Google auth error:', err.message);
     res.status(500).json({ success: false, message: err.message });
