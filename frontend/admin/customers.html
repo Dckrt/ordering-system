@@ -13,14 +13,16 @@
     .modal-box{background:white;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;}
     .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#dc2626,#f97316);display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:700;flex-shrink:0;}
     .avatar.adm{background:linear-gradient(135deg,#1d4ed8,#7c3aed);}
+    .avatar.super{background:linear-gradient(135deg,#d97706,#f59e0b);}
     .badge-blocked{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;display:inline-block;}
     .badge-active{background:#dcfce7;color:#16a34a;border:1px solid #86efac;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;display:inline-block;}
     .badge-adm{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;display:inline-block;}
-    /* Mobile customer cards */
+    .badge-super{background:#fef3c7;color:#d97706;border:1px solid #fde68a;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;display:inline-block;}
     .cust-card{background:white;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.07);padding:14px;margin-bottom:10px;}
     .cust-card-row{display:flex;align-items:center;gap:12px;}
     .cust-card-body{flex:1;min-width:0;}
-    .cust-card-actions{display:flex;gap:8px;margin-top:10px;}
+    .cust-card-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+    .action-icon-btn{width:32px;height:32px;border-radius:8px;border:1px solid;background:white;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
   </style>
 </head>
 <body>
@@ -53,12 +55,24 @@
   </aside>
 
   <main class="admin-content">
+
     <div class="admin-header-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
       <div>
         <h1 style="font-size:1.6rem;font-weight:700;margin-bottom:2px;">Customers</h1>
         <p style="color:var(--gray-500);font-size:13px;" id="cust-count">Loading...</p>
       </div>
-      <button onclick="openAddModal()" class="btn btn-primary"><i class="fas fa-user-plus" style="margin-right:6px;"></i>Add Customer</button>
+      <button onclick="openAddModal()" class="btn btn-primary">
+        <i class="fas fa-user-plus" style="margin-right:6px;"></i>Add Customer
+      </button>
+    </div>
+
+    <!-- Super Admin Notice -->
+    <div id="super-admin-notice" style="display:none;background:linear-gradient(135deg,#fef3c7,#fffbeb);border:1px solid #fde68a;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+      <i class="fas fa-crown" style="color:#d97706;font-size:18px;"></i>
+      <div>
+        <p style="font-weight:700;color:#92400e;font-size:13px;margin:0;">Super Admin Mode</p>
+        <p style="color:#b45309;font-size:12px;margin:0;">You have full access — you can delete any user including other admins.</p>
+      </div>
     </div>
 
     <!-- Stats -->
@@ -72,42 +86,49 @@
     <!-- Filters -->
     <div class="filter-row" style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
       <input id="search-input" type="text" placeholder="Search name, email, phone..." class="form-input" style="flex:1;min-width:140px;" oninput="filterCustomers()">
-      <select id="status-filter" class="form-select" style="max-width:130px;" onchange="filterCustomers()"><option value="">All Status</option><option value="active">Active</option><option value="blocked">Blocked</option></select>
-      <select id="role-filter" class="form-select" style="max-width:120px;" onchange="filterCustomers()"><option value="">All Roles</option><option value="customer">Customers</option><option value="admin">Admins</option></select>
+      <select id="status-filter" class="form-select" style="max-width:130px;" onchange="filterCustomers()">
+        <option value="">All Status</option><option value="active">Active</option><option value="blocked">Blocked</option>
+      </select>
+      <select id="role-filter" class="form-select" style="max-width:120px;" onchange="filterCustomers()">
+        <option value="">All Roles</option><option value="customer">Customers</option><option value="admin">Admins</option>
+      </select>
     </div>
 
+    <!-- Loading -->
     <div id="loading" style="text-align:center;padding:48px;color:#9ca3af;">
       <div style="width:26px;height:26px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>
       Loading customers...
     </div>
 
-    <!-- Desktop table -->
+    <!-- Desktop Table -->
     <div class="table-container" id="table-wrap" style="display:none;">
-      <table class="table" style="min-width:520px;">
-        <thead><tr><th>Customer</th><th>Contact</th><th>Role</th><th>Status</th><th>Orders</th><th>Actions</th></tr></thead>
+      <table class="table" style="min-width:600px;">
+        <thead>
+          <tr><th>Customer</th><th>Contact</th><th>Role</th><th>Status</th><th>Orders</th><th>Actions</th></tr>
+        </thead>
         <tbody id="cust-tbody"></tbody>
       </table>
     </div>
 
-    <!-- Mobile cards -->
+    <!-- Mobile Cards -->
     <div id="mobile-cards" style="display:none;"></div>
     <div id="no-results" style="display:none;text-align:center;padding:48px;color:#9ca3af;">No customers found.</div>
   </main>
 </div>
 
-<!-- View modal -->
+<!-- ── View Modal ── -->
 <div id="view-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeViewModal()">
   <div class="modal-box">
     <div style="width:40px;height:4px;background:#e5e7eb;border-radius:2px;margin:0 auto 16px;"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <h2 style="font-size:1.1rem;font-weight:700;margin:0;">Customer Details</h2>
-      <button onclick="closeViewModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#9ca3af;line-height:1;">✕</button>
+      <button onclick="closeViewModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#9ca3af;">✕</button>
     </div>
     <div id="view-content"></div>
   </div>
 </div>
 
-<!-- Add modal -->
+<!-- ── Add Modal ── -->
 <div id="add-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeAddModal()">
   <div class="modal-box" style="max-width:460px;">
     <div style="width:40px;height:4px;background:#e5e7eb;border-radius:2px;margin:0 auto 16px;"></div>
@@ -123,12 +144,35 @@
           <button type="button" onclick="togglePw('a-pass','a-eye')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;"><i id="a-eye" class="fa-regular fa-eye"></i></button>
         </div>
       </div>
-      <div class="form-group"><label class="form-label">Role</label><select id="a-role" class="form-select"><option value="customer">Customer</option><option value="admin">Admin</option></select></div>
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <select id="a-role" class="form-select"><option value="customer">Customer</option><option value="admin">Admin</option></select>
+      </div>
       <div style="display:flex;gap:10px;margin-top:16px;">
         <button type="submit" id="add-btn" class="btn btn-primary" style="flex:1;"><i class="fas fa-user-plus" style="margin-right:6px;"></i>Add User</button>
         <button type="button" onclick="closeAddModal()" class="btn btn-outline" style="flex:1;">Cancel</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ── Delete Confirm Modal ── -->
+<div id="delete-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeDeleteModal()">
+  <div class="modal-box" style="max-width:420px;">
+    <div style="width:40px;height:4px;background:#e5e7eb;border-radius:2px;margin:0 auto 16px;"></div>
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="width:60px;height:60px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <i class="fas fa-trash" style="font-size:24px;color:#dc2626;"></i>
+      </div>
+      <h2 style="font-size:1.1rem;font-weight:700;color:#111;margin-bottom:6px;">Delete User?</h2>
+      <p style="font-size:13px;color:#6b7280;">Are you sure you want to delete <strong id="delete-name-label"></strong>? This action cannot be undone.</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button id="confirm-delete-btn" class="btn btn-primary" style="flex:1;background:#dc2626;border-color:#dc2626;">
+        <i class="fas fa-trash" style="margin-right:6px;"></i>Yes, Delete
+      </button>
+      <button onclick="closeDeleteModal()" class="btn btn-outline" style="flex:1;">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -139,171 +183,364 @@
 <script>
 function sbOpen(){ document.getElementById('adminSidebar').classList.add('sb-open'); document.getElementById('sbBackdrop').classList.add('on'); }
 function sbClose(){ document.getElementById('adminSidebar').classList.remove('sb-open'); document.getElementById('sbBackdrop').classList.remove('on'); }
-function togglePw(id,iconId){const el=document.getElementById(id),ic=document.getElementById(iconId);el.type=el.type==='password'?'text':'password';ic.className=el.type==='text'?'fa-regular fa-eye-slash':'fa-regular fa-eye';}
+function togglePw(id,iconId){ const el=document.getElementById(id),ic=document.getElementById(iconId); el.type=el.type==='password'?'text':'password'; ic.className=el.type==='text'?'fa-regular fa-eye-slash':'fa-regular fa-eye'; }
 
-let allCustomers=[], allOrders=[];
+let allCustomers = [], allOrders = [], currentAdmin = null;
+let deleteTargetId = null;
 const isMobile = () => window.innerWidth <= 768;
 
-async function loadAll(){
-  try{
-    const [customers,orders]=await Promise.all([api.getAllUsers(),api.getAllOrders()]);
-    allCustomers=customers; allOrders=orders;
-    const now=new Date();
-    const thisMonth=customers.filter(c=>{const d=new Date(c.CREATED_AT||c.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
-    const withOrders=new Set(orders.map(o=>o.USER_ID||o.user_id).filter(Boolean)).size;
-    const blocked=customers.filter(c=>(c.STATUS||c.status||'active')==='blocked').length;
-    document.getElementById('s-total').textContent=customers.length;
-    document.getElementById('s-new').textContent=thisMonth;
-    document.getElementById('s-ord').textContent=withOrders;
-    document.getElementById('s-blk').textContent=blocked;
-    document.getElementById('cust-count').textContent=customers.length+' registered users';
-    document.getElementById('loading').style.display='none';
+// ── Check if current user is super admin ──────────────────────
+function isSuperAdmin() {
+  return currentAdmin && (currentAdmin.is_super_admin === 1 || currentAdmin.is_super_admin === '1');
+}
+
+// ── Can current admin delete target user? ─────────────────────
+function canDelete(target) {
+  const targetId   = target.USER_ID || target.user_id;
+  const myId       = currentAdmin.user_id || currentAdmin.USER_ID;
+  const targetRole = (target.ROLE || target.role || '').toLowerCase();
+  const isSuperTgt = target.IS_SUPER_ADMIN === 1 || target.is_super_admin === 1;
+
+  if (targetId === myId)    return false; // cannot delete yourself
+  if (isSuperTgt)           return false; // cannot delete super admin
+  if (targetRole === 'admin' && !isSuperAdmin()) return false; // only super admin can delete admins
+  return true;
+}
+
+// ── Load all data ─────────────────────────────────────────────
+async function loadAll() {
+  try {
+    const [customers, orders] = await Promise.all([api.getAllUsers(), api.getAllOrders()]);
+    allCustomers = customers;
+    allOrders    = orders;
+
+    const now = new Date();
+    const thisMonth  = customers.filter(c => { const d = new Date(c.CREATED_AT||c.created_at); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); }).length;
+    const withOrders = new Set(orders.map(o => o.USER_ID||o.user_id).filter(Boolean)).size;
+    const blocked    = customers.filter(c => (c.STATUS||c.status||'active')==='blocked').length;
+
+    document.getElementById('s-total').textContent = customers.length;
+    document.getElementById('s-new').textContent   = thisMonth;
+    document.getElementById('s-ord').textContent   = withOrders;
+    document.getElementById('s-blk').textContent   = blocked;
+    document.getElementById('cust-count').textContent = customers.length + ' registered users';
+    document.getElementById('loading').style.display = 'none';
+
+    // Show super admin notice
+    if (isSuperAdmin()) {
+      document.getElementById('super-admin-notice').style.display = 'flex';
+    }
+
     filterCustomers();
-  }catch(e){document.getElementById('loading').textContent='Failed to load. Is the server running?';}
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loading').textContent = 'Failed to load. Is the server running?';
+  }
 }
 
-function filterCustomers(){
-  const q=(document.getElementById('search-input').value||'').toLowerCase();
-  const st=document.getElementById('status-filter').value;
-  const role=document.getElementById('role-filter').value;
-  const filtered=allCustomers.filter(c=>{
-    const matchQ=!q||(c.FULL_NAME||c.full_name||'').toLowerCase().includes(q)||(c.EMAIL||c.email||'').toLowerCase().includes(q)||(c.PHONE||c.phone||'').toLowerCase().includes(q);
-    const matchSt=!st||(c.STATUS||c.status||'active').toLowerCase()===st;
-    const matchRole=!role||(c.ROLE||c.role||'customer').toLowerCase()===role;
-    return matchQ&&matchSt&&matchRole;
+// ── Filter ────────────────────────────────────────────────────
+function filterCustomers() {
+  const q    = (document.getElementById('search-input').value||'').toLowerCase();
+  const st   = document.getElementById('status-filter').value;
+  const role = document.getElementById('role-filter').value;
+
+  const filtered = allCustomers.filter(c => {
+    const matchQ    = !q || (c.FULL_NAME||c.full_name||'').toLowerCase().includes(q) || (c.EMAIL||c.email||'').toLowerCase().includes(q) || (c.PHONE||c.phone||'').toLowerCase().includes(q);
+    const matchSt   = !st   || (c.STATUS||c.status||'active').toLowerCase() === st;
+    const matchRole = !role || (c.ROLE||c.role||'customer').toLowerCase() === role;
+    return matchQ && matchSt && matchRole;
   });
-  if(isMobile()) renderCards(filtered); else renderTable(filtered);
+
+  if (isMobile()) renderCards(filtered);
+  else            renderTable(filtered);
 }
+window.addEventListener('resize', () => filterCustomers());
 
-window.addEventListener('resize',()=>filterCustomers());
+// ── Render Table (Desktop) ────────────────────────────────────
+function renderTable(customers) {
+  document.getElementById('mobile-cards').style.display = 'none';
+  const wrap  = document.getElementById('table-wrap');
+  const tbody = document.getElementById('cust-tbody');
+  const noRes = document.getElementById('no-results');
 
-function renderTable(customers){
-  document.getElementById('mobile-cards').style.display='none';
-  const wrap=document.getElementById('table-wrap'),tbody=document.getElementById('cust-tbody'),noRes=document.getElementById('no-results');
-  if(!customers.length){wrap.style.display='none';noRes.style.display='block';return;}
-  noRes.style.display='none';wrap.style.display='block';
-  tbody.innerHTML=customers.map(c=>{
-    const id=c.USER_ID||c.user_id, name=c.FULL_NAME||c.full_name||'—', email=c.EMAIL||c.email||'—', phone=c.PHONE||c.phone||'—';
-    const role=(c.ROLE||c.role||'customer').toLowerCase(), status=(c.STATUS||c.status||'active').toLowerCase();
-    const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
-    const orderCount=allOrders.filter(o=>(o.USER_ID||o.user_id)===id).length;
-    const isBlocked=status==='blocked', isAdmin=role==='admin';
+  if (!customers.length) { wrap.style.display='none'; noRes.style.display='block'; return; }
+  noRes.style.display = 'none'; wrap.style.display = 'block';
+
+  tbody.innerHTML = customers.map(c => {
+    const id       = c.USER_ID||c.user_id;
+    const name     = c.FULL_NAME||c.full_name||'—';
+    const email    = c.EMAIL||c.email||'—';
+    const phone    = c.PHONE||c.phone||'—';
+    const role     = (c.ROLE||c.role||'customer').toLowerCase();
+    const status   = (c.STATUS||c.status||'active').toLowerCase();
+    const isSuper  = c.IS_SUPER_ADMIN===1 || c.is_super_admin===1;
+    const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+    const orderCnt = allOrders.filter(o=>(o.USER_ID||o.user_id)===id).length;
+    const isBlocked= status==='blocked';
+    const isAdmin  = role==='admin';
+    const deletable= canDelete(c);
+
     return `<tr style="${isBlocked?'opacity:.65;':''}">
-      <td><div style="display:flex;align-items:center;gap:10px;"><div class="avatar ${isAdmin?'adm':''}">${initials}</div><div><div style="font-weight:600;font-size:13px;">${name}</div><div style="font-size:11px;color:#9ca3af;">${email}</div></div></div></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar ${isSuper?'super':isAdmin?'adm':''}">${initials}</div>
+          <div>
+            <div style="font-weight:600;font-size:13px;">${name} ${isSuper?'<span class="badge-super" style="font-size:10px;">⭐ Boss</span>':''}</div>
+            <div style="font-size:11px;color:#9ca3af;">${email}</div>
+          </div>
+        </div>
+      </td>
       <td style="font-size:13px;color:#6b7280;">${phone}</td>
-      <td>${isAdmin?'<span class="badge-adm">Admin</span>':'<span style="font-size:12px;color:#6b7280;">Customer</span>'}</td>
+      <td>${isSuper?'<span class="badge-super">⭐ Super Admin</span>':isAdmin?'<span class="badge-adm">Admin</span>':'<span style="font-size:12px;color:#6b7280;">Customer</span>'}</td>
       <td><span class="${isBlocked?'badge-blocked':'badge-active'}">${isBlocked?'Blocked':'Active'}</span></td>
-      <td><span class="badge badge-info" style="font-size:11px;">${orderCount}</span></td>
-      <td><div style="display:flex;gap:6px;">
-        <button style="width:30px;height:30px;border-radius:8px;border:1px solid #bfdbfe;background:white;color:#2563eb;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;" onclick="viewCustomer(${id})" title="View"><i class="fas fa-eye"></i></button>
-        ${!isAdmin?`<button style="width:30px;height:30px;border-radius:8px;border:1px solid ${isBlocked?'#86efac':'#fca5a5'};background:white;color:${isBlocked?'#16a34a':'#dc2626'};cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;" onclick="toggleBlock(${id},'${status}')" title="${isBlocked?'Unblock':'Block'}"><i class="fas ${isBlocked?'fa-unlock':'fa-ban'}"></i></button>`:''}
-      </div></td>
+      <td><span class="badge badge-info" style="font-size:11px;">${orderCnt}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <!-- View -->
+          <button class="action-icon-btn" style="border-color:#bfdbfe;color:#2563eb;" onclick="viewCustomer(${id})" title="View">
+            <i class="fas fa-eye"></i>
+          </button>
+          <!-- Block/Unblock — not for super admin -->
+          ${!isSuper && !isAdmin ? `
+          <button class="action-icon-btn" style="border-color:${isBlocked?'#86efac':'#fca5a5'};color:${isBlocked?'#16a34a':'#dc2626'};" onclick="toggleBlock(${id},'${status}')" title="${isBlocked?'Unblock':'Block'}">
+            <i class="fas ${isBlocked?'fa-unlock':'fa-ban'}"></i>
+          </button>` : ''}
+          <!-- Delete -->
+          ${deletable ? `
+          <button class="action-icon-btn" style="border-color:#fca5a5;color:#dc2626;" onclick="confirmDelete(${id},'${name.replace(/'/g,"\\'")}')" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>` : ''}
+        </div>
+      </td>
     </tr>`;
   }).join('');
 }
 
-function renderCards(customers){
-  document.getElementById('table-wrap').style.display='none';
-  const cards=document.getElementById('mobile-cards'),noRes=document.getElementById('no-results');
-  if(!customers.length){cards.style.display='none';noRes.style.display='block';return;}
-  noRes.style.display='none';cards.style.display='block';
-  cards.innerHTML=customers.map(c=>{
-    const id=c.USER_ID||c.user_id, name=c.FULL_NAME||c.full_name||'—', email=c.EMAIL||c.email||'—', phone=c.PHONE||c.phone||'—';
-    const role=(c.ROLE||c.role||'customer').toLowerCase(), status=(c.STATUS||c.status||'active').toLowerCase();
-    const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
-    const orderCount=allOrders.filter(o=>(o.USER_ID||o.user_id)===id).length;
-    const isBlocked=status==='blocked', isAdmin=role==='admin';
+// ── Render Cards (Mobile) ─────────────────────────────────────
+function renderCards(customers) {
+  document.getElementById('table-wrap').style.display = 'none';
+  const cards = document.getElementById('mobile-cards');
+  const noRes = document.getElementById('no-results');
+
+  if (!customers.length) { cards.style.display='none'; noRes.style.display='block'; return; }
+  noRes.style.display = 'none'; cards.style.display = 'block';
+
+  cards.innerHTML = customers.map(c => {
+    const id       = c.USER_ID||c.user_id;
+    const name     = c.FULL_NAME||c.full_name||'—';
+    const email    = c.EMAIL||c.email||'—';
+    const phone    = c.PHONE||c.phone||'—';
+    const role     = (c.ROLE||c.role||'customer').toLowerCase();
+    const status   = (c.STATUS||c.status||'active').toLowerCase();
+    const isSuper  = c.IS_SUPER_ADMIN===1 || c.is_super_admin===1;
+    const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+    const orderCnt = allOrders.filter(o=>(o.USER_ID||o.user_id)===id).length;
+    const isBlocked= status==='blocked';
+    const isAdmin  = role==='admin';
+    const deletable= canDelete(c);
+
     return `<div class="cust-card" style="${isBlocked?'opacity:.65;':''}">
       <div class="cust-card-row">
-        <div class="avatar ${isAdmin?'adm':''}" style="width:44px;height:44px;font-size:15px;">${initials}</div>
+        <div class="avatar ${isSuper?'super':isAdmin?'adm':''}" style="width:44px;height:44px;font-size:15px;">${initials}</div>
         <div class="cust-card-body">
-          <div style="font-weight:700;font-size:14px;">${name}</div>
+          <div style="font-weight:700;font-size:14px;">${name} ${isSuper?'⭐':''}</div>
           <div style="font-size:12px;color:#9ca3af;">${email}</div>
           <div style="font-size:12px;color:#9ca3af;">${phone}</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          ${isAdmin?'<span class="badge-adm">Admin</span>':''}
+          ${isSuper?'<span class="badge-super" style="font-size:10px;">⭐ Boss</span>':isAdmin?'<span class="badge-adm">Admin</span>':''}
           <span class="${isBlocked?'badge-blocked':'badge-active'}">${isBlocked?'Blocked':'Active'}</span>
-          <span style="font-size:11px;color:#9ca3af;">${orderCount} order${orderCount!==1?'s':''}</span>
+          <span style="font-size:11px;color:#9ca3af;">${orderCnt} order${orderCnt!==1?'s':''}</span>
         </div>
       </div>
       <div class="cust-card-actions">
-        <button onclick="viewCustomer(${id})" class="btn btn-outline btn-sm" style="flex:1;font-size:13px;"><i class="fas fa-eye" style="margin-right:5px;"></i>View</button>
-        ${!isAdmin?`<button onclick="toggleBlock(${id},'${status}')" class="btn btn-sm" style="flex:1;font-size:13px;background:${isBlocked?'#dcfce7':'#fee2e2'};color:${isBlocked?'#16a34a':'#dc2626'};border:1px solid ${isBlocked?'#86efac':'#fca5a5'};"><i class="fas ${isBlocked?'fa-unlock':'fa-ban'}" style="margin-right:5px;"></i>${isBlocked?'Unblock':'Block'}</button>`:''}
+        <button onclick="viewCustomer(${id})" class="btn btn-outline btn-sm" style="flex:1;font-size:13px;">
+          <i class="fas fa-eye" style="margin-right:5px;"></i>View
+        </button>
+        ${!isSuper && !isAdmin ? `
+        <button onclick="toggleBlock(${id},'${status}')" class="btn btn-sm" style="flex:1;font-size:13px;background:${isBlocked?'#dcfce7':'#fee2e2'};color:${isBlocked?'#16a34a':'#dc2626'};border:1px solid ${isBlocked?'#86efac':'#fca5a5'};">
+          <i class="fas ${isBlocked?'fa-unlock':'fa-ban'}" style="margin-right:5px;"></i>${isBlocked?'Unblock':'Block'}
+        </button>` : ''}
+        ${deletable ? `
+        <button onclick="confirmDelete(${id},'${name.replace(/'/g,"\\'")}')" class="btn btn-sm" style="flex:1;font-size:13px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;">
+          <i class="fas fa-trash" style="margin-right:5px;"></i>Delete
+        </button>` : ''}
       </div>
     </div>`;
   }).join('');
 }
 
-async function toggleBlock(id,currentStatus){
-  const isBlocked=currentStatus==='blocked';
-  if(!confirm(`${isBlocked?'Unblock':'Block'} this customer?`))return;
-  try{
-    const res=await fetch(`http://localhost:3000/api/admin/customers/${id}/status`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:isBlocked?'active':'blocked'})}).then(r=>r.json());
-    if(res.success){Utils.showToast(`Customer ${isBlocked?'unblocked':'blocked'}`,'success');await loadAll();}
-    else{Utils.showToast(res.message||'Failed','error');}
-  }catch{Utils.showToast('Server error','error');}
+// ── Block / Unblock ───────────────────────────────────────────
+async function toggleBlock(id, currentStatus) {
+  const isBlocked = currentStatus === 'blocked';
+  if (!confirm(`${isBlocked?'Unblock':'Block'} this customer?`)) return;
+  try {
+    const res = await fetch(`http://localhost:3000/api/admin/customers/${id}/status`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: isBlocked ? 'active' : 'blocked' })
+    }).then(r => r.json());
+    if (res.success) { Utils.showToast(`Customer ${isBlocked?'unblocked':'blocked'}`, 'success'); await loadAll(); }
+    else { Utils.showToast(res.message || 'Failed', 'error'); }
+  } catch { Utils.showToast('Server error', 'error'); }
 }
 
-function viewCustomer(id){
-  const c=allCustomers.find(x=>(x.USER_ID||x.user_id)===id);if(!c)return;
-  const orders=allOrders.filter(o=>(o.USER_ID||o.user_id)===id);
-  const name=c.FULL_NAME||c.full_name||'—', email=c.EMAIL||c.email||'—', phone=c.PHONE||c.phone||'—';
-  const role=(c.ROLE||c.role||'customer').toLowerCase(), status=(c.STATUS||c.status||'active').toLowerCase();
-  const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
-  const totalSpent=orders.filter(o=>(o.STATUS||o.status)!=='Cancelled').reduce((s,o)=>s+parseFloat(o.TOTAL||o.total||0),0);
-  document.getElementById('view-content').innerHTML=`
+// ── Delete ────────────────────────────────────────────────────
+function confirmDelete(id, name) {
+  deleteTargetId = id;
+  document.getElementById('delete-name-label').textContent = name;
+  document.getElementById('delete-modal').style.display = 'flex';
+}
+function closeDeleteModal() {
+  document.getElementById('delete-modal').style.display = 'none';
+  deleteTargetId = null;
+}
+
+document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+  if (!deleteTargetId) return;
+  const btn = document.getElementById('confirm-delete-btn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Deleting...';
+  btn.disabled = true;
+
+  try {
+    const myId = currentAdmin.user_id || currentAdmin.USER_ID;
+    const res = await fetch(`http://localhost:3000/api/admin/customers/${deleteTargetId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requester_id: myId })
+    }).then(r => r.json());
+
+    if (res.success) {
+      closeDeleteModal();
+      Utils.showToast('User deleted successfully.', 'success');
+      await loadAll();
+    } else {
+      Utils.showToast(res.message || 'Failed to delete.', 'error');
+    }
+  } catch {
+    Utils.showToast('Server error.', 'error');
+  }
+
+  btn.innerHTML = '<i class="fas fa-trash" style="margin-right:6px;"></i>Yes, Delete';
+  btn.disabled = false;
+});
+
+// ── View Customer ─────────────────────────────────────────────
+function viewCustomer(id) {
+  const c = allCustomers.find(x => (x.USER_ID||x.user_id) === id);
+  if (!c) return;
+
+  const orders   = allOrders.filter(o => (o.USER_ID||o.user_id) === id);
+  const name     = c.FULL_NAME||c.full_name||'—';
+  const email    = c.EMAIL||c.email||'—';
+  const phone    = c.PHONE||c.phone||'—';
+  const role     = (c.ROLE||c.role||'customer').toLowerCase();
+  const status   = (c.STATUS||c.status||'active').toLowerCase();
+  const isSuper  = c.IS_SUPER_ADMIN===1||c.is_super_admin===1;
+  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+  const totalSpent = orders.filter(o=>(o.STATUS||o.status)!=='Cancelled').reduce((s,o)=>s+parseFloat(o.TOTAL||o.total||0),0);
+  const deletable  = canDelete(c);
+
+  document.getElementById('view-content').innerHTML = `
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid #f3f4f6;">
-      <div class="avatar ${role==='admin'?'adm':''}" style="width:52px;height:52px;font-size:17px;">${initials}</div>
+      <div class="avatar ${isSuper?'super':role==='admin'?'adm':''}" style="width:52px;height:52px;font-size:17px;">${initials}</div>
       <div style="flex:1;">
         <p style="font-weight:700;font-size:15px;margin-bottom:2px;">${name}</p>
         <p style="color:#6b7280;font-size:13px;">${email}</p>
         <p style="color:#6b7280;font-size:13px;">${phone}</p>
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
-        ${role==='admin'?'<span class="badge-adm">Admin</span>':''}
+        ${isSuper?'<span class="badge-super">⭐ Super Admin</span>':role==='admin'?'<span class="badge-adm">Admin</span>':''}
         <span class="${status==='blocked'?'badge-blocked':'badge-active'}">${status==='blocked'?'Blocked':'Active'}</span>
       </div>
     </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-      <div style="background:#f9fafb;border-radius:10px;padding:12px;"><p style="font-size:11px;color:#9ca3af;margin-bottom:3px;">Total Orders</p><p style="font-size:1.4rem;font-weight:700;">${orders.length}</p></div>
-      <div style="background:#f9fafb;border-radius:10px;padding:12px;"><p style="font-size:11px;color:#9ca3af;margin-bottom:3px;">Total Spent</p><p style="font-size:1.4rem;font-weight:700;color:#dc2626;">₱${totalSpent.toFixed(2)}</p></div>
+      <div style="background:#f9fafb;border-radius:10px;padding:12px;">
+        <p style="font-size:11px;color:#9ca3af;margin-bottom:3px;">Total Orders</p>
+        <p style="font-size:1.4rem;font-weight:700;">${orders.length}</p>
+      </div>
+      <div style="background:#f9fafb;border-radius:10px;padding:12px;">
+        <p style="font-size:11px;color:#9ca3af;margin-bottom:3px;">Total Spent</p>
+        <p style="font-size:1.4rem;font-weight:700;color:#dc2626;">₱${totalSpent.toFixed(2)}</p>
+      </div>
     </div>
-    ${orders.length?`<p style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px;">Order History</p>
-    <div style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
-      ${orders.map(o=>{const oid=o.ORDER_ID||o.order_id,ost=o.STATUS||o.status;return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:8px;font-size:13px;">
-        <span style="font-weight:600;">ORD-${String(oid).padStart(4,'0')}</span>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:11px;color:#9ca3af;">${ost}</span>
-          <span style="font-weight:700;color:#dc2626;">₱${parseFloat(o.TOTAL||o.total||0).toFixed(2)}</span>
-        </div>
-      </div>`;}).join('')}
-    </div>`:'<p style="color:#9ca3af;font-size:13px;">No orders yet.</p>'}
-    ${role!=='admin'?`<button onclick="toggleBlock(${id},'${status}');closeViewModal();" class="btn ${status==='blocked'?'btn-primary':'btn-primary'}" style="${status!=='blocked'?'background:#dc2626;':'background:#16a34a;'}width:100%;margin-top:16px;"><i class="fas ${status==='blocked'?'fa-unlock':'fa-ban'}" style="margin-right:8px;"></i>${status==='blocked'?'Unblock Customer':'Block Customer'}</button>`:''}`;
-  document.getElementById('view-modal').style.display='flex';
+
+    ${orders.length ? `
+    <p style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px;">Order History</p>
+    <div style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+      ${orders.map(o => {
+        const oid = o.ORDER_ID||o.order_id, ost = o.STATUS||o.status;
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:8px;font-size:13px;">
+          <span style="font-weight:600;">ORD-${String(oid).padStart(4,'0')}</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:11px;color:#9ca3af;">${ost}</span>
+            <span style="font-weight:700;color:#dc2626;">₱${parseFloat(o.TOTAL||o.total||0).toFixed(2)}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>` : '<p style="color:#9ca3af;font-size:13px;margin-bottom:16px;">No orders yet.</p>'}
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      ${role !== 'admin' ? `
+      <button onclick="toggleBlock(${id},'${status}');closeViewModal();" class="btn btn-primary" style="${status!=='blocked'?'background:#dc2626;':'background:#16a34a;'}flex:1;">
+        <i class="fas ${status==='blocked'?'fa-unlock':'fa-ban'}" style="margin-right:8px;"></i>${status==='blocked'?'Unblock':'Block'}
+      </button>` : ''}
+      ${deletable ? `
+      <button onclick="closeViewModal();confirmDelete(${id},'${name.replace(/'/g,"\\'")}');" class="btn btn-primary" style="background:#dc2626;flex:1;">
+        <i class="fas fa-trash" style="margin-right:8px;"></i>Delete User
+      </button>` : ''}
+    </div>
+  `;
+
+  document.getElementById('view-modal').style.display = 'flex';
 }
-function closeViewModal(){document.getElementById('view-modal').style.display='none';}
+function closeViewModal() { document.getElementById('view-modal').style.display = 'none'; }
 
-function openAddModal(){document.getElementById('add-modal').style.display='flex';}
-function closeAddModal(){document.getElementById('add-modal').style.display='none';document.getElementById('add-form').reset();}
+// ── Add Customer ──────────────────────────────────────────────
+function openAddModal()  { document.getElementById('add-modal').style.display = 'flex'; }
+function closeAddModal() { document.getElementById('add-modal').style.display = 'none'; document.getElementById('add-form').reset(); }
 
-document.getElementById('add-form').addEventListener('submit',async(e)=>{
+document.getElementById('add-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const btn=document.getElementById('add-btn');
-  btn.innerHTML='<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Adding...';btn.disabled=true;
-  const pass=document.getElementById('a-pass').value;
-  if(pass.length<6){Utils.showToast('Password must be at least 6 characters','error');btn.innerHTML='<i class="fas fa-user-plus" style="margin-right:6px;"></i>Add User';btn.disabled=false;return;}
-  try{
-    const res=await fetch('http://localhost:3000/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:document.getElementById('a-name').value,email:document.getElementById('a-email').value,phone:document.getElementById('a-phone').value,password:pass,role:document.getElementById('a-role').value})}).then(r=>r.json());
-    if(res.success){closeAddModal();await loadAll();Utils.showToast('User added!','success');}
-    else{Utils.showToast(res.message||'Failed','error');}
-  }catch{Utils.showToast('Server error','error');}
-  btn.innerHTML='<i class="fas fa-user-plus" style="margin-right:6px;"></i>Add User';btn.disabled=false;
+  const btn  = document.getElementById('add-btn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Adding...';
+  btn.disabled  = true;
+
+  const pass = document.getElementById('a-pass').value;
+  if (pass.length < 6) {
+    Utils.showToast('Password must be at least 6 characters', 'error');
+    btn.innerHTML = '<i class="fas fa-user-plus" style="margin-right:6px;"></i>Add User';
+    btn.disabled  = false; return;
+  }
+
+  try {
+    const res = await fetch('http://localhost:3000/api/auth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        full_name:      document.getElementById('a-name').value,
+        email:          document.getElementById('a-email').value,
+        phone:          document.getElementById('a-phone').value,
+        password:       pass,
+        role:           document.getElementById('a-role').value,
+        skip_otp_check: true,
+      })
+    }).then(r => r.json());
+
+    if (res.success) { closeAddModal(); await loadAll(); Utils.showToast('User added!', 'success'); }
+    else { Utils.showToast(res.message || 'Failed', 'error'); }
+  } catch { Utils.showToast('Server error', 'error'); }
+
+  btn.innerHTML = '<i class="fas fa-user-plus" style="margin-right:6px;"></i>Add User';
+  btn.disabled  = false;
 });
 
-document.addEventListener('DOMContentLoaded',()=>{
-  const user=JSON.parse(localStorage.getItem('currentUser')||'null');
-  if(!user||(user.ROLE!=='admin'&&user.role!=='admin')){window.location.href='../login.html';return;}
+// ── Init ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+  if (!user || (user.ROLE !== 'admin' && user.role !== 'admin')) {
+    window.location.href = '../login.html'; return;
+  }
+  currentAdmin = user;
   loadAll();
 });
 </script>
