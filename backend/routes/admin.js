@@ -1,11 +1,22 @@
-const express = require('express');
-const router  = express.Router();
+// ============================================================
+// backend/routes/admin.js — Updated with delete user + super_admin
+// ============================================================
+
+const express  = require('express');
+const router   = express.Router();
 const oracledb = require('oracledb');
 const { getConnection } = require('../db');
 
-// ─────────────────────────────────────────────
-// GET /api/admin/dashboard
-// ─────────────────────────────────────────────
+// ── Helper: detect user columns ──────────────────────────────
+async function getUserColumns(conn) {
+  const result = await conn.execute(
+    `SELECT LOWER(column_name) AS "col" FROM user_tab_columns WHERE UPPER(table_name) = 'USERS'`,
+    {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
+  );
+  return result.rows.map(r => r.col);
+}
+
+// ── GET /api/admin/dashboard ─────────────────────────────────
 router.get('/dashboard', async (req, res) => {
   let conn;
   try {
@@ -22,37 +33,22 @@ router.get('/dashboard', async (req, res) => {
       total_products:  products.rows[0].total  || 0,
     });
   } catch (err) {
-    console.error('dashboard error:', err.message);
+    console.error('Dashboard error:', err.message);
     res.status(500).json({ error: err.message });
   } finally { if (conn) await conn.close(); }
 });
 
-// ─────────────────────────────────────────────
-// Shared helper — detect which columns exist
-// ─────────────────────────────────────────────
-async function getUserColumns(conn) {
-  const result = await conn.execute(
-    `SELECT LOWER(column_name) AS "col" FROM user_tab_columns WHERE UPPER(table_name) = 'USERS'`,
-    {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
-  );
-  return result.rows.map(r => r.col);
-}
 
-function buildUserSelectCols(cols) {
-  const statusCol  = cols.includes('status')     ? `NVL(status,'active')`                                : `'active'`;
-  const createdCol = cols.includes('created_at') ? `TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS')`      : `TO_CHAR(SYSDATE,'YYYY-MM-DD"T"HH24:MI:SS')`;
-  return { statusCol, createdCol };
-}
-
-// ─────────────────────────────────────────────
-// GET /api/admin/customers — non-admin users only
-// ─────────────────────────────────────────────
+// ── GET /api/admin/customers ─────────────────────────────────
 router.get('/customers', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
     const cols = await getUserColumns(conn);
-    const { statusCol, createdCol } = buildUserSelectCols(cols);
+    const statusCol    = cols.includes('status')         ? `NVL(status,'active')`            : `'active'`;
+    const createdCol   = cols.includes('created_at')     ? `TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS')` : `TO_CHAR(SYSDATE,'YYYY-MM-DD"T"HH24:MI:SS')`;
+    const superAdmCol  = cols.includes('is_super_admin') ? `NVL(is_super_admin,0)`           : `0`;
+
     const result = await conn.execute(
       `SELECT user_id              AS "user_id",
               full_name            AS "full_name",
@@ -60,7 +56,8 @@ router.get('/customers', async (req, res) => {
               phone                AS "phone",
               NVL(role,'customer') AS "role",
               ${statusCol}         AS "status",
-              ${createdCol}        AS "created_at"
+              ${createdCol}        AS "created_at",
+              ${superAdmCol}       AS "is_super_admin"
        FROM users
        WHERE LOWER(NVL(role,'customer')) != 'admin'
        ORDER BY user_id DESC`,
@@ -69,19 +66,21 @@ router.get('/customers', async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error('getCustomers error:', err.message);
-    res.json([]); // Return empty array so frontend doesn't crash
+    res.json([]);
   } finally { if (conn) await conn.close(); }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/admin/all-users — ALL users (for customers page)
-// ─────────────────────────────────────────────
+
+// ── GET /api/admin/all-users ─────────────────────────────────
 router.get('/all-users', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
     const cols = await getUserColumns(conn);
-    const { statusCol, createdCol } = buildUserSelectCols(cols);
+    const statusCol   = cols.includes('status')         ? `NVL(status,'active')`                            : `'active'`;
+    const createdCol  = cols.includes('created_at')     ? `TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS')`  : `TO_CHAR(SYSDATE,'YYYY-MM-DD"T"HH24:MI:SS')`;
+    const superAdmCol = cols.includes('is_super_admin') ? `NVL(is_super_admin,0)`                          : `0`;
+
     const result = await conn.execute(
       `SELECT user_id              AS "user_id",
               full_name            AS "full_name",
@@ -89,7 +88,8 @@ router.get('/all-users', async (req, res) => {
               phone                AS "phone",
               NVL(role,'customer') AS "role",
               ${statusCol}         AS "status",
-              ${createdCol}        AS "created_at"
+              ${createdCol}        AS "created_at",
+              ${superAdmCol}       AS "is_super_admin"
        FROM users
        ORDER BY user_id DESC`,
       {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
@@ -97,13 +97,12 @@ router.get('/all-users', async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error('getAllUsers error:', err.message);
-    res.json([]); // Return empty array so frontend doesn't crash
+    res.json([]);
   } finally { if (conn) await conn.close(); }
 });
 
-// ─────────────────────────────────────────────
-// PUT /api/admin/customers/:id/status
-// ─────────────────────────────────────────────
+
+// ── PUT /api/admin/customers/:id/status ──────────────────────
 router.put('/customers/:id/status', async (req, res) => {
   const { status } = req.body;
   if (!['active', 'blocked'].includes(status))
@@ -111,11 +110,7 @@ router.put('/customers/:id/status', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
-    // Silently add status column if it doesn't exist
-    try {
-      await conn.execute(`ALTER TABLE users ADD (status VARCHAR2(20) DEFAULT 'active')`);
-      await conn.commit();
-    } catch (e) { /* already exists — that's fine */ }
+    try { await conn.execute(`ALTER TABLE users ADD (status VARCHAR2(20) DEFAULT 'active')`); await conn.commit(); } catch (e) {}
     await conn.execute(`UPDATE users SET status = :status WHERE user_id = :id`, { status, id: parseInt(req.params.id) });
     await conn.commit();
     res.json({ success: true });
@@ -124,9 +119,77 @@ router.put('/customers/:id/status', async (req, res) => {
   } finally { if (conn) await conn.close(); }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/admin/categories
-// ─────────────────────────────────────────────
+
+// ── DELETE /api/admin/customers/:id ──────────────────────────
+// Only super_admin can delete other admins
+// Regular admin can only delete customers
+router.delete('/customers/:id', async (req, res) => {
+  const targetId    = parseInt(req.params.id);
+  const requesterId = parseInt(req.body.requester_id || 0);
+
+  let conn;
+  try {
+    conn = await getConnection();
+
+    // Get target user info
+    const cols = await getUserColumns(conn);
+    const superAdmCol = cols.includes('is_super_admin') ? `NVL(is_super_admin,0)` : `0`;
+
+    const targetRes = await conn.execute(
+      `SELECT role AS "role", ${superAdmCol} AS "is_super_admin" FROM users WHERE user_id = :id`,
+      { id: targetId },
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+    );
+
+    if (!targetRes.rows.length)
+      return res.status(404).json({ success: false, message: 'User not found.' });
+
+    const target = targetRes.rows[0];
+
+    // Cannot delete yourself
+    if (targetId === requesterId)
+      return res.status(403).json({ success: false, message: 'You cannot delete your own account.' });
+
+    // Cannot delete a super_admin
+    if (target.is_super_admin === 1)
+      return res.status(403).json({ success: false, message: 'Cannot delete the Super Admin account.' });
+
+    // Get requester info
+    const reqRes = await conn.execute(
+      `SELECT role AS "role", ${superAdmCol} AS "is_super_admin" FROM users WHERE user_id = :id`,
+      { id: requesterId },
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+    );
+
+    if (!reqRes.rows.length)
+      return res.status(403).json({ success: false, message: 'Requester not found.' });
+
+    const requester = reqRes.rows[0];
+
+    // If target is admin, only super_admin can delete
+    if ((target.role || '').toLowerCase() === 'admin' && requester.is_super_admin !== 1)
+      return res.status(403).json({ success: false, message: 'Only the Super Admin can delete other admins.' });
+
+    // Safe to delete — also delete related records to avoid FK errors
+    // Delete orders' notifications first
+    try { await conn.execute(`DELETE FROM notifications WHERE user_id = :id`, { id: targetId }); } catch(e) {}
+    // Delete OTP tokens
+    try { await conn.execute(`DELETE FROM otp_tokens WHERE LOWER(email) = (SELECT LOWER(email) FROM users WHERE user_id = :id)`, { id: targetId }); } catch(e) {}
+    // Delete the user
+    await conn.execute(`DELETE FROM users WHERE user_id = :id`, { id: targetId });
+    await conn.commit();
+
+    console.log(`✅ User ${targetId} deleted by requester ${requesterId}`);
+    res.json({ success: true, message: 'User deleted successfully.' });
+
+  } catch (err) {
+    console.error('Delete user error:', err.message);
+    res.status(500).json({ success: false, message: err.message });
+  } finally { if (conn) await conn.close(); }
+});
+
+
+// ── GET /api/admin/categories ─────────────────────────────────
 router.get('/categories', async (req, res) => {
   let conn;
   try {
@@ -141,7 +204,6 @@ router.get('/categories', async (req, res) => {
   finally { if (conn) await conn.close(); }
 });
 
-// POST /api/admin/categories
 router.post('/categories', async (req, res) => {
   const { name, description } = req.body;
   if (!name) return res.status(400).json({ success: false, message: 'Name required' });
@@ -158,7 +220,6 @@ router.post('/categories', async (req, res) => {
   finally { if (conn) await conn.close(); }
 });
 
-// PUT /api/admin/categories/:id
 router.put('/categories/:id', async (req, res) => {
   const { name, description } = req.body;
   let conn;
@@ -171,7 +232,6 @@ router.put('/categories/:id', async (req, res) => {
   finally { if (conn) await conn.close(); }
 });
 
-// DELETE /api/admin/categories/:id
 router.delete('/categories/:id', async (req, res) => {
   let conn;
   try {
@@ -183,74 +243,53 @@ router.delete('/categories/:id', async (req, res) => {
   finally { if (conn) await conn.close(); }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/admin/reports — ALWAYS returns array
-// ─────────────────────────────────────────────
+
+// ── GET /api/admin/reports ────────────────────────────────────
 router.get('/reports', async (req, res) => {
   let conn;
   try {
     conn = await getConnection();
-
-    // Check if order_items table exists and has data
-    let hasOrderItems = false, hasRows = false;
-    try {
-      const t = await conn.execute(`SELECT COUNT(*) AS "cnt" FROM user_tables WHERE UPPER(table_name) = 'ORDER_ITEMS'`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT });
-      hasOrderItems = t.rows[0].cnt > 0;
-      if (hasOrderItems) {
-        const c = await conn.execute(`SELECT COUNT(*) AS "cnt" FROM order_items`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT });
-        hasRows = c.rows[0].cnt > 0;
-      }
-    } catch(e) { /* ignore */ }
-
     let rows = [];
-
-    if (hasOrderItems && hasRows) {
-      try {
-        // Full report with order join
-        const result = await conn.execute(
-          `SELECT oi.name                     AS "product_name",
-                  SUM(oi.quantity)            AS "total_sold",
-                  SUM(oi.price * oi.quantity) AS "total_revenue"
-           FROM order_items oi
-           JOIN orders o ON oi.order_id = o.order_id
-           WHERE o.status != 'Cancelled'
-           GROUP BY oi.name
-           ORDER BY SUM(oi.quantity) DESC
-           FETCH FIRST 20 ROWS ONLY`,
-          {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
-        );
-        rows = result.rows;
-      } catch(e) {
-        try {
-          // Fallback — no order join
-          const result = await conn.execute(
-            `SELECT name AS "product_name", SUM(quantity) AS "total_sold", SUM(price*quantity) AS "total_revenue"
-             FROM order_items GROUP BY name ORDER BY SUM(quantity) DESC FETCH FIRST 20 ROWS ONLY`,
-            {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
-          );
-          rows = result.rows;
-        } catch(e2) { /* ignore */ }
+    try {
+      const tableCheck = await conn.execute(`SELECT COUNT(*) AS "cnt" FROM user_tables WHERE UPPER(table_name) = 'ORDER_ITEMS'`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+      if (tableCheck.rows[0].cnt > 0) {
+        const countCheck = await conn.execute(`SELECT COUNT(*) AS "cnt" FROM order_items`, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+        if (countCheck.rows[0].cnt > 0) {
+          try {
+            const result = await conn.execute(
+              `SELECT oi.name AS "product_name", SUM(oi.quantity) AS "total_sold", SUM(oi.price * oi.quantity) AS "total_revenue"
+               FROM order_items oi
+               JOIN orders o ON oi.order_id = o.order_id
+               WHERE o.status != 'Cancelled'
+               GROUP BY oi.name
+               ORDER BY SUM(oi.quantity) DESC`,
+              {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
+            );
+            rows = result.rows;
+          } catch(e) {
+            const result = await conn.execute(
+              `SELECT name AS "product_name", SUM(quantity) AS "total_sold", SUM(price*quantity) AS "total_revenue"
+               FROM order_items GROUP BY name ORDER BY SUM(quantity) DESC`,
+              {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
+            );
+            rows = result.rows;
+          }
+        }
       }
-    }
+    } catch(e) {}
 
-    // If no sales data yet, show products with 0 sales as placeholder
     if (!rows.length) {
-      try {
-        const result = await conn.execute(
-          `SELECT name AS "product_name", 0 AS "total_sold", 0 AS "total_revenue"
-           FROM products ORDER BY product_id FETCH FIRST 20 ROWS ONLY`,
-          {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
-        );
-        rows = result.rows;
-      } catch(e) { /* ignore */ }
+      const result = await conn.execute(
+        `SELECT name AS "product_name", 0 AS "total_sold", 0 AS "total_revenue" FROM products ORDER BY product_id`,
+        {}, { outFormat: oracledb.OUT_FORMAT_OBJECT }
+      );
+      rows = result.rows;
     }
 
-    // ALWAYS return an array — never an object/error
     res.json(Array.isArray(rows) ? rows : []);
-
   } catch (err) {
     console.error('Reports error:', err.message);
-    res.json([]); // ← Always array, never error object
+    res.json([]);
   } finally { if (conn) await conn.close(); }
 });
 
