@@ -31,6 +31,7 @@ app.use('/api/products', require('./routes/products'));
 app.use('/api/orders',   require('./routes/orders'));
 app.use('/api/admin',    require('./routes/admin'));
 app.use('/api/otp',      require('./routes/otp'));
+app.use('/api/contact',  require('./routes/contact'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
@@ -38,3 +39,4 @@ app.listen(PORT, () => {
   console.log(`📧 Gmail user: ${process.env.GMAIL_USER || '⚠️  GMAIL_USER not set in .env'}`);
   console.log(`🔑 Gmail pass: ${process.env.GMAIL_PASS ? '✅ Set' : '⚠️  GMAIL_PASS not set in .env'}`);
 });
+
