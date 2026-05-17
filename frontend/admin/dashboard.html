@@ -8,237 +8,113 @@
   <link rel="stylesheet" href="../css/admin.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
   <style>
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes slideIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes spin  { to { transform: rotate(360deg); } }
+    @keyframes fadeIn{ from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);} }
+    @keyframes slideIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
     @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.3);} }
     .anim { animation: fadeIn .3s ease both; }
 
     /* ── Notification Bell ── */
-    .notif-wrapper {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-    }
+    .notif-wrapper { position:relative; display:inline-flex; align-items:center; }
     .notif-btn {
-      background: none;
-      border: 1.5px solid #e5e7eb;
-      border-radius: 10px;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: #374151;
-      font-size: 16px;
-      transition: background .15s, border-color .15s;
-      position: relative;
+      background:none; border:1.5px solid #e5e7eb; border-radius:10px;
+      width:40px; height:40px; display:flex; align-items:center;
+      justify-content:center; cursor:pointer; color:#374151; font-size:16px;
+      transition:background .15s,border-color .15s; position:relative;
     }
-    .notif-btn:hover { background: #f3f4f6; border-color: #d1d5db; }
+    .notif-btn:hover { background:#f3f4f6; border-color:#d1d5db; }
     .notif-badge {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: #dc2626;
-      color: white;
-      font-size: 10px;
-      font-weight: 700;
-      border-radius: 999px;
-      min-width: 17px;
-      height: 17px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 4px;
-      border: 2px solid white;
-      animation: pulse .4s ease;
-      display: none;
+      position:absolute; top:-5px; right:-5px;
+      background:#dc2626; color:white; font-size:10px; font-weight:700;
+      border-radius:999px; min-width:17px; height:17px;
+      align-items:center; justify-content:center; padding:0 4px;
+      border:2px solid white; display:none;
     }
-    .notif-badge.show { display: flex; }
+    .notif-badge.show { display:flex; }
 
     /* ── Notification Dropdown ── */
     .notif-dropdown {
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
-      width: 340px;
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      box-shadow: 0 10px 40px rgba(0,0,0,.12);
-      z-index: 9999;
-      display: none;
-      animation: slideIn .2s ease;
-      overflow: hidden;
+      position:absolute; top:calc(100% + 8px); right:0; width:340px;
+      background:white; border:1px solid #e5e7eb; border-radius:14px;
+      box-shadow:0 10px 40px rgba(0,0,0,.12); z-index:9999;
+      display:none; overflow:hidden;
     }
-    .notif-dropdown.open { display: block; }
+    .notif-dropdown.open { display:block; animation:slideIn .2s ease; }
     .notif-dropdown-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 16px 10px;
-      border-bottom: 1px solid #f3f4f6;
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px 16px 10px; border-bottom:1px solid #f3f4f6;
     }
-    .notif-dropdown-header h3 { font-size: 14px; font-weight: 700; margin: 0; }
-    .notif-clear-btn {
-      font-size: 11px;
-      color: #dc2626;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      padding: 4px 8px;
-      border-radius: 6px;
-    }
-    .notif-clear-btn:hover { background: #fef2f2; }
-    .notif-list { max-height: 340px; overflow-y: auto; }
-    .notif-item {
-      display: flex;
-      gap: 10px;
-      padding: 11px 16px;
-      border-bottom: 1px solid #f9fafb;
-      cursor: pointer;
-      transition: background .1s;
-    }
-    .notif-item:hover { background: #f9fafb; }
-    .notif-item:last-child { border-bottom: none; }
-    .notif-item.unread { background: #fff7f7; }
-    .notif-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 9px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-    .notif-icon.order   { background: #eff6ff; color: #1d4ed8; }
-    .notif-icon.msg     { background: #fff7ed; color: #c2410c; }
-    .notif-icon.cancel  { background: #fef2f2; color: #dc2626; }
-    .notif-icon.confirm { background: #f0fdf4; color: #16a34a; }
-    .notif-text { flex: 1; min-width: 0; }
-    .notif-text p { font-size: 12.5px; margin: 0 0 2px; color: #111827; line-height: 1.4; }
-    .notif-text span { font-size: 11px; color: #9ca3af; }
-    .notif-dot { width: 7px; height: 7px; background: #dc2626; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
-    .notif-empty { text-align: center; padding: 30px 16px; color: #9ca3af; font-size: 13px; }
-    .notif-footer { padding: 10px 16px; border-top: 1px solid #f3f4f6; text-align: center; }
-    .notif-footer a { font-size: 12px; color: #dc2626; font-weight: 600; text-decoration: none; }
+    .notif-dropdown-header h3 { font-size:14px; font-weight:700; margin:0; }
+    .notif-clear-btn { font-size:11px; color:#dc2626; background:none; border:none; cursor:pointer; font-weight:600; padding:4px 8px; border-radius:6px; }
+    .notif-clear-btn:hover { background:#fef2f2; }
+    .notif-list { max-height:320px; overflow-y:auto; }
+    .notif-item { display:flex; gap:10px; padding:11px 16px; border-bottom:1px solid #f9fafb; cursor:pointer; transition:background .1s; }
+    .notif-item:hover { background:#f9fafb; }
+    .notif-item:last-child { border-bottom:none; }
+    .notif-item.unread { background:#fff7f7; }
+    .notif-icon { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+    .notif-icon.order  { background:#eff6ff; color:#1d4ed8; }
+    .notif-icon.msg    { background:#fff7ed; color:#c2410c; }
+    .notif-icon.cancel { background:#fef2f2; color:#dc2626; }
+    .notif-text { flex:1; min-width:0; }
+    .notif-text p { font-size:12.5px; margin:0 0 2px; color:#111827; line-height:1.4; }
+    .notif-text span { font-size:11px; color:#9ca3af; }
+    .notif-dot { width:7px; height:7px; background:#dc2626; border-radius:50%; margin-top:6px; flex-shrink:0; }
+    .notif-empty { text-align:center; padding:28px 16px; color:#9ca3af; font-size:13px; }
+    .notif-footer { padding:10px 16px; border-top:1px solid #f3f4f6; text-align:center; }
+    .notif-footer a { font-size:12px; color:#dc2626; font-weight:600; text-decoration:none; }
 
     /* ── Messages Panel ── */
-    .messages-panel { margin-top: 24px; }
-    .msg-tabs { display: flex; gap: 4px; margin-bottom: 14px; }
-    .msg-tab {
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1.5px solid #e5e7eb;
-      background: white;
-      color: #6b7280;
-      transition: all .15s;
-    }
-    .msg-tab.active { background: #dc2626; color: white; border-color: #dc2626; }
-    .msg-card {
-      background: white;
-      border: 1px solid #f3f4f6;
-      border-radius: 12px;
-      padding: 14px 16px;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      cursor: pointer;
-      transition: box-shadow .15s, border-color .15s;
-      margin-bottom: 8px;
-    }
-    .msg-card:hover { border-color: #e5e7eb; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
-    .msg-card.unread { border-left: 3px solid #dc2626; }
-    .msg-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #dc2626, #ef4444);
-      color: white;
-      font-weight: 700;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .msg-body { flex: 1; min-width: 0; }
-    .msg-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
-    .msg-name { font-size: 13px; font-weight: 700; color: #111827; }
-    .msg-time { font-size: 11px; color: #9ca3af; }
-    .msg-subject { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 2px; }
-    .msg-preview { font-size: 12px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .msg-actions { display: flex; gap: 6px; margin-top: 8px; }
-    .msg-actions button {
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 6px;
-      border: 1px solid #e5e7eb;
-      background: white;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all .1s;
-    }
-    .msg-actions .btn-mark { color: #059669; }
-    .msg-actions .btn-mark:hover { background: #f0fdf4; border-color: #bbf7d0; }
-    .msg-actions .btn-del { color: #dc2626; }
-    .msg-actions .btn-del:hover { background: #fef2f2; border-color: #fecaca; }
+    .msg-panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px; }
+    .msg-panel-title { font-size:1rem; font-weight:700; color:var(--gray-700); display:flex; align-items:center; gap:6px; margin:0; }
+    .msg-unread-pill { background:#dc2626; color:white; font-size:10px; font-weight:700; border-radius:999px; padding:2px 8px; display:none; }
+    .msg-tabs { display:flex; gap:4px; }
+    .msg-tab { padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; border:1.5px solid #e5e7eb; background:white; color:#6b7280; transition:all .15s; }
+    .msg-tab.active { background:#dc2626; color:white; border-color:#dc2626; }
+
+    .msg-card { background:white; border:1px solid #f0f0f0; border-radius:12px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start; cursor:pointer; transition:box-shadow .15s,border-color .15s; margin-bottom:8px; }
+    .msg-card:hover { border-color:#e5e7eb; box-shadow:0 2px 12px rgba(0,0,0,.06); }
+    .msg-card.unread { border-left:3px solid #dc2626; background:#fff9f9; }
+    .msg-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#dc2626,#ef4444); color:white; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .msg-body { flex:1; min-width:0; }
+    .msg-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; }
+    .msg-name { font-size:13px; font-weight:700; color:#111827; }
+    .msg-time { font-size:11px; color:#9ca3af; white-space:nowrap; }
+    .msg-subject { font-size:12px; font-weight:600; color:#374151; margin-bottom:3px; }
+    .msg-preview { font-size:12px; color:#6b7280; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .msg-btns { display:flex; gap:6px; margin-top:8px; }
+    .msg-btns button { font-size:11px; padding:4px 10px; border-radius:6px; border:1px solid #e5e7eb; background:white; cursor:pointer; font-weight:600; transition:all .1s; }
+    .btn-mark { color:#059669; } .btn-mark:hover { background:#f0fdf4; border-color:#bbf7d0; }
+    .btn-del  { color:#dc2626; } .btn-del:hover  { background:#fef2f2; border-color:#fecaca; }
+
+    /* ── Unread bar ── */
+    .unread-bar { background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:12px 16px; margin-bottom:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; display:none; }
+    .unread-bar.show { display:flex; }
 
     /* ── Message Modal ── */
-    .msg-modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.45);
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      display: none;
-    }
-    .msg-modal-overlay.open { display: flex; }
-    .msg-modal {
-      background: white;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 480px;
-      padding: 24px;
-      animation: slideIn .2s ease;
-    }
-    .msg-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .msg-modal-header h3 { font-size: 15px; font-weight: 700; margin: 0; }
-    .msg-modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: #6b7280; }
-    .msg-meta { background: #f9fafb; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 12.5px; }
-    .msg-meta div { display: flex; gap: 8px; margin-bottom: 4px; }
-    .msg-meta div:last-child { margin: 0; }
-    .msg-meta strong { color: #374151; min-width: 70px; }
-    .msg-meta span { color: #111827; }
-    .msg-content { font-size: 13px; color: #374151; line-height: 1.6; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; }
+    .msg-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:10000; align-items:center; justify-content:center; padding:16px; display:none; }
+    .msg-modal-overlay.open { display:flex; }
+    .msg-modal { background:white; border-radius:16px; width:100%; max-width:500px; padding:24px; animation:slideIn .2s ease; max-height:90vh; overflow-y:auto; }
+    .msg-modal-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap:10px; }
+    .msg-modal-header h3 { font-size:15px; font-weight:700; margin:0; flex:1; }
+    .msg-modal-close { background:none; border:none; font-size:18px; cursor:pointer; color:#6b7280; flex-shrink:0; }
+    .msg-meta { background:#f9fafb; border-radius:10px; padding:12px 14px; margin-bottom:14px; }
+    .msg-meta-row { display:flex; gap:8px; margin-bottom:5px; font-size:12.5px; }
+    .msg-meta-row:last-child { margin:0; }
+    .msg-meta-row strong { color:#374151; min-width:65px; }
+    .msg-meta-row span { color:#111827; }
+    .msg-content-box { font-size:13px; color:#374151; line-height:1.7; background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:14px; white-space:pre-wrap; }
+    .msg-modal-actions { display:flex; gap:8px; margin-top:14px; justify-content:flex-end; }
+    .msg-modal-actions button { font-size:12px; padding:8px 16px; border-radius:8px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
   </style>
 </head>
 <body>
 
-<!-- Mobile top bar -->
-<div class="admin-topbar">
-  <span class="admin-topbar-title">Dashboard</span>
-</div>
-
-<!-- Hamburger -->
-<button class="sb-toggle" id="sbToggle" onclick="sbOpen()">
-  <i class="fas fa-bars"></i>
-</button>
-
-<!-- Backdrop -->
+<div class="admin-topbar"><span class="admin-topbar-title">Dashboard</span></div>
+<button class="sb-toggle" id="sbToggle" onclick="sbOpen()"><i class="fas fa-bars"></i></button>
 <div class="sb-backdrop" id="sbBackdrop" onclick="sbClose()"></div>
 
 <div class="admin-layout">
-
-  <!-- Sidebar -->
   <aside class="admin-sidebar" id="adminSidebar">
     <div class="admin-sidebar-header">
       <a href="../index.html" class="logo" style="text-decoration:none;">
@@ -255,6 +131,7 @@
       <a href="products.html"   class="admin-nav-item"><i class="fas fa-box"></i> Products</a>
       <a href="categories.html" class="admin-nav-item"><i class="fas fa-tags"></i> Categories</a>
       <a href="customers.html"  class="admin-nav-item"><i class="fas fa-users"></i> Customers</a>
+      <a href="messages.html"   class="admin-nav-item"><i class="fas fa-comments"></i> Messages</a>
       <a href="reports.html"    class="admin-nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
       <a href="../index.html"   class="admin-nav-item" style="margin-top:auto;"><i class="fas fa-arrow-left"></i> Back to Site</a>
       <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;font-size:inherit;">
@@ -263,37 +140,30 @@
     </nav>
   </aside>
 
-  <!-- Main -->
   <main class="admin-content">
 
     <!-- Header -->
-    <div class="admin-header-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
       <div>
         <h1 style="font-size:1.6rem;font-weight:700;margin-bottom:2px;">Dashboard</h1>
         <p style="color:var(--gray-500);font-size:13px;">Welcome back, <strong id="admin-name">Admin</strong> · <span id="current-date"></span></p>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
-
-        <!-- 🔔 Notification Bell -->
+        <!-- 🔔 Bell -->
         <div class="notif-wrapper">
-          <button class="notif-btn" id="notifBtn" onclick="toggleNotif()" title="Notifications">
+          <button class="notif-btn" onclick="toggleNotif()" title="Notifications">
             <i class="fas fa-bell"></i>
-            <span class="notif-badge" id="notifBadge">0</span>
+            <span class="notif-badge" id="notifBadge"></span>
           </button>
           <div class="notif-dropdown" id="notifDropdown">
             <div class="notif-dropdown-header">
-              <h3>Notifications</h3>
+              <h3><i class="fas fa-bell" style="margin-right:6px;color:#dc2626;font-size:12px;"></i>Notifications</h3>
               <button class="notif-clear-btn" onclick="clearAllNotifs()">Clear all</button>
             </div>
-            <div class="notif-list" id="notifList">
-              <div class="notif-empty">No new notifications</div>
-            </div>
-            <div class="notif-footer">
-              <a href="orders.html">View all orders →</a>
-            </div>
+            <div class="notif-list" id="notifList"><div class="notif-empty">No notifications yet</div></div>
+            <div class="notif-footer"><a href="orders.html">View all orders →</a></div>
           </div>
         </div>
-
         <a href="orders.html" class="btn btn-primary btn-sm print-hide"><i class="fas fa-list-check" style="margin-right:6px;"></i>Manage Orders</a>
       </div>
     </div>
@@ -301,76 +171,83 @@
     <!-- Stats -->
     <div class="stats-grid" style="margin-bottom:20px;">
       <div class="stats-card anim" style="animation-delay:.05s">
-        <div class="stats-header">
-          <div><p class="stats-label">Total Orders</p><h2 class="stats-value" id="total-orders">—</h2></div>
-          <div class="stats-icon blue"><i class="fas fa-bag-shopping"></i></div>
-        </div>
+        <div class="stats-header"><div><p class="stats-label">Total Orders</p><h2 class="stats-value" id="total-orders">—</h2></div><div class="stats-icon blue"><i class="fas fa-bag-shopping"></i></div></div>
         <p style="font-size:.8rem;color:var(--gray-500);">All time orders</p>
       </div>
       <div class="stats-card anim" style="animation-delay:.1s">
-        <div class="stats-header">
-          <div><p class="stats-label">Pending</p><h2 class="stats-value" id="pending-orders">—</h2></div>
-          <div class="stats-icon orange"><i class="fas fa-clock"></i></div>
-        </div>
+        <div class="stats-header"><div><p class="stats-label">Pending</p><h2 class="stats-value" id="pending-orders">—</h2></div><div class="stats-icon orange"><i class="fas fa-clock"></i></div></div>
         <p style="font-size:.8rem;color:var(--gray-500);">Needs attention</p>
       </div>
       <div class="stats-card anim" style="animation-delay:.15s">
-        <div class="stats-header">
-          <div><p class="stats-label">Revenue</p><h2 class="stats-value" id="total-revenue" style="font-size:1.1rem;">—</h2></div>
-          <div class="stats-icon green"><i class="fas fa-peso-sign"></i></div>
-        </div>
+        <div class="stats-header"><div><p class="stats-label">Revenue</p><h2 class="stats-value" id="total-revenue" style="font-size:1.1rem;">—</h2></div><div class="stats-icon green"><i class="fas fa-peso-sign"></i></div></div>
         <p style="font-size:.8rem;color:var(--gray-500);">Total earnings</p>
       </div>
       <div class="stats-card anim" style="animation-delay:.2s">
-        <div class="stats-header">
-          <div><p class="stats-label">Customers</p><h2 class="stats-value" id="total-customers">—</h2></div>
-          <div class="stats-icon red"><i class="fas fa-users"></i></div>
-        </div>
+        <div class="stats-header"><div><p class="stats-label">Customers</p><h2 class="stats-value" id="total-customers">—</h2></div><div class="stats-icon red"><i class="fas fa-users"></i></div></div>
         <p style="font-size:.8rem;color:var(--gray-500);">Registered</p>
       </div>
-    </div>
-
-    <!-- Unread Messages Stat Bar -->
-    <div id="unread-bar" style="display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 16px;margin-bottom:18px;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <i class="fas fa-envelope" style="color:#ea580c;font-size:14px;"></i>
-        <span style="font-size:13px;font-weight:600;color:#7c2d12;"><span id="unread-count">0</span> unread message(s) from buyers</span>
-      </div>
-      <button onclick="switchToUnread()" style="font-size:12px;font-weight:600;color:#ea580c;background:#ffedd5;border:1px solid #fdba74;border-radius:6px;padding:5px 12px;cursor:pointer;">View Unread</button>
     </div>
 
     <!-- Quick Actions -->
     <div style="margin-bottom:20px;">
       <h2 style="font-size:1rem;font-weight:700;margin-bottom:12px;color:var(--gray-700);">Quick Actions</h2>
       <div class="grid grid-cols-4" style="gap:10px;">
-        <a href="products.html" class="card" style="text-decoration:none;">
-          <div class="card-content text-center" style="padding:14px;">
-            <div class="stats-icon blue" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-plus"></i></div>
-            <p style="font-size:12px;font-weight:600;">Add Product</p>
-          </div>
-        </a>
-        <a href="orders.html" class="card" style="text-decoration:none;">
-          <div class="card-content text-center" style="padding:14px;">
-            <div class="stats-icon orange" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-list-check"></i></div>
-            <p style="font-size:12px;font-weight:600;">Orders</p>
-          </div>
-        </a>
-        <a href="customers.html" class="card" style="text-decoration:none;">
-          <div class="card-content text-center" style="padding:14px;">
-            <div class="stats-icon green" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-users"></i></div>
-            <p style="font-size:12px;font-weight:600;">Customers</p>
-          </div>
-        </a>
-        <a href="reports.html" class="card" style="text-decoration:none;">
-          <div class="card-content text-center" style="padding:14px;">
-            <div class="stats-icon red" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-chart-bar"></i></div>
-            <p style="font-size:12px;font-weight:600;">Reports</p>
-          </div>
-        </a>
+        <a href="products.html" class="card" style="text-decoration:none;"><div class="card-content text-center" style="padding:14px;"><div class="stats-icon blue" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-plus"></i></div><p style="font-size:12px;font-weight:600;">Add Product</p></div></a>
+        <a href="orders.html"   class="card" style="text-decoration:none;"><div class="card-content text-center" style="padding:14px;"><div class="stats-icon orange" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-list-check"></i></div><p style="font-size:12px;font-weight:600;">Orders</p></div></a>
+        <a href="customers.html"class="card" style="text-decoration:none;"><div class="card-content text-center" style="padding:14px;"><div class="stats-icon green" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-users"></i></div><p style="font-size:12px;font-weight:600;">Customers</p></div></a>
+        <a href="reports.html"  class="card" style="text-decoration:none;"><div class="card-content text-center" style="padding:14px;"><div class="stats-icon red" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-chart-bar"></i></div><p style="font-size:12px;font-weight:600;">Reports</p></div></a>
       </div>
     </div>
 
-    <!-- Recent Orders -->
+    <!-- ═══════ MESSAGES FROM BUYERS ═══════ -->
+    <div style="margin-bottom:24px;" id="messages-section">
+
+      <!-- Unread Alert -->
+      <div class="unread-bar" id="unreadBar">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-envelope" style="color:#ea580c;font-size:14px;"></i>
+          <span style="font-size:13px;font-weight:600;color:#7c2d12;"><span id="unread-count">0</span> unread message(s) from buyers</span>
+        </div>
+        <button onclick="filterMsgs('unread')" style="font-size:12px;font-weight:600;color:#ea580c;background:#ffedd5;border:1px solid #fdba74;border-radius:6px;padding:5px 12px;cursor:pointer;">View Unread</button>
+      </div>
+
+      <div class="msg-panel-header">
+        <h2 class="msg-panel-title">
+          <i class="fas fa-envelope" style="color:#dc2626;font-size:14px;"></i>
+          Messages from Buyers
+          <span class="msg-unread-pill" id="msgUnreadPill">0</span>
+        </h2>
+        <div class="msg-tabs">
+          <button class="msg-tab active" id="tab-all"    onclick="filterMsgs('all')">All</button>
+          <button class="msg-tab"        id="tab-unread" onclick="filterMsgs('unread')">Unread</button>
+          <button class="msg-tab"        id="tab-read"   onclick="filterMsgs('read')">Read</button>
+        </div>
+      </div>
+
+      <!-- Loading spinner -->
+      <div id="msgs-loading" style="text-align:center;padding:30px;color:#9ca3af;">
+        <div style="width:22px;height:22px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>
+        Loading messages...
+      </div>
+
+      <!-- Error box (shown when API call fails) -->
+      <div id="msgs-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px 16px;font-size:13px;color:#991b1b;margin-bottom:10px;">
+        <i class="fas fa-circle-exclamation" style="margin-right:6px;"></i>
+        <span id="msgs-error-text">Could not load messages.</span>
+        <button onclick="loadMessages()" style="margin-left:10px;font-size:12px;font-weight:600;color:#dc2626;background:#fff;border:1px solid #fecaca;border-radius:6px;padding:3px 10px;cursor:pointer;">Retry</button>
+      </div>
+
+      <!-- Message cards -->
+      <div id="msgs-container"></div>
+
+      <!-- Empty state -->
+      <div id="msgs-empty" style="display:none;text-align:center;padding:36px;color:#9ca3af;">
+        <i class="fas fa-inbox" style="font-size:30px;margin-bottom:10px;display:block;"></i>
+        <p style="font-size:13px;margin:0;">No messages found</p>
+      </div>
+    </div>
+
+    <!-- ═══════ RECENT ORDERS ═══════ -->
     <div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
         <h2 style="font-size:1rem;font-weight:700;color:var(--gray-700);">Recent Orders</h2>
@@ -382,70 +259,35 @@
           Loading orders...
         </div>
         <table class="table" id="orders-table" style="display:none;min-width:480px;">
-          <thead>
-            <tr>
-              <th>Order #</th>
-              <th>Customer</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th class="hide-mobile">Date</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Order #</th><th>Customer</th><th>Total</th><th>Status</th><th class="hide-mobile">Date</th><th>Action</th></tr></thead>
           <tbody id="recent-orders"></tbody>
         </table>
-      </div>
-    </div>
-
-    <!-- ── Messages Panel ── -->
-    <div class="messages-panel">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-        <h2 style="font-size:1rem;font-weight:700;color:var(--gray-700);">
-          <i class="fas fa-envelope" style="color:#dc2626;margin-right:6px;font-size:14px;"></i>
-          Messages from Buyers
-          <span id="msg-unread-badge" style="display:none;background:#dc2626;color:white;font-size:10px;font-weight:700;border-radius:999px;padding:2px 7px;margin-left:6px;vertical-align:middle;"></span>
-        </h2>
-        <div class="msg-tabs">
-          <button class="msg-tab active" id="tab-all"    onclick="filterMsgs('all')">All</button>
-          <button class="msg-tab"        id="tab-unread" onclick="filterMsgs('unread')">Unread</button>
-          <button class="msg-tab"        id="tab-read"   onclick="filterMsgs('read')">Read</button>
-        </div>
-      </div>
-
-      <div id="msgs-loading" style="text-align:center;padding:30px;color:var(--gray-400);">
-        <div style="width:22px;height:22px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 8px;"></div>
-        Loading messages...
-      </div>
-      <div id="msgs-container"></div>
-      <div id="msgs-empty" style="display:none;text-align:center;padding:30px;color:#9ca3af;font-size:13px;">
-        <i class="fas fa-inbox" style="font-size:28px;margin-bottom:8px;display:block;"></i>
-        No messages found
       </div>
     </div>
 
   </main>
 </div>
 
-<!-- Message Modal -->
-<div class="msg-modal-overlay" id="msgModal">
+<!-- ═══════ MESSAGE MODAL ═══════ -->
+<div class="msg-modal-overlay" id="msgModal" onclick="if(event.target===this)closeModal()">
   <div class="msg-modal">
     <div class="msg-modal-header">
       <h3 id="modal-subject">Message</h3>
       <button class="msg-modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
     </div>
     <div class="msg-meta">
-      <div><strong>From:</strong> <span id="modal-name"></span></div>
-      <div><strong>Email:</strong> <span id="modal-email"></span></div>
-      <div id="modal-phone-row"><strong>Phone:</strong> <span id="modal-phone"></span></div>
-      <div><strong>Date:</strong> <span id="modal-date"></span></div>
+      <div class="msg-meta-row"><strong>From:</strong>  <span id="modal-name"></span></div>
+      <div class="msg-meta-row"><strong>Email:</strong> <span id="modal-email"></span></div>
+      <div class="msg-meta-row" id="modal-phone-row"><strong>Phone:</strong><span id="modal-phone"></span></div>
+      <div class="msg-meta-row"><strong>Date:</strong>  <span id="modal-date"></span></div>
     </div>
-    <div class="msg-content" id="modal-message"></div>
-    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
-      <button id="modal-mark-btn" style="font-size:12px;padding:7px 14px;border-radius:8px;border:1px solid #bbf7d0;background:#f0fdf4;color:#059669;font-weight:600;cursor:pointer;" onclick="markCurrentRead()">
-        <i class="fas fa-check" style="margin-right:4px;"></i>Mark as Read
+    <div class="msg-content-box" id="modal-message"></div>
+    <div class="msg-modal-actions">
+      <button id="modal-mark-btn" style="border:1px solid #bbf7d0;background:#f0fdf4;color:#059669;" onclick="markCurrentRead()">
+        <i class="fas fa-check"></i>Mark as Read
       </button>
-      <button id="modal-del-btn" style="font-size:12px;padding:7px 14px;border-radius:8px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;font-weight:600;cursor:pointer;" onclick="deleteCurrentMsg()">
-        <i class="fas fa-trash" style="margin-right:4px;"></i>Delete
+      <button style="border:1px solid #fecaca;background:#fef2f2;color:#dc2626;" onclick="deleteCurrentMsg()">
+        <i class="fas fa-trash"></i>Delete
       </button>
     </div>
   </div>
@@ -457,59 +299,52 @@
 <script src="../js/app.js"></script>
 <script>
 /* ── Sidebar ── */
-function sbOpen(){ document.getElementById('adminSidebar').classList.add('sb-open'); document.getElementById('sbBackdrop').classList.add('on'); }
-function sbClose(){ document.getElementById('adminSidebar').classList.remove('sb-open'); document.getElementById('sbBackdrop').classList.remove('on'); }
+function sbOpen()  { document.getElementById('adminSidebar').classList.add('sb-open');    document.getElementById('sbBackdrop').classList.add('on'); }
+function sbClose() { document.getElementById('adminSidebar').classList.remove('sb-open'); document.getElementById('sbBackdrop').classList.remove('on'); }
 
-const SC = { Pending:'badge-warning', Confirmed:'badge-info', Preparing:'badge-info', Ready:'badge-success', Delivered:'badge-success', Cancelled:'badge-danger' };
+const SC = { Pending:'badge-warning',Confirmed:'badge-info',Preparing:'badge-info',Ready:'badge-success',Delivered:'badge-success',Cancelled:'badge-danger' };
 
 /* ── Notification State ── */
-let notifications       = JSON.parse(localStorage.getItem('adminNotifs') || '[]');
-let lastOrderCount      = parseInt(localStorage.getItem('lastOrderCount') || '0');
-let lastMsgCount        = parseInt(localStorage.getItem('lastMsgCount')  || '0');
-let lastCancelledIds    = JSON.parse(localStorage.getItem('lastCancelledIds') || '[]');
+let notifications    = JSON.parse(localStorage.getItem('adminNotifs') || '[]');
+let lastOrderCount   = parseInt(localStorage.getItem('lastOrderCount') || '-1');
+let lastMsgCount     = parseInt(localStorage.getItem('lastMsgCount')   || '-1');
+let lastCancelledIds = JSON.parse(localStorage.getItem('lastCancelledIds') || '[]');
 
-/* ── All messages state ── */
-let allMessages    = [];
-let currentFilter  = 'all';
-let currentModalId = null;
-
-/* ─────────────────────────────────── NOTIFICATIONS ─────────────────────────────────── */
-function saveNotifs() {
-  localStorage.setItem('adminNotifs', JSON.stringify(notifications));
-}
+function saveNotifs() { localStorage.setItem('adminNotifs', JSON.stringify(notifications)); }
 
 function addNotif(type, text, link) {
-  notifications.unshift({ type, text, link, time: Date.now(), id: Date.now() + Math.random() });
+  notifications.unshift({ type, text, link, time: Date.now(), id: Date.now() + Math.random(), seen: false });
   if (notifications.length > 30) notifications = notifications.slice(0, 30);
-  saveNotifs();
-  renderNotifBadge();
-  renderNotifList();
+  saveNotifs(); renderNotifBadge(); renderNotifList();
 }
 
 function renderNotifBadge() {
   const badge = document.getElementById('notifBadge');
   const count = notifications.filter(n => !n.seen).length;
-  if (count > 0) {
-    badge.textContent = count > 9 ? '9+' : count;
-    badge.classList.add('show');
-  } else {
-    badge.classList.remove('show');
-  }
+  badge.textContent = count > 9 ? '9+' : count;
+  badge.classList.toggle('show', count > 0);
+}
+
+function relativeTime(ts) {
+  const d = Date.now() - ts;
+  if (d < 60000)    return 'just now';
+  if (d < 3600000)  return Math.floor(d / 60000) + 'm ago';
+  if (d < 86400000) return Math.floor(d / 3600000) + 'h ago';
+  return Math.floor(d / 86400000) + 'd ago';
 }
 
 function renderNotifList() {
   const list = document.getElementById('notifList');
   if (!notifications.length) {
-    list.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:22px;margin-bottom:6px;display:block;"></i>No notifications yet</div>';
+    list.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:22px;margin-bottom:6px;display:block;color:#d1d5db;"></i>No notifications yet</div>';
     return;
   }
-  const iconMap = { order:'order fas fa-bag-shopping', msg:'msg fas fa-envelope', cancel:'cancel fas fa-times-circle', confirm:'confirm fas fa-check-circle' };
+  const iconMap = { order:'fa-bag-shopping order', msg:'fa-envelope msg', cancel:'fa-times-circle cancel' };
   list.innerHTML = notifications.slice(0, 15).map(n => {
-    const [cls, ico] = (iconMap[n.type] || 'order fas fa-bell').split(' ');
-    const t = relativeTime(n.time);
-    return `<div class="notif-item${n.seen ? '' : ' unread'}" onclick="openNotif('${n.id}','${n.link||'orders.html'}')">
-      <div class="notif-icon ${cls}"><i class="fas ${ico}"></i></div>
-      <div class="notif-text"><p>${n.text}</p><span>${t}</span></div>
+    const parts = (iconMap[n.type] || 'fa-bell order').split(' ');
+    return `<div class="notif-item${n.seen ? '' : ' unread'}" onclick="openNotif('${n.id}','${n.link||''}')">
+      <div class="notif-icon ${parts[1]||'order'}"><i class="fas ${parts[0]}"></i></div>
+      <div class="notif-text"><p>${n.text}</p><span>${relativeTime(n.time)}</span></div>
       ${n.seen ? '' : '<div class="notif-dot"></div>'}
     </div>`;
   }).join('');
@@ -518,152 +353,108 @@ function renderNotifList() {
 function openNotif(id, link) {
   const n = notifications.find(x => String(x.id) === String(id));
   if (n) { n.seen = true; saveNotifs(); renderNotifBadge(); renderNotifList(); }
-  if (link) window.location.href = link;
+  document.getElementById('notifDropdown').classList.remove('open');
+  if (link && !link.startsWith('#')) window.location.href = link;
 }
 
 function toggleNotif() {
-  const dd = document.getElementById('notifDropdown');
-  dd.classList.toggle('open');
-  if (dd.classList.contains('open')) {
-    notifications.forEach(n => n.seen = true);
-    saveNotifs();
-    renderNotifBadge();
-    renderNotifList();
-  }
+  document.getElementById('notifDropdown').classList.toggle('open');
 }
 
 function clearAllNotifs() {
-  notifications = [];
-  saveNotifs();
-  renderNotifBadge();
-  renderNotifList();
+  notifications = []; saveNotifs(); renderNotifBadge(); renderNotifList();
   document.getElementById('notifDropdown').classList.remove('open');
 }
 
 document.addEventListener('click', e => {
-  const wrapper = document.querySelector('.notif-wrapper');
-  if (wrapper && !wrapper.contains(e.target)) {
-    document.getElementById('notifDropdown').classList.remove('open');
-  }
+  const w = document.querySelector('.notif-wrapper');
+  if (w && !w.contains(e.target)) document.getElementById('notifDropdown').classList.remove('open');
 });
 
-function relativeTime(ts) {
-  const diff = Date.now() - ts;
-  if (diff < 60000)   return 'just now';
-  if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
-  if (diff < 86400000)return Math.floor(diff/3600000) + 'h ago';
-  return Math.floor(diff/86400000) + 'd ago';
-}
+/* ── Messages State ── */
+let allMessages    = [];
+let currentFilter  = 'all';
+let currentModalId = null;
 
-/* ─────────────────────────────────── POLL FOR NEW ACTIVITY ─────────────────────────────────── */
-async function pollActivity() {
-  try {
-    const [orders, msgs] = await Promise.all([api.getAllOrders(), api.getMessages()]);
-
-    /* New orders */
-    if (orders.length > lastOrderCount && lastOrderCount > 0) {
-      const newCount = orders.length - lastOrderCount;
-      addNotif('order', `${newCount} new order${newCount>1?'s':''} placed by buyer${newCount>1?'s':''}!`, 'orders.html');
-    }
-    lastOrderCount = orders.length;
-    localStorage.setItem('lastOrderCount', lastOrderCount);
-
-    /* Cancelled orders */
-    const cancelledNow = orders.filter(o => (o.status||o.STATUS) === 'Cancelled').map(o => o.order_id||o.ORDER_ID);
-    const newCancels   = cancelledNow.filter(id => !lastCancelledIds.includes(id));
-    newCancels.forEach(id => {
-      const ord = orders.find(o => (o.order_id||o.ORDER_ID) === id);
-      const name= ord ? (ord.full_name||ord.FULL_NAME||'A buyer') : 'A buyer';
-      addNotif('cancel', `${name} cancelled order ORD-${String(id).padStart(4,'0')}`, 'orders.html');
-    });
-    lastCancelledIds = cancelledNow;
-    localStorage.setItem('lastCancelledIds', JSON.stringify(lastCancelledIds));
-
-    /* New messages */
-    const unread = msgs.filter(m => !m.is_read && m.is_read !== 1);
-    if (msgs.length > lastMsgCount && lastMsgCount > 0) {
-      const newCount = msgs.length - lastMsgCount;
-      addNotif('msg', `${newCount} new message${newCount>1?'s':''} from buyer${newCount>1?'s':''}!`, '#messages-panel');
-    }
-    lastMsgCount = msgs.length;
-    localStorage.setItem('lastMsgCount', lastMsgCount);
-
-    /* Update unread bar */
-    const unreadCount = unread.length;
-    const bar         = document.getElementById('unread-bar');
-    const badgeEl     = document.getElementById('msg-unread-badge');
-    if (unreadCount > 0) {
-      document.getElementById('unread-count').textContent = unreadCount;
-      bar.style.display = 'flex';
-      badgeEl.textContent = unreadCount;
-      badgeEl.style.display = 'inline';
-    } else {
-      bar.style.display = 'none';
-      badgeEl.style.display = 'none';
-    }
-  } catch(e) { /* silent */ }
-}
-
-/* ─────────────────────────────────── MESSAGES ─────────────────────────────────── */
 function initials(name) {
   if (!name) return '?';
-  return name.trim().split(' ').slice(0,2).map(w=>w[0].toUpperCase()).join('');
+  return name.trim().split(' ').slice(0, 2).map(w => (w[0] || '').toUpperCase()).join('');
 }
 
-function formatDate(d) {
+function fmtDate(d) {
   if (!d) return '—';
-  return new Date(d).toLocaleString('en-PH', { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' });
+  try { return new Date(d).toLocaleString('en-PH', { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' }); }
+  catch(e) { return String(d); }
 }
 
 async function loadMessages() {
+  const loadEl  = document.getElementById('msgs-loading');
+  const errEl   = document.getElementById('msgs-error');
+  const errText = document.getElementById('msgs-error-text');
+  loadEl.style.display = 'block';
+  errEl.style.display  = 'none';
+  document.getElementById('msgs-container').innerHTML = '';
+  document.getElementById('msgs-empty').style.display = 'none';
+
   try {
-    allMessages = await api.getMessages();
+    const res = await fetch('http://localhost:3000/api/contact');
+    if (!res.ok) throw new Error('Server error ' + res.status + ' — ' + res.statusText);
+    const data = await res.json();
+    allMessages = Array.isArray(data) ? data : [];
+    loadEl.style.display = 'none';
     renderMessages();
-    document.getElementById('msgs-loading').style.display = 'none';
-  } catch(e) {
-    document.getElementById('msgs-loading').innerHTML = '<p style="color:#dc2626;font-size:13px;">Failed to load messages.</p>';
+    updateUnreadUI();
+  } catch (err) {
+    loadEl.style.display = 'none';
+    errText.textContent  = 'Cannot reach backend: ' + err.message + '. Make sure your Express server is running on port 3000.';
+    errEl.style.display  = 'block';
   }
 }
 
-function filterMsgs(filter) {
-  currentFilter = filter;
-  document.querySelectorAll('.msg-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + filter).classList.add('active');
-  renderMessages();
+function updateUnreadUI() {
+  const unread = allMessages.filter(m => !m.is_read || m.is_read == 0).length;
+  const pill   = document.getElementById('msgUnreadPill');
+  const bar    = document.getElementById('unreadBar');
+  if (unread > 0) {
+    pill.textContent = unread;
+    pill.style.display = 'inline';
+    document.getElementById('unread-count').textContent = unread;
+    bar.classList.add('show');
+  } else {
+    pill.style.display = 'none';
+    bar.classList.remove('show');
+  }
 }
 
-function switchToUnread() {
-  filterMsgs('unread');
-  document.querySelector('.messages-panel').scrollIntoView({ behavior:'smooth' });
+function filterMsgs(f) {
+  currentFilter = f;
+  document.querySelectorAll('.msg-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + f).classList.add('active');
+  renderMessages();
 }
 
 function renderMessages() {
   const container = document.getElementById('msgs-container');
   const empty     = document.getElementById('msgs-empty');
-  let list = allMessages;
+  let list = [...allMessages];
   if (currentFilter === 'unread') list = list.filter(m => !m.is_read || m.is_read == 0);
-  if (currentFilter === 'read')   list = list.filter(m => m.is_read  == 1);
-
-  if (!list.length) {
-    container.innerHTML = '';
-    empty.style.display = 'block';
-    return;
-  }
+  if (currentFilter === 'read')   list = list.filter(m => m.is_read == 1);
+  if (!list.length) { container.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   container.innerHTML = list.map(m => {
-    const isUnread = !m.is_read || m.is_read == 0;
-    return `<div class="msg-card${isUnread?' unread':''}" onclick="openMsg(${m.id})">
+    const unread = !m.is_read || m.is_read == 0;
+    return `<div class="msg-card${unread ? ' unread' : ''}" onclick="openMsg(${m.id})">
       <div class="msg-avatar">${initials(m.full_name)}</div>
       <div class="msg-body">
         <div class="msg-row">
-          <span class="msg-name">${m.full_name||'Unknown'}</span>
-          <span class="msg-time">${formatDate(m.created_at)}</span>
+          <span class="msg-name">${m.full_name || 'Unknown'}${unread ? ' <span style="background:#dc2626;color:#fff;font-size:9px;padding:1px 6px;border-radius:99px;font-weight:700;margin-left:4px;">NEW</span>' : ''}</span>
+          <span class="msg-time">${fmtDate(m.created_at)}</span>
         </div>
-        <div class="msg-subject">${m.subject||'(no subject)'}</div>
-        <div class="msg-preview">${(m.message||'').substring(0,90)}${(m.message||'').length>90?'...':''}</div>
-        <div class="msg-actions" onclick="event.stopPropagation()">
-          ${isUnread ? `<button class="btn-mark" onclick="markRead(${m.id},this)"><i class="fas fa-check" style="margin-right:3px;"></i>Mark Read</button>` : ''}
-          <button class="btn-del" onclick="deleteMsg(${m.id},this)"><i class="fas fa-trash" style="margin-right:3px;"></i>Delete</button>
+        <div class="msg-subject">${m.subject || '(no subject)'}</div>
+        <div class="msg-preview">${(m.message || '').substring(0, 100)}${(m.message || '').length > 100 ? '…' : ''}</div>
+        <div class="msg-btns" onclick="event.stopPropagation()">
+          ${unread ? `<button class="btn-mark" onclick="markRead(${m.id})"><i class="fas fa-check" style="margin-right:3px;"></i>Mark Read</button>` : ''}
+          <button class="btn-del" onclick="deleteMsg(${m.id})"><i class="fas fa-trash" style="margin-right:3px;"></i>Delete</button>
         </div>
       </div>
     </div>`;
@@ -679,111 +470,140 @@ function openMsg(id) {
   document.getElementById('modal-email').textContent   = m.email || '—';
   document.getElementById('modal-phone').textContent   = m.phone || '—';
   document.getElementById('modal-phone-row').style.display = m.phone ? 'flex' : 'none';
-  document.getElementById('modal-date').textContent    = formatDate(m.created_at);
+  document.getElementById('modal-date').textContent    = fmtDate(m.created_at);
   document.getElementById('modal-message').textContent = m.message || '';
-  document.getElementById('modal-mark-btn').style.display = (!m.is_read || m.is_read == 0) ? 'inline-flex' : 'none';
+  const isUnread = !m.is_read || m.is_read == 0;
+  document.getElementById('modal-mark-btn').style.display = isUnread ? 'inline-flex' : 'none';
   document.getElementById('msgModal').classList.add('open');
-  if (!m.is_read || m.is_read == 0) markRead(id, null, true);
+  if (isUnread) markRead(id, true);
 }
 
-function closeModal() {
-  document.getElementById('msgModal').classList.remove('open');
-  currentModalId = null;
-}
+function closeModal() { document.getElementById('msgModal').classList.remove('open'); currentModalId = null; }
 
-async function markRead(id, btn, silent) {
+async function markRead(id, silent) {
   try {
-    await fetch(`http://localhost:3000/api/contact/${id}/read`, { method:'PUT' });
+    await fetch('http://localhost:3000/api/contact/' + id + '/read', { method: 'PUT' });
     const m = allMessages.find(x => x.id == id);
     if (m) m.is_read = 1;
     if (!silent) renderMessages();
-    const badgeEl = document.getElementById('msg-unread-badge');
-    const unread  = allMessages.filter(m => !m.is_read || m.is_read == 0).length;
-    if (unread > 0) {
-      badgeEl.textContent = unread;
-    } else {
-      badgeEl.style.display = 'none';
-      document.getElementById('unread-bar').style.display = 'none';
-    }
-  } catch(e) { alert('Failed to mark as read.'); }
+    updateUnreadUI();
+  } catch(e) { if (!silent) alert('Failed to mark as read: ' + e.message); }
 }
 
 async function markCurrentRead() {
   if (!currentModalId) return;
-  await markRead(currentModalId, null);
+  await markRead(currentModalId, false);
   document.getElementById('modal-mark-btn').style.display = 'none';
   renderMessages();
 }
 
-async function deleteMsg(id, btn) {
+async function deleteMsg(id) {
   if (!confirm('Delete this message?')) return;
   try {
-    await fetch(`http://localhost:3000/api/contact/${id}`, { method:'DELETE' });
+    await fetch('http://localhost:3000/api/contact/' + id, { method: 'DELETE' });
     allMessages = allMessages.filter(x => x.id != id);
-    renderMessages();
-  } catch(e) { alert('Failed to delete.'); }
+    renderMessages(); updateUnreadUI();
+    if (currentModalId == id) closeModal();
+  } catch(e) { alert('Failed to delete: ' + e.message); }
 }
 
-async function deleteCurrentMsg() {
-  if (!currentModalId) return;
-  await deleteMsg(currentModalId, null);
-  closeModal();
+async function deleteCurrentMsg() { if (currentModalId) await deleteMsg(currentModalId); }
+
+/* ── Poll every 30s for new buyer activity ── */
+async function pollActivity() {
+  try {
+    const [ordRes, msgRes] = await Promise.all([
+      fetch('http://localhost:3000/api/orders').catch(()=>null),
+      fetch('http://localhost:3000/api/contact').catch(()=>null)
+    ]);
+
+    const orders = ordRes && ordRes.ok ? await ordRes.json().catch(()=>[]) : [];
+    const msgs   = msgRes && msgRes.ok ? await msgRes.json().catch(()=>[]) : [];
+    const ordArr = Array.isArray(orders) ? orders : [];
+    const msgArr = Array.isArray(msgs)   ? msgs   : [];
+
+    /* New orders */
+    if (lastOrderCount >= 0 && ordArr.length > lastOrderCount) {
+      const n = ordArr.length - lastOrderCount;
+      addNotif('order', `${n} new order${n > 1 ? 's' : ''} placed by buyer${n > 1 ? 's' : ''}!`, 'orders.html');
+    }
+    lastOrderCount = lastOrderCount < 0 ? ordArr.length : ordArr.length;
+    localStorage.setItem('lastOrderCount', lastOrderCount);
+
+    /* Cancelled orders */
+    const cancelledNow = ordArr.filter(o => (o.status || o.STATUS) === 'Cancelled').map(o => o.order_id || o.ORDER_ID);
+    cancelledNow.filter(id => !lastCancelledIds.includes(id)).forEach(id => {
+      const ord  = ordArr.find(o => (o.order_id || o.ORDER_ID) === id);
+      const name = ord ? (ord.full_name || ord.FULL_NAME || 'A buyer') : 'A buyer';
+      addNotif('cancel', `${name} cancelled order ORD-${String(id).padStart(4, '0')}`, 'orders.html');
+    });
+    lastCancelledIds = cancelledNow;
+    localStorage.setItem('lastCancelledIds', JSON.stringify(lastCancelledIds));
+
+    /* New messages */
+    if (lastMsgCount >= 0 && msgArr.length > lastMsgCount) {
+      const n = msgArr.length - lastMsgCount;
+      addNotif('msg', `${n} new message${n > 1 ? 's' : ''} from buyer${n > 1 ? 's' : ''}!`, '#messages-section');
+      allMessages = msgArr; renderMessages(); updateUnreadUI();
+    }
+    if (lastMsgCount < 0) lastMsgCount = msgArr.length;
+    else lastMsgCount = msgArr.length;
+    localStorage.setItem('lastMsgCount', lastMsgCount);
+
+  } catch(e) { /* silent */ }
 }
 
-/* ─────────────────────────────────── INIT ─────────────────────────────────── */
+/* ── INIT ── */
 document.addEventListener('DOMContentLoaded', async () => {
   const user = Auth.getCurrentUser();
   if (!user || !Auth.isAdmin()) { window.location.href = '../login.html'; return; }
 
-  document.getElementById('admin-name').textContent = (user.full_name||user.FULL_NAME||'Admin').split(' ')[0];
-  document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('admin-name').textContent =
+    (user.full_name || user.FULL_NAME || 'Admin').split(' ')[0];
+  document.getElementById('current-date').textContent =
+    new Date().toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' });
 
   renderNotifBadge();
   renderNotifList();
 
+  /* Load messages */
+  await loadMessages();
+
+  /* Load orders */
   try {
     const [orders, customers] = await Promise.all([api.getAllOrders(), api.getCustomers()]);
-    const pending = orders.filter(o=>(o.status||o.STATUS)==='Pending').length;
-    const revenue = orders.reduce((s,o)=>s+parseFloat(o.total||o.TOTAL||0),0);
+    const pending = orders.filter(o => (o.status || o.STATUS) === 'Pending').length;
+    const revenue = orders.reduce((s, o) => s + parseFloat(o.total || o.TOTAL || 0), 0);
     document.getElementById('total-orders').textContent    = orders.length;
     document.getElementById('pending-orders').textContent  = pending;
-    document.getElementById('total-revenue').textContent   = '₱'+revenue.toFixed(2);
-    document.getElementById('total-customers').textContent = Array.isArray(customers)?customers.length:'—';
-
-    const loading = document.getElementById('orders-loading');
-    const table   = document.getElementById('orders-table');
-    const tbody   = document.getElementById('recent-orders');
-    loading.style.display = 'none';
-    table.style.display   = 'table';
-
+    document.getElementById('total-revenue').textContent   = '₱' + revenue.toFixed(2);
+    document.getElementById('total-customers').textContent = Array.isArray(customers) ? customers.length : '—';
+    document.getElementById('orders-loading').style.display = 'none';
+    document.getElementById('orders-table').style.display   = 'table';
+    const tbody = document.getElementById('recent-orders');
     if (!orders.length) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:#9ca3af;">No orders yet</td></tr>`;
     } else {
-      tbody.innerHTML = orders.slice(0,8).map(o=>{
-        const id=o.order_id||o.ORDER_ID, name=o.full_name||o.FULL_NAME||'—', total=parseFloat(o.total||o.TOTAL||0), status=o.status||o.STATUS||'Pending', date=o.created_at||o.CREATED_AT;
+      tbody.innerHTML = orders.slice(0, 8).map(o => {
+        const id = o.order_id||o.ORDER_ID, name = o.full_name||o.FULL_NAME||'—',
+              total = parseFloat(o.total||o.TOTAL||0), status = o.status||o.STATUS||'Pending',
+              date  = o.created_at||o.CREATED_AT;
         return `<tr>
           <td style="font-weight:700;color:#dc2626;font-size:13px;">ORD-${String(id).padStart(4,'0')}</td>
           <td style="font-size:13px;">${name}</td>
           <td style="font-weight:600;font-size:13px;">₱${total.toFixed(2)}</td>
           <td><span class="badge ${SC[status]||'badge-info'}" style="font-size:11px;">${status}</span></td>
-          <td class="hide-mobile" style="font-size:12px;color:#9ca3af;">${date?new Date(date).toLocaleDateString('en-PH',{month:'short',day:'numeric'}):'-'}</td>
+          <td class="hide-mobile" style="font-size:12px;color:#9ca3af;">${date ? new Date(date).toLocaleDateString('en-PH',{month:'short',day:'numeric'}) : '-'}</td>
           <td><a href="orders.html" class="btn btn-outline btn-sm" style="padding:4px 10px;font-size:12px;">View</a></td>
         </tr>`;
       }).join('');
     }
-
-    /* Set baseline counts on first load (no notifs for existing data) */
-    if (!localStorage.getItem('lastOrderCount')) lastOrderCount = orders.length;
-    localStorage.setItem('lastOrderCount', lastOrderCount);
-
   } catch(err) {
-    document.getElementById('orders-loading').innerHTML = `<p style="color:#dc2626;padding:16px;font-size:13px;">Failed to load. Is the server running?</p>`;
+    document.getElementById('orders-loading').innerHTML =
+      `<p style="color:#dc2626;padding:16px;font-size:13px;">Failed to load orders. Is the server running?</p>`;
   }
 
-  /* Load messages */
-  await loadMessages();
-
-  /* Poll every 30 seconds */
+  /* Start polling */
   await pollActivity();
   setInterval(pollActivity, 30000);
 });

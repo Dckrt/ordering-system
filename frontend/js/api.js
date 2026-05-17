@@ -59,11 +59,35 @@ const api = {
       .then(data => Array.isArray(data) ? data : [])
       .catch(() => []),
 
+  // ── MESSAGES (Contact) ────────────────────────────────────
+
+  // Get all contact messages
   getMessages: () =>
     fetch(`${API_BASE}/contact`)
       .then(r => r.json())
       .then(data => Array.isArray(data) ? data : [])
       .catch(() => []),
+
+  // Mark a message as read
+  markMessageRead: (id) =>
+    fetch(`${API_BASE}/contact/${id}/read`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    }).then(r => r.json()),
+
+  // Delete a message
+  deleteMessage: (id) =>
+    fetch(`${API_BASE}/contact/${id}`, {
+      method: 'DELETE'
+    }).then(r => r.json()),
+
+  // Send a contact message (used by buyer on contact page)
+  sendMessage: (data) =>
+    fetch(`${API_BASE}/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(r => r.json()),
 
   // ── ADMIN CATEGORIES ──────────────────────────────────────
   getCategories_admin: () =>
