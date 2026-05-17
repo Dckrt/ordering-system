@@ -7,17 +7,27 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
   <style>
-    /* Notification bell */
-    .notif-bell { position:relative;cursor:pointer; }
-    .notif-count { position:absolute;top:-6px;right:-6px;background:#dc2626;color:white;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;display:none; }
-    .notif-dropdown { position:fixed;top:64px;right:16px;z-index:8000;background:white;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:320px;max-height:400px;overflow-y:auto;display:none; }
-    .notif-header { padding:12px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center; }
-    .notif-item { padding:12px 16px;border-bottom:1px solid #f9fafb;font-size:13px; }
+    .notif-bell { position:relative; cursor:pointer; display:flex; align-items:center; }
+    .notif-count {
+      position:absolute; top:-6px; right:-6px;
+      background:#dc2626; color:white; font-size:10px; font-weight:700;
+      width:18px; height:18px; border-radius:50%;
+      display:none; align-items:center; justify-content:center;
+    }
+    .notif-dropdown {
+      position:fixed; top:64px; right:16px; z-index:8000;
+      background:white; border:1px solid #e5e7eb; border-radius:12px;
+      box-shadow:0 8px 24px rgba(0,0,0,.12);
+      min-width:320px; max-height:400px; overflow-y:auto; display:none;
+    }
+    .notif-header { padding:12px 16px; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:center; }
+    .notif-item   { padding:12px 16px; border-bottom:1px solid #f9fafb; font-size:13px; }
     .notif-item.unread { background:#fff7f7; }
-    .notif-empty { padding:32px;text-align:center;color:var(--gray-400);font-size:13px; }
+    .notif-empty  { padding:32px; text-align:center; color:#9ca3af; font-size:13px; }
   </style>
 </head>
 <body>
+
   <header class="header">
     <div class="container header-content">
       <a href="index.html" class="logo">
@@ -28,15 +38,18 @@
         </div>
       </a>
       <nav class="nav">
-        <a href="index.html" class="nav-link active">Home</a>
-        <a href="menu.html" class="nav-link">Menu</a>
-        <a href="about.html" class="nav-link">About</a>
+        <a href="index.html"   class="nav-link active">Home</a>
+        <a href="menu.html"    class="nav-link">Menu</a>
+        <a href="about.html"   class="nav-link">About</a>
         <a href="contact.html" class="nav-link">Contact</a>
+
+        <!-- Notification Bell -->
         <div class="notif-bell nav-link" id="notif-bell" onclick="toggleNotifications()">
           <i class="fas fa-bell" style="font-size:18px;"></i>
           <span class="notif-count" id="notif-count">0</span>
         </div>
-        <a href="login.html" class="nav-link">
+
+        <a href="login.html" class="nav-link" id="user-nav-link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
           </svg>
@@ -52,13 +65,18 @@
     </div>
   </header>
 
-  <!-- Notification dropdown -->
+  <!-- Notification Dropdown -->
   <div class="notif-dropdown" id="notif-dropdown">
     <div class="notif-header">
       <span style="font-size:14px;font-weight:600;">Notifications</span>
       <button onclick="markAllRead()" style="background:none;border:none;font-size:12px;color:#dc2626;cursor:pointer;font-weight:500;">Mark all read</button>
     </div>
-    <div id="notif-list"><div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;display:block;"></i>No notifications</div></div>
+    <div id="notif-list">
+      <div class="notif-empty">
+        <i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;display:block;"></i>
+        No notifications
+      </div>
+    </div>
   </div>
 
   <section class="hero">
@@ -79,9 +97,9 @@
     </div>
   </section>
 
-  <section style="padding: var(--space-16) 0; background-color: var(--gray-50);">
+  <section style="padding:var(--space-16) 0;background-color:var(--gray-50);">
     <div class="container">
-      <h2 class="text-center mb-8" style="font-size: 2rem;">Why Choose Us</h2>
+      <h2 class="text-center mb-8" style="font-size:2rem;">Why Choose Us</h2>
       <div class="grid grid-cols-3">
         <div class="card text-center">
           <div class="card-content">
@@ -123,9 +141,9 @@
     </div>
   </section>
 
-  <section style="padding: var(--space-16) 0;">
+  <section style="padding:var(--space-16) 0;">
     <div class="container">
-      <h2 class="text-center mb-8" style="font-size: 2rem;">Featured Products</h2>
+      <h2 class="text-center mb-8" style="font-size:2rem;">Featured Products</h2>
       <div class="grid grid-cols-4" id="featured-products"></div>
       <div class="text-center mt-8">
         <a href="menu.html" class="btn btn-primary">View Full Menu</a>
@@ -186,36 +204,52 @@
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
   <script>
-      // ── Notifications
+  // ── FIX: declare notifOpen FIRST ─────────────────────────────
+  let notifOpen = false;
+
   async function loadNotifications() {
     const user = Auth.getCurrentUser();
-    if (!user) return;
+    if (!user) return; // not logged in — hide bell
     const userId = user.user_id || user.USER_ID;
     try {
-      const notifs = await fetch(`http://localhost:3000/api/orders/notifications/${userId}`).then(r=>r.json());
-      const unread = notifs.filter(n => !n.is_read);
+      const notifs = await fetch(`http://localhost:3000/api/orders/notifications/${userId}`).then(r => r.json());
+      if (!Array.isArray(notifs)) return;
+
+      const unread  = notifs.filter(n => !(n.is_read || n.IS_READ));
       const countEl = document.getElementById('notif-count');
-      if (unread.length > 0) { countEl.textContent = unread.length; countEl.style.display = 'flex'; }
-      else { countEl.style.display = 'none'; }
+
+      if (unread.length > 0) {
+        countEl.textContent   = unread.length;
+        countEl.style.display = 'flex';
+      } else {
+        countEl.style.display = 'none';
+      }
 
       const listEl = document.getElementById('notif-list');
       if (!notifs.length) {
-        listEl.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;display:block;"></i>No notifications</div>';
+        listEl.innerHTML = `<div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;display:block;"></i>No notifications</div>`;
         return;
       }
-      listEl.innerHTML = notifs.map(n => `
-        <div class="notif-item ${n.is_read ? '' : 'unread'}">
+
+      listEl.innerHTML = notifs.map(n => {
+        const isRead = n.is_read || n.IS_READ;
+        const msg    = n.message  || n.MESSAGE  || '';
+        const time   = n.created_at || n.CREATED_AT || '';
+        return `<div class="notif-item ${isRead ? '' : 'unread'}">
           <div style="display:flex;align-items:flex-start;gap:10px;">
-            <div style="width:32px;height:32px;border-radius:50%;background:${n.is_read?'#f3f4f6':'#fef2f2'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <i class="fas fa-bag-shopping" style="font-size:13px;color:${n.is_read?'#9ca3af':'#dc2626'};"></i>
+            <div style="width:32px;height:32px;border-radius:50%;background:${isRead?'#f3f4f6':'#fef2f2'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-bag-shopping" style="font-size:13px;color:${isRead?'#9ca3af':'#dc2626'};"></i>
             </div>
             <div style="flex:1;">
-              <p style="margin:0;font-weight:${n.is_read?'400':'600'};">${n.message}</p>
-              <p style="margin:2px 0 0;font-size:11px;color:#9ca3af;">${new Date(n.created_at).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</p>
+              <p style="margin:0;font-weight:${isRead?'400':'600'};color:#111;">${msg}</p>
+              <p style="margin:2px 0 0;font-size:11px;color:#9ca3af;">
+                ${time ? new Date(time).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : ''}
+              </p>
             </div>
           </div>
-        </div>`).join('');
-    } catch (e) { /* Silent fail */ }
+        </div>`;
+      }).join('');
+    } catch (e) { /* silent fail */ }
   }
 
   function toggleNotifications() {
@@ -228,17 +262,29 @@
   async function markAllRead() {
     const user = Auth.getCurrentUser(); if (!user) return;
     const userId = user.user_id || user.USER_ID;
-    await fetch(`http://localhost:3000/api/orders/notifications/${userId}/read`, { method: 'PUT' });
-    document.getElementById('notif-count').style.display = 'none';
-    loadNotifications();
+    try {
+      await fetch(`http://localhost:3000/api/orders/notifications/${userId}/read`, { method: 'PUT' });
+      document.getElementById('notif-count').style.display = 'none';
+      loadNotifications();
+    } catch (e) {}
   }
 
-  // Close notification dropdown on outside click
+  // Close dropdown when clicking outside
   document.addEventListener('click', (e) => {
-    const bell = document.getElementById('notif-bell'), dd = document.getElementById('notif-dropdown');
-    if (notifOpen && !bell.contains(e.target) && !dd.contains(e.target)) {
-      notifOpen = false; dd.style.display = 'none';
+    const bell = document.getElementById('notif-bell');
+    const dd   = document.getElementById('notif-dropdown');
+    if (notifOpen && bell && dd && !bell.contains(e.target) && !dd.contains(e.target)) {
+      notifOpen = false;
+      dd.style.display = 'none';
     }
+  });
+
+  // Load on page ready
+  document.addEventListener('DOMContentLoaded', () => {
+    Cart.updateBadge();
+    NavInit.init();
+    // Only load notifications if user is logged in
+    if (Auth.isLoggedIn()) loadNotifications();
   });
   </script>
 </body>

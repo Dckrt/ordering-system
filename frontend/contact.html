@@ -248,6 +248,9 @@
     });
 
     // ── Notifications
+
+  let notifOpen = false;
+  
   async function loadNotifications() {
     const user = Auth.getCurrentUser();
     if (!user) return;
@@ -301,6 +304,8 @@
       notifOpen = false; dd.style.display = 'none';
     }
   });
+
+  
   </script>
 </body>
 </html>
