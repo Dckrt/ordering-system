@@ -10,7 +10,215 @@
   <style>
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes slideIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.3);} }
     .anim { animation: fadeIn .3s ease both; }
+
+    /* ── Notification Bell ── */
+    .notif-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .notif-btn {
+      background: none;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #374151;
+      font-size: 16px;
+      transition: background .15s, border-color .15s;
+      position: relative;
+    }
+    .notif-btn:hover { background: #f3f4f6; border-color: #d1d5db; }
+    .notif-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #dc2626;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 999px;
+      min-width: 17px;
+      height: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      border: 2px solid white;
+      animation: pulse .4s ease;
+      display: none;
+    }
+    .notif-badge.show { display: flex; }
+
+    /* ── Notification Dropdown ── */
+    .notif-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 340px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.12);
+      z-index: 9999;
+      display: none;
+      animation: slideIn .2s ease;
+      overflow: hidden;
+    }
+    .notif-dropdown.open { display: block; }
+    .notif-dropdown-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .notif-dropdown-header h3 { font-size: 14px; font-weight: 700; margin: 0; }
+    .notif-clear-btn {
+      font-size: 11px;
+      color: #dc2626;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .notif-clear-btn:hover { background: #fef2f2; }
+    .notif-list { max-height: 340px; overflow-y: auto; }
+    .notif-item {
+      display: flex;
+      gap: 10px;
+      padding: 11px 16px;
+      border-bottom: 1px solid #f9fafb;
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .notif-item:hover { background: #f9fafb; }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item.unread { background: #fff7f7; }
+    .notif-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .notif-icon.order   { background: #eff6ff; color: #1d4ed8; }
+    .notif-icon.msg     { background: #fff7ed; color: #c2410c; }
+    .notif-icon.cancel  { background: #fef2f2; color: #dc2626; }
+    .notif-icon.confirm { background: #f0fdf4; color: #16a34a; }
+    .notif-text { flex: 1; min-width: 0; }
+    .notif-text p { font-size: 12.5px; margin: 0 0 2px; color: #111827; line-height: 1.4; }
+    .notif-text span { font-size: 11px; color: #9ca3af; }
+    .notif-dot { width: 7px; height: 7px; background: #dc2626; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+    .notif-empty { text-align: center; padding: 30px 16px; color: #9ca3af; font-size: 13px; }
+    .notif-footer { padding: 10px 16px; border-top: 1px solid #f3f4f6; text-align: center; }
+    .notif-footer a { font-size: 12px; color: #dc2626; font-weight: 600; text-decoration: none; }
+
+    /* ── Messages Panel ── */
+    .messages-panel { margin-top: 24px; }
+    .msg-tabs { display: flex; gap: 4px; margin-bottom: 14px; }
+    .msg-tab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1.5px solid #e5e7eb;
+      background: white;
+      color: #6b7280;
+      transition: all .15s;
+    }
+    .msg-tab.active { background: #dc2626; color: white; border-color: #dc2626; }
+    .msg-card {
+      background: white;
+      border: 1px solid #f3f4f6;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      cursor: pointer;
+      transition: box-shadow .15s, border-color .15s;
+      margin-bottom: 8px;
+    }
+    .msg-card:hover { border-color: #e5e7eb; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    .msg-card.unread { border-left: 3px solid #dc2626; }
+    .msg-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      color: white;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .msg-body { flex: 1; min-width: 0; }
+    .msg-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+    .msg-name { font-size: 13px; font-weight: 700; color: #111827; }
+    .msg-time { font-size: 11px; color: #9ca3af; }
+    .msg-subject { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 2px; }
+    .msg-preview { font-size: 12px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .msg-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .msg-actions button {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      background: white;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all .1s;
+    }
+    .msg-actions .btn-mark { color: #059669; }
+    .msg-actions .btn-mark:hover { background: #f0fdf4; border-color: #bbf7d0; }
+    .msg-actions .btn-del { color: #dc2626; }
+    .msg-actions .btn-del:hover { background: #fef2f2; border-color: #fecaca; }
+
+    /* ── Message Modal ── */
+    .msg-modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      display: none;
+    }
+    .msg-modal-overlay.open { display: flex; }
+    .msg-modal {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 480px;
+      padding: 24px;
+      animation: slideIn .2s ease;
+    }
+    .msg-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .msg-modal-header h3 { font-size: 15px; font-weight: 700; margin: 0; }
+    .msg-modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: #6b7280; }
+    .msg-meta { background: #f9fafb; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 12.5px; }
+    .msg-meta div { display: flex; gap: 8px; margin-bottom: 4px; }
+    .msg-meta div:last-child { margin: 0; }
+    .msg-meta strong { color: #374151; min-width: 70px; }
+    .msg-meta span { color: #111827; }
+    .msg-content { font-size: 13px; color: #374151; line-height: 1.6; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; }
   </style>
 </head>
 <body>
@@ -64,7 +272,30 @@
         <h1 style="font-size:1.6rem;font-weight:700;margin-bottom:2px;">Dashboard</h1>
         <p style="color:var(--gray-500);font-size:13px;">Welcome back, <strong id="admin-name">Admin</strong> · <span id="current-date"></span></p>
       </div>
-      <a href="orders.html" class="btn btn-primary btn-sm print-hide"><i class="fas fa-list-check" style="margin-right:6px;"></i>Manage Orders</a>
+      <div style="display:flex;align-items:center;gap:10px;">
+
+        <!-- 🔔 Notification Bell -->
+        <div class="notif-wrapper">
+          <button class="notif-btn" id="notifBtn" onclick="toggleNotif()" title="Notifications">
+            <i class="fas fa-bell"></i>
+            <span class="notif-badge" id="notifBadge">0</span>
+          </button>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-header">
+              <h3>Notifications</h3>
+              <button class="notif-clear-btn" onclick="clearAllNotifs()">Clear all</button>
+            </div>
+            <div class="notif-list" id="notifList">
+              <div class="notif-empty">No new notifications</div>
+            </div>
+            <div class="notif-footer">
+              <a href="orders.html">View all orders →</a>
+            </div>
+          </div>
+        </div>
+
+        <a href="orders.html" class="btn btn-primary btn-sm print-hide"><i class="fas fa-list-check" style="margin-right:6px;"></i>Manage Orders</a>
+      </div>
     </div>
 
     <!-- Stats -->
@@ -97,6 +328,15 @@
         </div>
         <p style="font-size:.8rem;color:var(--gray-500);">Registered</p>
       </div>
+    </div>
+
+    <!-- Unread Messages Stat Bar -->
+    <div id="unread-bar" style="display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 16px;margin-bottom:18px;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-envelope" style="color:#ea580c;font-size:14px;"></i>
+        <span style="font-size:13px;font-weight:600;color:#7c2d12;"><span id="unread-count">0</span> unread message(s) from buyers</span>
+      </div>
+      <button onclick="switchToUnread()" style="font-size:12px;font-weight:600;color:#ea580c;background:#ffedd5;border:1px solid #fdba74;border-radius:6px;padding:5px 12px;cursor:pointer;">View Unread</button>
     </div>
 
     <!-- Quick Actions -->
@@ -157,7 +397,58 @@
       </div>
     </div>
 
+    <!-- ── Messages Panel ── -->
+    <div class="messages-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <h2 style="font-size:1rem;font-weight:700;color:var(--gray-700);">
+          <i class="fas fa-envelope" style="color:#dc2626;margin-right:6px;font-size:14px;"></i>
+          Messages from Buyers
+          <span id="msg-unread-badge" style="display:none;background:#dc2626;color:white;font-size:10px;font-weight:700;border-radius:999px;padding:2px 7px;margin-left:6px;vertical-align:middle;"></span>
+        </h2>
+        <div class="msg-tabs">
+          <button class="msg-tab active" id="tab-all"    onclick="filterMsgs('all')">All</button>
+          <button class="msg-tab"        id="tab-unread" onclick="filterMsgs('unread')">Unread</button>
+          <button class="msg-tab"        id="tab-read"   onclick="filterMsgs('read')">Read</button>
+        </div>
+      </div>
+
+      <div id="msgs-loading" style="text-align:center;padding:30px;color:var(--gray-400);">
+        <div style="width:22px;height:22px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 8px;"></div>
+        Loading messages...
+      </div>
+      <div id="msgs-container"></div>
+      <div id="msgs-empty" style="display:none;text-align:center;padding:30px;color:#9ca3af;font-size:13px;">
+        <i class="fas fa-inbox" style="font-size:28px;margin-bottom:8px;display:block;"></i>
+        No messages found
+      </div>
+    </div>
+
   </main>
+</div>
+
+<!-- Message Modal -->
+<div class="msg-modal-overlay" id="msgModal">
+  <div class="msg-modal">
+    <div class="msg-modal-header">
+      <h3 id="modal-subject">Message</h3>
+      <button class="msg-modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="msg-meta">
+      <div><strong>From:</strong> <span id="modal-name"></span></div>
+      <div><strong>Email:</strong> <span id="modal-email"></span></div>
+      <div id="modal-phone-row"><strong>Phone:</strong> <span id="modal-phone"></span></div>
+      <div><strong>Date:</strong> <span id="modal-date"></span></div>
+    </div>
+    <div class="msg-content" id="modal-message"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
+      <button id="modal-mark-btn" style="font-size:12px;padding:7px 14px;border-radius:8px;border:1px solid #bbf7d0;background:#f0fdf4;color:#059669;font-weight:600;cursor:pointer;" onclick="markCurrentRead()">
+        <i class="fas fa-check" style="margin-right:4px;"></i>Mark as Read
+      </button>
+      <button id="modal-del-btn" style="font-size:12px;padding:7px 14px;border-radius:8px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;font-weight:600;cursor:pointer;" onclick="deleteCurrentMsg()">
+        <i class="fas fa-trash" style="margin-right:4px;"></i>Delete
+      </button>
+    </div>
+  </div>
 </div>
 
 <script src="../js/data.js"></script>
@@ -165,18 +456,290 @@
 <script src="../js/cart.js"></script>
 <script src="../js/app.js"></script>
 <script>
-/* Sidebar */
+/* ── Sidebar ── */
 function sbOpen(){ document.getElementById('adminSidebar').classList.add('sb-open'); document.getElementById('sbBackdrop').classList.add('on'); }
 function sbClose(){ document.getElementById('adminSidebar').classList.remove('sb-open'); document.getElementById('sbBackdrop').classList.remove('on'); }
 
 const SC = { Pending:'badge-warning', Confirmed:'badge-info', Preparing:'badge-info', Ready:'badge-success', Delivered:'badge-success', Cancelled:'badge-danger' };
 
+/* ── Notification State ── */
+let notifications       = JSON.parse(localStorage.getItem('adminNotifs') || '[]');
+let lastOrderCount      = parseInt(localStorage.getItem('lastOrderCount') || '0');
+let lastMsgCount        = parseInt(localStorage.getItem('lastMsgCount')  || '0');
+let lastCancelledIds    = JSON.parse(localStorage.getItem('lastCancelledIds') || '[]');
+
+/* ── All messages state ── */
+let allMessages    = [];
+let currentFilter  = 'all';
+let currentModalId = null;
+
+/* ─────────────────────────────────── NOTIFICATIONS ─────────────────────────────────── */
+function saveNotifs() {
+  localStorage.setItem('adminNotifs', JSON.stringify(notifications));
+}
+
+function addNotif(type, text, link) {
+  notifications.unshift({ type, text, link, time: Date.now(), id: Date.now() + Math.random() });
+  if (notifications.length > 30) notifications = notifications.slice(0, 30);
+  saveNotifs();
+  renderNotifBadge();
+  renderNotifList();
+}
+
+function renderNotifBadge() {
+  const badge = document.getElementById('notifBadge');
+  const count = notifications.filter(n => !n.seen).length;
+  if (count > 0) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+}
+
+function renderNotifList() {
+  const list = document.getElementById('notifList');
+  if (!notifications.length) {
+    list.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:22px;margin-bottom:6px;display:block;"></i>No notifications yet</div>';
+    return;
+  }
+  const iconMap = { order:'order fas fa-bag-shopping', msg:'msg fas fa-envelope', cancel:'cancel fas fa-times-circle', confirm:'confirm fas fa-check-circle' };
+  list.innerHTML = notifications.slice(0, 15).map(n => {
+    const [cls, ico] = (iconMap[n.type] || 'order fas fa-bell').split(' ');
+    const t = relativeTime(n.time);
+    return `<div class="notif-item${n.seen ? '' : ' unread'}" onclick="openNotif('${n.id}','${n.link||'orders.html'}')">
+      <div class="notif-icon ${cls}"><i class="fas ${ico}"></i></div>
+      <div class="notif-text"><p>${n.text}</p><span>${t}</span></div>
+      ${n.seen ? '' : '<div class="notif-dot"></div>'}
+    </div>`;
+  }).join('');
+}
+
+function openNotif(id, link) {
+  const n = notifications.find(x => String(x.id) === String(id));
+  if (n) { n.seen = true; saveNotifs(); renderNotifBadge(); renderNotifList(); }
+  if (link) window.location.href = link;
+}
+
+function toggleNotif() {
+  const dd = document.getElementById('notifDropdown');
+  dd.classList.toggle('open');
+  if (dd.classList.contains('open')) {
+    notifications.forEach(n => n.seen = true);
+    saveNotifs();
+    renderNotifBadge();
+    renderNotifList();
+  }
+}
+
+function clearAllNotifs() {
+  notifications = [];
+  saveNotifs();
+  renderNotifBadge();
+  renderNotifList();
+  document.getElementById('notifDropdown').classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  const wrapper = document.querySelector('.notif-wrapper');
+  if (wrapper && !wrapper.contains(e.target)) {
+    document.getElementById('notifDropdown').classList.remove('open');
+  }
+});
+
+function relativeTime(ts) {
+  const diff = Date.now() - ts;
+  if (diff < 60000)   return 'just now';
+  if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+  if (diff < 86400000)return Math.floor(diff/3600000) + 'h ago';
+  return Math.floor(diff/86400000) + 'd ago';
+}
+
+/* ─────────────────────────────────── POLL FOR NEW ACTIVITY ─────────────────────────────────── */
+async function pollActivity() {
+  try {
+    const [orders, msgs] = await Promise.all([api.getAllOrders(), api.getMessages()]);
+
+    /* New orders */
+    if (orders.length > lastOrderCount && lastOrderCount > 0) {
+      const newCount = orders.length - lastOrderCount;
+      addNotif('order', `${newCount} new order${newCount>1?'s':''} placed by buyer${newCount>1?'s':''}!`, 'orders.html');
+    }
+    lastOrderCount = orders.length;
+    localStorage.setItem('lastOrderCount', lastOrderCount);
+
+    /* Cancelled orders */
+    const cancelledNow = orders.filter(o => (o.status||o.STATUS) === 'Cancelled').map(o => o.order_id||o.ORDER_ID);
+    const newCancels   = cancelledNow.filter(id => !lastCancelledIds.includes(id));
+    newCancels.forEach(id => {
+      const ord = orders.find(o => (o.order_id||o.ORDER_ID) === id);
+      const name= ord ? (ord.full_name||ord.FULL_NAME||'A buyer') : 'A buyer';
+      addNotif('cancel', `${name} cancelled order ORD-${String(id).padStart(4,'0')}`, 'orders.html');
+    });
+    lastCancelledIds = cancelledNow;
+    localStorage.setItem('lastCancelledIds', JSON.stringify(lastCancelledIds));
+
+    /* New messages */
+    const unread = msgs.filter(m => !m.is_read && m.is_read !== 1);
+    if (msgs.length > lastMsgCount && lastMsgCount > 0) {
+      const newCount = msgs.length - lastMsgCount;
+      addNotif('msg', `${newCount} new message${newCount>1?'s':''} from buyer${newCount>1?'s':''}!`, '#messages-panel');
+    }
+    lastMsgCount = msgs.length;
+    localStorage.setItem('lastMsgCount', lastMsgCount);
+
+    /* Update unread bar */
+    const unreadCount = unread.length;
+    const bar         = document.getElementById('unread-bar');
+    const badgeEl     = document.getElementById('msg-unread-badge');
+    if (unreadCount > 0) {
+      document.getElementById('unread-count').textContent = unreadCount;
+      bar.style.display = 'flex';
+      badgeEl.textContent = unreadCount;
+      badgeEl.style.display = 'inline';
+    } else {
+      bar.style.display = 'none';
+      badgeEl.style.display = 'none';
+    }
+  } catch(e) { /* silent */ }
+}
+
+/* ─────────────────────────────────── MESSAGES ─────────────────────────────────── */
+function initials(name) {
+  if (!name) return '?';
+  return name.trim().split(' ').slice(0,2).map(w=>w[0].toUpperCase()).join('');
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleString('en-PH', { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' });
+}
+
+async function loadMessages() {
+  try {
+    allMessages = await api.getMessages();
+    renderMessages();
+    document.getElementById('msgs-loading').style.display = 'none';
+  } catch(e) {
+    document.getElementById('msgs-loading').innerHTML = '<p style="color:#dc2626;font-size:13px;">Failed to load messages.</p>';
+  }
+}
+
+function filterMsgs(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.msg-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + filter).classList.add('active');
+  renderMessages();
+}
+
+function switchToUnread() {
+  filterMsgs('unread');
+  document.querySelector('.messages-panel').scrollIntoView({ behavior:'smooth' });
+}
+
+function renderMessages() {
+  const container = document.getElementById('msgs-container');
+  const empty     = document.getElementById('msgs-empty');
+  let list = allMessages;
+  if (currentFilter === 'unread') list = list.filter(m => !m.is_read || m.is_read == 0);
+  if (currentFilter === 'read')   list = list.filter(m => m.is_read  == 1);
+
+  if (!list.length) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  container.innerHTML = list.map(m => {
+    const isUnread = !m.is_read || m.is_read == 0;
+    return `<div class="msg-card${isUnread?' unread':''}" onclick="openMsg(${m.id})">
+      <div class="msg-avatar">${initials(m.full_name)}</div>
+      <div class="msg-body">
+        <div class="msg-row">
+          <span class="msg-name">${m.full_name||'Unknown'}</span>
+          <span class="msg-time">${formatDate(m.created_at)}</span>
+        </div>
+        <div class="msg-subject">${m.subject||'(no subject)'}</div>
+        <div class="msg-preview">${(m.message||'').substring(0,90)}${(m.message||'').length>90?'...':''}</div>
+        <div class="msg-actions" onclick="event.stopPropagation()">
+          ${isUnread ? `<button class="btn-mark" onclick="markRead(${m.id},this)"><i class="fas fa-check" style="margin-right:3px;"></i>Mark Read</button>` : ''}
+          <button class="btn-del" onclick="deleteMsg(${m.id},this)"><i class="fas fa-trash" style="margin-right:3px;"></i>Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openMsg(id) {
+  const m = allMessages.find(x => x.id == id);
+  if (!m) return;
+  currentModalId = id;
+  document.getElementById('modal-subject').textContent = m.subject || '(no subject)';
+  document.getElementById('modal-name').textContent    = m.full_name || '—';
+  document.getElementById('modal-email').textContent   = m.email || '—';
+  document.getElementById('modal-phone').textContent   = m.phone || '—';
+  document.getElementById('modal-phone-row').style.display = m.phone ? 'flex' : 'none';
+  document.getElementById('modal-date').textContent    = formatDate(m.created_at);
+  document.getElementById('modal-message').textContent = m.message || '';
+  document.getElementById('modal-mark-btn').style.display = (!m.is_read || m.is_read == 0) ? 'inline-flex' : 'none';
+  document.getElementById('msgModal').classList.add('open');
+  if (!m.is_read || m.is_read == 0) markRead(id, null, true);
+}
+
+function closeModal() {
+  document.getElementById('msgModal').classList.remove('open');
+  currentModalId = null;
+}
+
+async function markRead(id, btn, silent) {
+  try {
+    await fetch(`http://localhost:3000/api/contact/${id}/read`, { method:'PUT' });
+    const m = allMessages.find(x => x.id == id);
+    if (m) m.is_read = 1;
+    if (!silent) renderMessages();
+    const badgeEl = document.getElementById('msg-unread-badge');
+    const unread  = allMessages.filter(m => !m.is_read || m.is_read == 0).length;
+    if (unread > 0) {
+      badgeEl.textContent = unread;
+    } else {
+      badgeEl.style.display = 'none';
+      document.getElementById('unread-bar').style.display = 'none';
+    }
+  } catch(e) { alert('Failed to mark as read.'); }
+}
+
+async function markCurrentRead() {
+  if (!currentModalId) return;
+  await markRead(currentModalId, null);
+  document.getElementById('modal-mark-btn').style.display = 'none';
+  renderMessages();
+}
+
+async function deleteMsg(id, btn) {
+  if (!confirm('Delete this message?')) return;
+  try {
+    await fetch(`http://localhost:3000/api/contact/${id}`, { method:'DELETE' });
+    allMessages = allMessages.filter(x => x.id != id);
+    renderMessages();
+  } catch(e) { alert('Failed to delete.'); }
+}
+
+async function deleteCurrentMsg() {
+  if (!currentModalId) return;
+  await deleteMsg(currentModalId, null);
+  closeModal();
+}
+
+/* ─────────────────────────────────── INIT ─────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', async () => {
   const user = Auth.getCurrentUser();
   if (!user || !Auth.isAdmin()) { window.location.href = '../login.html'; return; }
 
   document.getElementById('admin-name').textContent = (user.full_name||user.FULL_NAME||'Admin').split(' ')[0];
   document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+
+  renderNotifBadge();
+  renderNotifList();
 
   try {
     const [orders, customers] = await Promise.all([api.getAllOrders(), api.getCustomers()]);
@@ -208,9 +771,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         </tr>`;
       }).join('');
     }
+
+    /* Set baseline counts on first load (no notifs for existing data) */
+    if (!localStorage.getItem('lastOrderCount')) lastOrderCount = orders.length;
+    localStorage.setItem('lastOrderCount', lastOrderCount);
+
   } catch(err) {
     document.getElementById('orders-loading').innerHTML = `<p style="color:#dc2626;padding:16px;font-size:13px;">Failed to load. Is the server running?</p>`;
   }
+
+  /* Load messages */
+  await loadMessages();
+
+  /* Poll every 30 seconds */
+  await pollActivity();
+  setInterval(pollActivity, 30000);
 });
 </script>
 </body>

@@ -59,6 +59,12 @@ const api = {
       .then(data => Array.isArray(data) ? data : [])
       .catch(() => []),
 
+  getMessages: () =>
+    fetch(`${API_BASE}/contact`)
+      .then(r => r.json())
+      .then(data => Array.isArray(data) ? data : [])
+      .catch(() => []),
+
   // ── ADMIN CATEGORIES ──────────────────────────────────────
   getCategories_admin: () =>
     fetch(`${API_BASE}/admin/categories`)

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Messages - Admin | Batangas Premium Naga</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
+  <style>
+    @keyframes spin    { to { transform: rotate(360deg); } }
+    @keyframes fadeIn  { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .anim { animation: fadeIn .3s ease both; }
+
+    /* Message cards */
+    .msg-card {
+      background: white; border-radius: 14px;
+      border: 1.5px solid #f3f4f6;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+      padding: 20px; margin-bottom: 14px;
+      transition: border-color .15s;
+      position: relative;
+    }
+    .msg-card.unread { border-left: 4px solid #dc2626; background: #fffbfb; }
+    .msg-card:hover  { border-color: #fca5a5; }
+
+    .msg-meta { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+    .msg-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg,#dc2626,#f97316);
+      display: flex; align-items:center; justify-content:center;
+      color: white; font-weight: 800; font-size: 15px; flex-shrink: 0;
+    }
+    .msg-name    { font-weight: 700; color: #111; font-size: 14px; }
+    .msg-email   { font-size: 12px; color: #9ca3af; }
+    .msg-date    { font-size: 11px; color: #9ca3af; margin-left: auto; white-space: nowrap; }
+    .msg-subject { font-weight: 600; color: #dc2626; font-size: 13px; margin-bottom: 6px; }
+    .msg-body    { font-size: 13px; color: #374151; line-height: 1.6; white-space: pre-wrap; }
+    .msg-phone   { font-size: 12px; color: #6b7280; margin-top: 4px; }
+
+    .msg-actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+
+    /* Unread badge */
+    .unread-dot {
+      display: inline-block; width: 8px; height: 8px;
+      background: #dc2626; border-radius: 50%; margin-right: 6px;
+    }
+
+    /* Filter tabs */
+    .filter-tabs { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; }
+    .filter-tab {
+      padding: 6px 16px; border-radius: 999px; font-size: 13px;
+      font-weight: 600; cursor: pointer; border: 1.5px solid #e5e7eb;
+      background: white; color: #6b7280; transition: all .15s;
+    }
+    .filter-tab.active { background: #dc2626; color: white; border-color: #dc2626; }
+
+    /* Empty state */
+    .empty-state { text-align:center; padding: 60px 20px; color: #9ca3af; }
+    .empty-state i { font-size: 48px; margin-bottom: 12px; display: block; opacity: .3; }
+
+    /* Modal overlay */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.4);
+      z-index: 9000; display: flex; align-items: center; justify-content: center;
+      padding: 20px; display: none;
+    }
+    .modal-box {
+      background: white; border-radius: 20px; max-width: 560px; width: 100%;
+      padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-title { font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: #111; }
+    .modal-field { margin-bottom: 12px; }
+    .modal-field label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 3px; }
+    .modal-field p { font-size: 14px; color: #111; line-height: 1.6; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+
+<!-- Mobile top bar -->
+<div class="admin-topbar">
+  <span class="admin-topbar-title">Messages</span>
+</div>
+
+<!-- Hamburger -->
+<button class="sb-toggle" id="sbToggle" onclick="sbOpen()">
+  <i class="fas fa-bars"></i>
+</button>
+
+<!-- Backdrop -->
+<div class="sb-backdrop" id="sbBackdrop" onclick="sbClose()"></div>
+
+<div class="admin-layout">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-header">
+      <a href="../index.html" class="logo" style="text-decoration:none;">
+        <div class="logo-icon"><i class="fas fa-utensils"></i></div>
+        <div>
+          <div class="logo-text" style="color:white;font-size:13px;">Batangas Premium Naga</div>
+          <div class="logo-subtext" style="color:rgba(255,255,255,.7);">Admin Panel</div>
+        </div>
+      </a>
+    </div>
+    <nav class="admin-sidebar-nav">
+      <a href="dashboard.html"  class="admin-nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+      <a href="orders.html"     class="admin-nav-item"><i class="fas fa-list-check"></i> Orders</a>
+      <a href="products.html"   class="admin-nav-item"><i class="fas fa-box"></i> Products</a>
+      <a href="categories.html" class="admin-nav-item"><i class="fas fa-tags"></i> Categories</a>
+      <a href="customers.html"  class="admin-nav-item"><i class="fas fa-users"></i> Customers</a>
+      <a href="reports.html"    class="admin-nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
+      <a href="messages.html"   class="admin-nav-item active"><i class="fas fa-envelope"></i> Messages</a>
+      <a href="../index.html"   class="admin-nav-item" style="margin-top:auto;"><i class="fas fa-arrow-left"></i> Back to Site</a>
+      <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;font-size:inherit;">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="admin-content">
+
+    <div class="admin-header-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h1 style="font-size:1.6rem;font-weight:700;margin-bottom:2px;">
+          Messages
+          <span id="unread-badge" style="display:none;background:#dc2626;color:white;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:middle;"></span>
+        </h1>
+        <p style="color:var(--gray-500);font-size:13px;">Contact messages from buyers</p>
+      </div>
+      <button onclick="markAllRead()" class="btn btn-outline btn-sm">
+        <i class="fas fa-check-double" style="margin-right:6px;"></i>Mark All Read
+      </button>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterMsgs('all',this)">All</button>
+      <button class="filter-tab" onclick="filterMsgs('unread',this)">Unread</button>
+      <button class="filter-tab" onclick="filterMsgs('read',this)">Read</button>
+    </div>
+
+    <!-- Messages list -->
+    <div id="msgs-container">
+      <div style="text-align:center;padding:48px;color:#9ca3af;">
+        <div style="width:26px;height:26px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>
+        Loading messages...
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Message detail modal -->
+<div class="modal-overlay" id="msg-modal" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+      <div class="modal-title" id="modal-subject">—</div>
+      <button onclick="document.getElementById('msg-modal').style.display='none'" style="background:none;border:none;font-size:18px;cursor:pointer;color:#9ca3af;padding:0 0 0 12px;">&times;</button>
+    </div>
+    <div class="modal-field">
+      <label>From</label>
+      <p id="modal-name">—</p>
+    </div>
+    <div class="modal-field">
+      <label>Email</label>
+      <p id="modal-email">—</p>
+    </div>
+    <div class="modal-field" id="modal-phone-row">
+      <label>Phone</label>
+      <p id="modal-phone">—</p>
+    </div>
+    <div class="modal-field">
+      <label>Date</label>
+      <p id="modal-date">—</p>
+    </div>
+    <div class="modal-field" style="background:#f9fafb;border-radius:10px;padding:14px;">
+      <label>Message</label>
+      <p id="modal-body">—</p>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+      <a id="modal-reply-btn" href="#" class="btn btn-primary" style="padding:10px 20px;">
+        <i class="fas fa-reply" style="margin-right:6px;"></i>Reply via Email
+      </a>
+      <button id="modal-delete-btn" class="btn btn-outline" style="padding:10px 20px;color:#dc2626;border-color:#fca5a5;" onclick="deleteFromModal()">
+        <i class="fas fa-trash" style="margin-right:6px;"></i>Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/cart.js"></script>
+<script src="../js/app.js"></script>
+<script>
+function sbOpen(){ document.getElementById('adminSidebar').classList.add('sb-open'); document.getElementById('sbBackdrop').classList.add('on'); }
+function sbClose(){ document.getElementById('adminSidebar').classList.remove('sb-open'); document.getElementById('sbBackdrop').classList.remove('on'); }
+
+let allMessages = [];
+let currentFilter = 'all';
+let modalMsgId = null;
+
+// ── Fetch messages
+async function loadMessages() {
+  try {
+    const data = await fetch('http://localhost:3000/api/contact').then(r => r.json());
+    allMessages = Array.isArray(data) ? data : [];
+    updateUnreadBadge();
+    renderMessages();
+  } catch (e) {
+    document.getElementById('msgs-container').innerHTML =
+      `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load messages. Is the server running?</p></div>`;
+  }
+}
+
+function updateUnreadBadge() {
+  const unread = allMessages.filter(m => !m.is_read).length;
+  const badge = document.getElementById('unread-badge');
+  if (unread > 0) { badge.textContent = unread + ' unread'; badge.style.display = 'inline'; }
+  else { badge.style.display = 'none'; }
+}
+
+function filterMsgs(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderMessages();
+}
+
+function renderMessages() {
+  const container = document.getElementById('msgs-container');
+  let list = allMessages;
+  if (currentFilter === 'unread') list = allMessages.filter(m => !m.is_read);
+  if (currentFilter === 'read')   list = allMessages.filter(m =>  m.is_read);
+
+  if (!list.length) {
+    container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No ${currentFilter === 'all' ? '' : currentFilter} messages found.</p></div>`;
+    return;
+  }
+
+  container.innerHTML = list.map((m, i) => {
+    const initials = (m.name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    const date = m.created_at ? new Date(m.created_at).toLocaleString('en-PH', { month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+    const isUnread = !m.is_read;
+    const preview = (m.message || '').slice(0, 120) + ((m.message||'').length > 120 ? '…' : '');
+
+    return `<div class="msg-card ${isUnread ? 'unread' : ''} anim" style="animation-delay:${i * 0.04}s;">
+      <div class="msg-meta">
+        <div class="msg-avatar">${initials}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="msg-name">${isUnread ? '<span class="unread-dot"></span>' : ''}${m.name || '—'}</div>
+          <div class="msg-email">${m.email || ''}</div>
+        </div>
+        <div class="msg-date">${date}</div>
+      </div>
+      ${m.subject ? `<div class="msg-subject"><i class="fas fa-tag" style="font-size:10px;margin-right:4px;"></i>${m.subject}</div>` : ''}
+      <div class="msg-body">${preview}</div>
+      ${m.phone ? `<div class="msg-phone"><i class="fas fa-phone" style="font-size:10px;margin-right:4px;"></i>${m.phone}</div>` : ''}
+      <div class="msg-actions">
+        <button class="btn btn-primary btn-sm" onclick="openModal(${m.id})" style="padding:6px 14px;font-size:12px;">
+          <i class="fas fa-eye" style="margin-right:4px;"></i>View Full
+        </button>
+        <a href="mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject||'Your message')}" class="btn btn-outline btn-sm" style="padding:6px 14px;font-size:12px;">
+          <i class="fas fa-reply" style="margin-right:4px;"></i>Reply
+        </a>
+        ${isUnread ? `<button class="btn btn-outline btn-sm" onclick="markRead(${m.id})" style="padding:6px 14px;font-size:12px;color:#16a34a;border-color:#86efac;">
+          <i class="fas fa-check" style="margin-right:4px;"></i>Mark Read
+        </button>` : ''}
+        <button class="btn btn-outline btn-sm" onclick="deleteMsg(${m.id})" style="padding:6px 14px;font-size:12px;color:#dc2626;border-color:#fca5a5;margin-left:auto;">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Open detail modal
+function openModal(id) {
+  const m = allMessages.find(x => x.id === id);
+  if (!m) return;
+  modalMsgId = id;
+
+  document.getElementById('modal-subject').textContent = m.subject || '(No subject)';
+  document.getElementById('modal-name').textContent    = m.name  || '—';
+  document.getElementById('modal-email').textContent   = m.email || '—';
+  document.getElementById('modal-body').textContent    = m.message || '—';
+  document.getElementById('modal-date').textContent    = m.created_at
+    ? new Date(m.created_at).toLocaleString('en-PH', { month:'long', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' })
+    : '—';
+
+  const phoneRow = document.getElementById('modal-phone-row');
+  if (m.phone) { document.getElementById('modal-phone').textContent = m.phone; phoneRow.style.display = 'block'; }
+  else { phoneRow.style.display = 'none'; }
+
+  document.getElementById('modal-reply-btn').href =
+    `mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject || 'Your message')}`;
+
+  document.getElementById('msg-modal').style.display = 'flex';
+
+  // Auto mark as read when opened
+  if (!m.is_read) markRead(id, true);
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('msg-modal'))
+    document.getElementById('msg-modal').style.display = 'none';
+}
+
+function deleteFromModal() {
+  document.getElementById('msg-modal').style.display = 'none';
+  if (modalMsgId) deleteMsg(modalMsgId);
+}
+
+// ── Mark one as read
+async function markRead(id, silent = false) {
+  try {
+    await fetch(`http://localhost:3000/api/contact/${id}/read`, { method: 'PUT' });
+    const msg = allMessages.find(m => m.id === id);
+    if (msg) msg.is_read = 1;
+    updateUnreadBadge();
+    if (!silent) renderMessages();
+  } catch (e) { if (!silent) Utils.showToast('Failed to mark as read', 'error'); }
+}
+
+// ── Mark all as read
+async function markAllRead() {
+  const unread = allMessages.filter(m => !m.is_read);
+  if (!unread.length) { Utils.showToast('No unread messages', 'info'); return; }
+  await Promise.all(unread.map(m => markRead(m.id, true)));
+  renderMessages();
+  Utils.showToast('All messages marked as read', 'success');
+}
+
+// ── Delete message
+async function deleteMsg(id) {
+  if (!confirm('Delete this message? This cannot be undone.')) return;
+  try {
+    await fetch(`http://localhost:3000/api/contact/${id}`, { method: 'DELETE' });
+    allMessages = allMessages.filter(m => m.id !== id);
+    updateUnreadBadge();
+    renderMessages();
+    Utils.showToast('Message deleted', 'success');
+  } catch (e) {
+    Utils.showToast('Failed to delete', 'error');
+  }
+}
+
+// ── Init
+document.addEventListener('DOMContentLoaded', () => {
+  const user = Auth.getCurrentUser();
+  if (!user || !Auth.isAdmin()) { window.location.href = '../login.html'; return; }
+  loadMessages();
+});
+</script>
+</body>
+</html>
