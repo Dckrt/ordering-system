@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
   <style>
+    /* ── Cart items ── */
     .cart-item {
       background: white; border-radius: 16px;
       box-shadow: 0 2px 12px rgba(0,0,0,.06);
@@ -17,14 +18,13 @@
     }
     .cart-item.selected { border-color: #dc2626; box-shadow: 0 2px 12px rgba(220,38,38,.15); }
     .cart-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 12px; flex-shrink: 0; background: #f3f4f6; }
-
     .item-body { flex: 1; min-width: 0; }
     .item-cat  { font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
     .item-name { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .item-unit { font-size: 13px; color: #dc2626; font-weight: 600; margin-bottom: 10px; }
     .item-row  { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-    /* Custom checkbox */
+    /* ── Checkbox ── */
     .item-check {
       width: 20px; height: 20px; border-radius: 6px; border: 2px solid #e5e7eb;
       background: white; cursor: pointer; display: flex; align-items: center;
@@ -33,7 +33,7 @@
     .item-check.checked { background: #dc2626; border-color: #dc2626; }
     .item-check.checked::after { content: '✓'; color: white; font-size: 12px; font-weight: 700; }
 
-    /* Qty controls */
+    /* ── Qty controls ── */
     .qty-ctrl { display: flex; align-items: center; border: 1.5px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
     .qty-btn {
       width: 34px; height: 34px; background: #f9fafb; border: none;
@@ -45,26 +45,24 @@
     .qty-btn.qty-dis { color: #d1d5db; cursor: not-allowed; }
     .qty-val { min-width: 34px; text-align: center; font-weight: 700; font-size: 14px; color: #111; }
 
+    /* ── Remove btn ── */
     .remove-btn {
       position: absolute; top: 10px; right: 10px;
       width: 26px; height: 26px; border-radius: 50%;
       background: #f3f4f6; border: 1px solid #e5e7eb;
       color: #9ca3af; cursor: pointer; font-size: 11px;
-      display: flex; align-items: center; justify-content: center;
-      transition: all .15s;
+      display: flex; align-items: center; justify-content: center; transition: all .15s;
     }
     .remove-btn:hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
 
-    /* Bottom checkout bar */
+    /* ── Checkout bar ── */
     .checkout-bar {
       background: white; border-top: 1px solid #f3f4f6;
-      box-shadow: 0 -4px 20px rgba(0,0,0,.08);
-      padding: 16px 20px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.08); padding: 16px 20px;
       display: flex; align-items: center; justify-content: space-between; gap: 16px;
-      margin-top: 24px; border-radius: 16px;
-      position: sticky; bottom: 16px;
+      margin-top: 24px; border-radius: 16px; position: sticky; bottom: 16px;
     }
-    .bar-left { display: flex; flex-direction: column; }
+    .bar-left  { display: flex; flex-direction: column; }
     .bar-label { font-size: 11px; color: #6b7280; margin-bottom: 2px; }
     .bar-total { font-size: 22px; font-weight: 800; color: #dc2626; }
     .bar-sub   { font-size: 12px; color: #9ca3af; }
@@ -77,10 +75,10 @@
       transition: opacity .15s; white-space: nowrap;
       display: flex; align-items: center; gap: 8px;
     }
-    .checkout-btn-main:hover { opacity: .88; }
+    .checkout-btn-main:hover    { opacity: .88; }
     .checkout-btn-main:disabled { opacity: .4; cursor: not-allowed; }
 
-    /* Select-all row */
+    /* ── Select all row ── */
     .sel-all-row {
       display: flex; align-items: center; gap: 10px;
       padding: 12px 16px; background: white; border-radius: 12px;
@@ -88,8 +86,8 @@
       box-shadow: 0 1px 6px rgba(0,0,0,.04);
     }
 
-    /* Notification bell */
-    .notif-bell { position: relative; cursor: pointer; display: flex; align-items: center; }
+    /* ── Notification bell ── */
+    .notif-bell  { position: relative; cursor: pointer; display: flex; align-items: center; }
     .notif-count {
       position: absolute; top: -6px; right: -6px;
       background: #dc2626; color: white; font-size: 10px; font-weight: 700;
@@ -100,8 +98,7 @@
       position: fixed; top: 64px; right: 16px; z-index: 8000;
       background: white; border: 1px solid #e5e7eb; border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0,0,0,.12);
-      min-width: 300px; max-width: 320px; display: none;
-      overflow: hidden;
+      min-width: 300px; max-width: 320px; display: none; overflow: hidden;
     }
     .notif-header { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
     .notif-item   { padding: 8px 12px; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
@@ -112,6 +109,7 @@
   </style>
 </head>
 <body>
+
   <header class="header">
     <div class="container header-content">
       <a href="index.html" class="logo">
@@ -122,15 +120,18 @@
         </div>
       </a>
       <nav class="nav">
-        <a href="index.html" class="nav-link">Home</a>
-        <a href="menu.html"  class="nav-link">Menu</a>
-        <a href="about.html" class="nav-link">About</a>
+        <a href="index.html"   class="nav-link">Home</a>
+        <a href="menu.html"    class="nav-link">Menu</a>
+        <a href="about.html"   class="nav-link">About</a>
         <a href="contact.html" class="nav-link">Contact</a>
+
+        <!-- Notification Bell — handled by app.js -->
         <div class="notif-bell nav-link" id="notif-bell" onclick="toggleNotifications()">
           <i class="fas fa-bell" style="font-size:18px;"></i>
           <span class="notif-count" id="notif-count">0</span>
         </div>
-        <a href="login.html" class="nav-link">
+
+        <a href="login.html" class="nav-link" id="user-nav-link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
           </svg>
@@ -146,13 +147,15 @@
     </div>
   </header>
 
-  <!-- Notification dropdown — populated by app.js loadNotifications() -->
+  <!-- Notification Dropdown — populated by app.js loadNotifications() -->
   <div class="notif-dropdown" id="notif-dropdown">
     <div class="notif-header">
       <span style="font-size:13px;font-weight:600;">Notifications</span>
       <button onclick="markAllRead()" style="background:none;border:none;font-size:11px;color:#dc2626;cursor:pointer;font-weight:500;">Mark all read</button>
     </div>
-    <div id="notif-list"><div class="notif-empty">No notifications</div></div>
+    <div id="notif-list">
+      <div class="notif-empty">No notifications</div>
+    </div>
   </div>
 
   <section class="hero">
@@ -187,7 +190,6 @@
 
       <!-- Cart content -->
       <div id="cart-content">
-        <!-- Select all -->
         <div class="sel-all-row">
           <div class="item-check" id="sel-all-check" onclick="toggleSelectAll()"></div>
           <span style="font-size:14px;font-weight:600;color:#374151;cursor:pointer;" onclick="toggleSelectAll()">Select All</span>
@@ -202,16 +204,15 @@
           </a>
         </div>
 
-        <!-- Checkout bar (sticky) -->
+        <!-- Checkout bar sticky -->
         <div class="checkout-bar">
           <div class="bar-left">
             <span class="bar-label">Selected total</span>
             <span class="bar-total" id="bar-total">₱0.00</span>
-            <span class="bar-sub" id="bar-sub">No items selected</span>
+            <span class="bar-sub"   id="bar-sub">No items selected</span>
           </div>
           <button class="checkout-btn-main" id="checkout-btn" onclick="doCheckout()" disabled>
-            <i class="fas fa-bag-shopping"></i>
-            Checkout
+            <i class="fas fa-bag-shopping"></i> Checkout
           </button>
         </div>
       </div>
@@ -243,13 +244,21 @@
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
   <script>
+  // ── Cart state ────────────────────────────────────────────────
   let checkedIds = new Set();
 
   document.addEventListener('DOMContentLoaded', () => {
+    Cart.updateBadge();
+    NavInit.init();
+    // ✅ loadNotifications() is called by NavInit.init() in app.js
+    // It uses SERVER_BASE which comes from API_BASE in api.js
+    // No need to hardcode localhost here!
+
     Cart.getItems().forEach(i => checkedIds.add(i.id));
     renderCart();
   });
 
+  // ── Cart rendering ────────────────────────────────────────────
   function renderCart() {
     const items     = Cart.getItems();
     const emptyEl   = document.getElementById('empty-cart');
@@ -274,9 +283,8 @@
       const atMin     = item.quantity <= 1;
       const isChecked = checkedIds.has(item.id);
       return `
-        <div class="cart-item ${isChecked ? 'selected' : ''}" id="ci-${item.id}" style="animation-delay:${idx*.05}s;padding-right:40px;">
-          <div class="item-check ${isChecked ? 'checked' : ''}" id="chk-${item.id}"
-            onclick="toggleCheck(${item.id})"></div>
+        <div class="cart-item ${isChecked?'selected':''}" id="ci-${item.id}" style="animation-delay:${idx*.05}s;padding-right:40px;">
+          <div class="item-check ${isChecked?'checked':''}" id="chk-${item.id}" onclick="toggleCheck(${item.id})"></div>
           <button class="remove-btn" onclick="doRemove(${item.id})" title="Remove">✕</button>
           <img src="${item.image||'https://via.placeholder.com/80'}" onerror="this.src='https://via.placeholder.com/80'" alt="${item.name}">
           <div class="item-body">
@@ -285,14 +293,11 @@
             <p class="item-unit">₱${parseFloat(item.price).toFixed(2)} each</p>
             <div class="item-row">
               <div class="qty-ctrl">
-                <button class="qty-btn ${atMin?'qty-dis':''}" onclick="${atMin?'':(`doQty(${item.id},-1)`)}"
-                  ${atMin?'disabled':''}>−</button>
+                <button class="qty-btn ${atMin?'qty-dis':''}" onclick="${atMin?'':(`doQty(${item.id},-1)`)}" ${atMin?'disabled':''}>−</button>
                 <span class="qty-val">${item.quantity}</span>
                 <button class="qty-btn" onclick="doQty(${item.id},1)">+</button>
               </div>
-              <span style="font-size:15px;font-weight:800;color:#111;margin-left:auto;">
-                ₱${(item.price*item.quantity).toFixed(2)}
-              </span>
+              <span style="font-size:15px;font-weight:800;color:#111;margin-left:auto;">₱${(item.price*item.quantity).toFixed(2)}</span>
             </div>
           </div>
         </div>`;
@@ -318,15 +323,14 @@
     const items = Cart.getItems();
     const chk   = document.getElementById('sel-all-check');
     if (!chk) return;
-    const all = items.length > 0 && items.every(i => checkedIds.has(i.id));
-    chk.classList.toggle('checked', all);
+    chk.classList.toggle('checked', items.length > 0 && items.every(i => checkedIds.has(i.id)));
   }
 
   function updateBar() {
     const items    = Cart.getItems();
     const selected = items.filter(i => checkedIds.has(i.id));
-    const total    = selected.reduce((s, i) => s + i.price * i.quantity, 0);
-    const count    = selected.reduce((s, i) => s + i.quantity, 0);
+    const total    = selected.reduce((s,i) => s + i.price * i.quantity, 0);
+    const count    = selected.reduce((s,i) => s + i.quantity, 0);
     document.getElementById('bar-total').textContent = '₱' + total.toFixed(2);
     document.getElementById('sel-label').textContent = `${selected.length} selected`;
     document.getElementById('bar-sub').textContent   = selected.length
@@ -349,8 +353,13 @@
 
   function doRemove(id) {
     const row = document.getElementById('ci-' + id);
-    if (row) { row.style.opacity = '0'; row.style.transform = 'translateX(20px)'; setTimeout(() => { checkedIds.delete(id); Cart.removeItem(id); renderCart(); }, 220); }
-    else { checkedIds.delete(id); Cart.removeItem(id); renderCart(); }
+    if (row) {
+      row.style.opacity   = '0';
+      row.style.transform = 'translateX(20px)';
+      setTimeout(() => { checkedIds.delete(id); Cart.removeItem(id); renderCart(); }, 220);
+    } else {
+      checkedIds.delete(id); Cart.removeItem(id); renderCart();
+    }
   }
 
   function doCheckout() {
@@ -363,6 +372,12 @@
     sessionStorage.setItem('checkedItems', JSON.stringify([...checkedIds]));
     goTo('checkout.html');
   }
+
+  // ── NOTE ─────────────────────────────────────────────────────
+  // toggleNotifications(), markAllRead(), loadNotifications()
+  // are all defined in app.js and use SERVER_BASE from API_BASE.
+  // They work automatically for both localhost AND LAN (192.168.x.x).
+  // Just change the IP in api.js — everything updates!
   </script>
 </body>
 </html>

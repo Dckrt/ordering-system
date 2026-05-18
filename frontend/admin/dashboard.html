@@ -6,14 +6,15 @@
   <title>Dashboard - Admin | Batangas Premium Naga</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css">
+  <link rel="stylesheet" href="css/nav-mobile.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
   <style>
     @keyframes spin  { to { transform: rotate(360deg); } }
     @keyframes fadeIn{ from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);} }
     @keyframes slideIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.3);} }
     .anim { animation: fadeIn .3s ease both; }
 
-    /* ── Notification Bell ── */
     .notif-wrapper { position:relative; display:inline-flex; align-items:center; }
     .notif-btn {
       background:none; border:1.5px solid #e5e7eb; border-radius:10px;
@@ -31,7 +32,6 @@
     }
     .notif-badge.show { display:flex; }
 
-    /* ── Notification Dropdown ── */
     .notif-dropdown {
       position:absolute; top:calc(100% + 8px); right:0; width:340px;
       background:white; border:1px solid #e5e7eb; border-radius:14px;
@@ -63,7 +63,6 @@
     .notif-footer { padding:10px 16px; border-top:1px solid #f3f4f6; text-align:center; }
     .notif-footer a { font-size:12px; color:#dc2626; font-weight:600; text-decoration:none; }
 
-    /* ── Messages Panel ── */
     .msg-panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px; }
     .msg-panel-title { font-size:1rem; font-weight:700; color:var(--gray-700); display:flex; align-items:center; gap:6px; margin:0; }
     .msg-unread-pill { background:#dc2626; color:white; font-size:10px; font-weight:700; border-radius:999px; padding:2px 8px; display:none; }
@@ -89,7 +88,6 @@
     .unread-bar { background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:12px 16px; margin-bottom:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; display:none; }
     .unread-bar.show { display:flex; }
 
-    /* ── Message Modal ── */
     .msg-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:10000; align-items:center; justify-content:center; padding:16px; display:none; }
     .msg-modal-overlay.open { display:flex; }
     .msg-modal { background:white; border-radius:16px; width:100%; max-width:500px; padding:24px; animation:slideIn .2s ease; max-height:90vh; overflow-y:auto; }
@@ -129,7 +127,7 @@
       <a href="products.html"   class="admin-nav-item"><i class="fas fa-box"></i> Products</a>
       <a href="categories.html" class="admin-nav-item"><i class="fas fa-tags"></i> Categories</a>
       <a href="customers.html"  class="admin-nav-item"><i class="fas fa-users"></i> Customers</a>
-      <a href="messages.html"   class="admin-nav-item"><i class="fas fa-comments"></i> Messages <span id="sidebar-msg-badge" style="display:none;background:#dc2626;color:white;font-size:9px;font-weight:700;border-radius:999px;padding:1px 6px;margin-left:4px;"></span></a>
+      <a href="messages.html"   class="admin-nav-item"><i class="fas fa-comments"></i> Messages</a>
       <a href="reports.html"    class="admin-nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
       <a href="../index.html"   class="admin-nav-item" style="margin-top:auto;"><i class="fas fa-arrow-left"></i> Back to Site</a>
       <button onclick="Auth.logout()" class="admin-nav-item" style="background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;width:100%;text-align:left;font-size:inherit;">
@@ -147,7 +145,6 @@
         <p style="color:var(--gray-500);font-size:13px;">Welcome back, <strong id="admin-name">Admin</strong> · <span id="current-date"></span></p>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <!-- 🔔 Notification Bell -->
         <div class="notif-wrapper">
           <button class="notif-btn" onclick="toggleNotif()" title="Notifications">
             <i class="fas fa-bell"></i>
@@ -158,15 +155,11 @@
               <h3><i class="fas fa-bell" style="margin-right:6px;color:#dc2626;font-size:12px;"></i>Notifications</h3>
               <button class="notif-clear-btn" onclick="clearAllNotifs()">Clear all</button>
             </div>
-            <div class="notif-list" id="notifList">
-              <div class="notif-empty">No notifications yet</div>
-            </div>
+            <div class="notif-list" id="notifList"><div class="notif-empty">No notifications yet</div></div>
             <div class="notif-footer"><a href="orders.html">View all orders →</a></div>
           </div>
         </div>
-        <a href="orders.html" class="btn btn-primary btn-sm print-hide">
-          <i class="fas fa-list-check" style="margin-right:6px;"></i>Manage Orders
-        </a>
+        <a href="orders.html" class="btn btn-primary btn-sm print-hide"><i class="fas fa-list-check" style="margin-right:6px;"></i>Manage Orders</a>
       </div>
     </div>
 
@@ -194,22 +187,22 @@
     <div style="margin-bottom:20px;">
       <h2 style="font-size:1rem;font-weight:700;margin-bottom:12px;color:var(--gray-700);">Quick Actions</h2>
       <div class="grid grid-cols-4" style="gap:10px;">
-        <a href="products.html" class="card" style="text-decoration:none;"><div class="card-content text-center" style="padding:14px;"><div class="stats-icon blue" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-plus"></i></div><p style="font-size:12px;font-weight:600;">Add Product</p></div></a>
-        <a href="orders.html"   class="card" style="text-decoration:none;"><div class="card-content text-center" style="padding:14px;"><div class="stats-icon orange" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-list-check"></i></div><p style="font-size:12px;font-weight:600;">Orders</p></div></a>
-        <a href="customers.html"class="card" style="text-decoration:none;"><div class="card-content text-center" style="padding:14px;"><div class="stats-icon green" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-users"></i></div><p style="font-size:12px;font-weight:600;">Customers</p></div></a>
-        <!-- Messages quick action -->
-        <a href="messages.html" class="card" style="text-decoration:none;"><div class="card-content text-center" style="padding:14px;"><div class="stats-icon red" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-comments"></i></div><p style="font-size:12px;font-weight:600;">Messages</p></div></a>
+        <a href="products.html"  class="card" style="text-decoration:none;"><div class="card-content text-center" style="padding:14px;"><div class="stats-icon blue"   style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-plus"></i></div><p style="font-size:12px;font-weight:600;">Add Product</p></div></a>
+        <a href="orders.html"    class="card" style="text-decoration:none;"><div class="card-content text-center" style="padding:14px;"><div class="stats-icon orange" style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-list-check"></i></div><p style="font-size:12px;font-weight:600;">Orders</p></div></a>
+        <a href="customers.html" class="card" style="text-decoration:none;"><div class="card-content text-center" style="padding:14px;"><div class="stats-icon green"  style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-users"></i></div><p style="font-size:12px;font-weight:600;">Customers</p></div></a>
+        <a href="messages.html"  class="card" style="text-decoration:none;"><div class="card-content text-center" style="padding:14px;"><div class="stats-icon red"    style="width:40px;height:40px;margin:0 auto 8px;font-size:15px;"><i class="fas fa-comments"></i></div><p style="font-size:12px;font-weight:600;">Messages</p></div></a>
       </div>
     </div>
 
     <!-- Messages from Buyers -->
     <div style="margin-bottom:24px;" id="messages-section">
+
       <div class="unread-bar" id="unreadBar">
         <div style="display:flex;align-items:center;gap:8px;">
           <i class="fas fa-envelope" style="color:#ea580c;font-size:14px;"></i>
           <span style="font-size:13px;font-weight:600;color:#7c2d12;"><span id="unread-count">0</span> unread message(s) from buyers</span>
         </div>
-        <a href="messages.html" style="font-size:12px;font-weight:600;color:#ea580c;background:#ffedd5;border:1px solid #fdba74;border-radius:6px;padding:5px 12px;text-decoration:none;">View All Messages →</a>
+        <button onclick="filterMsgs('unread')" style="font-size:12px;font-weight:600;color:#ea580c;background:#ffedd5;border:1px solid #fdba74;border-radius:6px;padding:5px 12px;cursor:pointer;">View Unread</button>
       </div>
 
       <div class="msg-panel-header">
@@ -224,7 +217,7 @@
             <button class="msg-tab"        id="tab-unread" onclick="filterMsgs('unread')">Unread</button>
             <button class="msg-tab"        id="tab-read"   onclick="filterMsgs('read')">Read</button>
           </div>
-          <a href="messages.html" class="btn btn-outline btn-sm">View All →</a>
+          <a href="messages.html" class="btn btn-outline btn-sm" style="font-size:12px;">View All →</a>
         </div>
       </div>
 
@@ -240,6 +233,7 @@
       </div>
 
       <div id="msgs-container"></div>
+
       <div id="msgs-empty" style="display:none;text-align:center;padding:36px;color:#9ca3af;">
         <i class="fas fa-inbox" style="font-size:30px;margin-bottom:10px;display:block;"></i>
         <p style="font-size:13px;margin:0;">No messages found</p>
@@ -285,6 +279,9 @@
       <button id="modal-mark-btn" style="border:1px solid #bbf7d0;background:#f0fdf4;color:#059669;" onclick="markCurrentRead()">
         <i class="fas fa-check"></i>Mark as Read
       </button>
+      <a id="modal-reply-btn" href="#" class="btn btn-primary" style="padding:8px 16px;font-size:12px;display:inline-flex;align-items:center;gap:6px;">
+        <i class="fas fa-reply"></i>Reply via Email
+      </a>
       <button style="border:1px solid #fecaca;background:#fef2f2;color:#dc2626;" onclick="deleteCurrentMsg()">
         <i class="fas fa-trash"></i>Delete
       </button>
@@ -297,7 +294,6 @@
 <script src="../js/cart.js"></script>
 <script src="../js/app.js"></script>
 <script>
-/* ── Sidebar ── */
 function sbOpen()  { document.getElementById('adminSidebar').classList.add('sb-open');    document.getElementById('sbBackdrop').classList.add('on'); }
 function sbClose() { document.getElementById('adminSidebar').classList.remove('sb-open'); document.getElementById('sbBackdrop').classList.remove('on'); }
 
@@ -338,54 +334,33 @@ function renderNotifList() {
     list.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:22px;margin-bottom:6px;display:block;color:#d1d5db;"></i>No notifications yet</div>';
     return;
   }
-  const iconMap = {
-    order:  'fa-bag-shopping order',
-    msg:    'fa-envelope msg',
-    cancel: 'fa-times-circle cancel'
-  };
-  list.innerHTML = notifications.slice(0, 15).map(n => {
+  const iconMap = { order:'fa-bag-shopping order', msg:'fa-envelope msg', cancel:'fa-times-circle cancel' };
+  const slice = notifications.slice(0, 15);
+  list.innerHTML = slice.map((n, idx) => {
     const parts = (iconMap[n.type] || 'fa-bell order').split(' ');
-    return `<div class="notif-item${n.seen ? '' : ' unread'}" onclick="openNotif('${n.id}','${n.link||''}')">
+    return `<div class="notif-item${n.seen ? '' : ' unread'}" data-idx="${idx}" style="cursor:pointer;">
       <div class="notif-icon ${parts[1]||'order'}"><i class="fas ${parts[0]}"></i></div>
       <div class="notif-text"><p>${n.text}</p><span>${relativeTime(n.time)}</span></div>
       ${n.seen ? '' : '<div class="notif-dot"></div>'}
     </div>`;
   }).join('');
+
+  // Attach click via JS — avoids string escaping issues with onclick=""
+  list.querySelectorAll('.notif-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const n = slice[parseInt(el.dataset.idx)];
+      if (!n) return;
+      n.seen = true;
+      saveNotifs(); renderNotifBadge(); renderNotifList();
+      document.getElementById('notifDropdown').classList.remove('open');
+      if (n.link && n.link !== '#' && !n.link.startsWith('#')) {
+        window.location.href = n.link;
+      }
+    });
+  });
 }
 
-// ── FIX: openNotif now correctly redirects to messages.html ──
-function openNotif(id, link) {
-  // Mark as seen
-  const n = notifications.find(x => String(x.id) === String(id));
-  if (n) { n.seen = true; saveNotifs(); renderNotifBadge(); renderNotifList(); }
-
-  // Close dropdown
-  document.getElementById('notifDropdown').classList.remove('open');
-
-  // ── Navigate ──
-  if (!link) return;
-
-  // If link is a real page (not just #something)
-  if (!link.startsWith('#')) {
-    window.location.href = link;
-    return;
-  }
-
-  // If link starts with # — scroll to section on this page
-  // But for messages, we redirect to messages.html instead
-  if (link === '#messages-section') {
-    window.location.href = 'messages.html';
-    return;
-  }
-
-  // Fallback scroll
-  const el = document.querySelector(link);
-  if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
-}
-
-function toggleNotif() {
-  document.getElementById('notifDropdown').classList.toggle('open');
-}
+function toggleNotif() { document.getElementById('notifDropdown').classList.toggle('open'); }
 
 function clearAllNotifs() {
   notifications = []; saveNotifs(); renderNotifBadge(); renderNotifList();
@@ -398,9 +373,9 @@ document.addEventListener('click', e => {
 });
 
 /* ── Messages ── */
-let allMessages   = [];
-let currentFilter = 'all';
-let currentModalId= null;
+let allMessages    = [];
+let currentFilter  = 'all';
+let currentModalId = null;
 
 function initials(name) {
   if (!name) return '?';
@@ -423,9 +398,8 @@ async function loadMessages() {
   document.getElementById('msgs-empty').style.display = 'none';
 
   try {
-    const res = await fetch('http://localhost:3000/api/contact');
-    if (!res.ok) throw new Error('Server error ' + res.status);
-    const data = await res.json();
+    // ✅ Using api.getMessages() — routes through API_BASE in api.js
+    const data = await api.getMessages();
     allMessages = Array.isArray(data) ? data : [];
     loadEl.style.display = 'none';
     renderMessages();
@@ -441,18 +415,12 @@ function updateUnreadUI() {
   const unread = allMessages.filter(m => !m.is_read || m.is_read == 0).length;
   const pill   = document.getElementById('msgUnreadPill');
   const bar    = document.getElementById('unreadBar');
-  const badge  = document.getElementById('sidebar-msg-badge');
-
   if (unread > 0) {
     pill.textContent = unread; pill.style.display = 'inline';
     document.getElementById('unread-count').textContent = unread;
     bar.classList.add('show');
-    // Update sidebar badge
-    if (badge) { badge.textContent = unread; badge.style.display = 'inline'; }
   } else {
-    pill.style.display = 'none';
-    bar.classList.remove('show');
-    if (badge) badge.style.display = 'none';
+    pill.style.display = 'none'; bar.classList.remove('show');
   }
 }
 
@@ -468,11 +436,10 @@ function renderMessages() {
   const empty     = document.getElementById('msgs-empty');
   let list = [...allMessages];
   if (currentFilter === 'unread') list = list.filter(m => !m.is_read || m.is_read == 0);
-  if (currentFilter === 'read')   list = list.filter(m => m.is_read == 1);
+  if (currentFilter === 'read')   list = list.filter(m =>  m.is_read == 1);
   if (!list.length) { container.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
-
-  // Show only first 5 on dashboard, rest go to messages.html
+  // Show only latest 5 on dashboard
   const preview = list.slice(0, 5);
   container.innerHTML = preview.map(m => {
     const unread = !m.is_read || m.is_read == 0;
@@ -484,7 +451,7 @@ function renderMessages() {
           <span class="msg-time">${fmtDate(m.created_at)}</span>
         </div>
         <div class="msg-subject">${m.subject || '(no subject)'}</div>
-        <div class="msg-preview">${(m.message || '').substring(0,100)}${(m.message||'').length>100?'…':''}</div>
+        <div class="msg-preview">${(m.message||'').substring(0,100)}${(m.message||'').length>100?'…':''}</div>
         <div class="msg-btns" onclick="event.stopPropagation()">
           ${unread ? `<button class="btn-mark" onclick="markRead(${m.id})"><i class="fas fa-check" style="margin-right:3px;"></i>Mark Read</button>` : ''}
           <button class="btn-del" onclick="deleteMsg(${m.id})"><i class="fas fa-trash" style="margin-right:3px;"></i>Delete</button>
@@ -495,15 +462,16 @@ function renderMessages() {
 
   if (list.length > 5) {
     container.innerHTML += `<div style="text-align:center;padding:12px;">
-      <a href="messages.html" style="font-size:13px;font-weight:600;color:#dc2626;text-decoration:none;">
-        <i class="fas fa-arrow-right" style="margin-right:4px;"></i>View all ${list.length} messages →
+      <a href="messages.html" class="btn btn-outline btn-sm" style="font-size:13px;">
+        View all ${list.length} messages →
       </a>
     </div>`;
   }
 }
 
 function openMsg(id) {
-  const m = allMessages.find(x => x.id == id); if (!m) return;
+  const m = allMessages.find(x => x.id == id);
+  if (!m) return;
   currentModalId = id;
   document.getElementById('modal-subject').textContent = m.subject || '(no subject)';
   document.getElementById('modal-name').textContent    = m.full_name || '—';
@@ -512,6 +480,7 @@ function openMsg(id) {
   document.getElementById('modal-phone-row').style.display = m.phone ? 'flex' : 'none';
   document.getElementById('modal-date').textContent    = fmtDate(m.created_at);
   document.getElementById('modal-message').textContent = m.message || '';
+  document.getElementById('modal-reply-btn').href = `mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject||'Your message')}`;
   const isUnread = !m.is_read || m.is_read == 0;
   document.getElementById('modal-mark-btn').style.display = isUnread ? 'inline-flex' : 'none';
   document.getElementById('msgModal').classList.add('open');
@@ -522,12 +491,13 @@ function closeModal() { document.getElementById('msgModal').classList.remove('op
 
 async function markRead(id, silent) {
   try {
-    await fetch('http://localhost:3000/api/contact/' + id + '/read', { method: 'PUT' });
+    // ✅ Using api.markMessageRead()
+    await api.markMessageRead(id);
     const m = allMessages.find(x => x.id == id);
     if (m) m.is_read = 1;
     if (!silent) renderMessages();
     updateUnreadUI();
-  } catch(e) { if (!silent) Utils.showToast('Failed to mark as read','error'); }
+  } catch(e) { if (!silent) Utils.showToast('Failed to mark as read', 'error'); }
 }
 
 async function markCurrentRead() {
@@ -539,28 +509,26 @@ async function markCurrentRead() {
 async function deleteMsg(id) {
   if (!confirm('Delete this message?')) return;
   try {
-    await fetch('http://localhost:3000/api/contact/' + id, { method: 'DELETE' });
+    // ✅ Using api.deleteMessage()
+    await api.deleteMessage(id);
     allMessages = allMessages.filter(x => x.id != id);
     renderMessages(); updateUnreadUI();
     if (currentModalId == id) closeModal();
-  } catch(e) { Utils.showToast('Failed to delete','error'); }
+  } catch(e) { Utils.showToast('Failed to delete', 'error'); }
 }
 
 async function deleteCurrentMsg() { if (currentModalId) await deleteMsg(currentModalId); }
 
-/* ── Poll for new activity ── */
+/* ── Poll every 30s ── */
 async function pollActivity() {
   try {
-    const [ordRes, msgRes] = await Promise.all([
-      fetch('http://localhost:3000/api/orders').catch(()=>null),
-      fetch('http://localhost:3000/api/contact').catch(()=>null)
+    const [orders, msgs] = await Promise.all([
+      api.getAllOrders().catch(() => []),
+      api.getMessages().catch(() => [])
     ]);
-    const orders = ordRes && ordRes.ok ? await ordRes.json().catch(()=>[]) : [];
-    const msgs   = msgRes && msgRes.ok ? await msgRes.json().catch(()=>[]) : [];
     const ordArr = Array.isArray(orders) ? orders : [];
     const msgArr = Array.isArray(msgs)   ? msgs   : [];
 
-    // New orders
     if (lastOrderCount >= 0 && ordArr.length > lastOrderCount) {
       const n = ordArr.length - lastOrderCount;
       addNotif('order', `${n} new order${n>1?'s':''} placed!`, 'orders.html');
@@ -568,36 +536,33 @@ async function pollActivity() {
     lastOrderCount = ordArr.length;
     localStorage.setItem('lastOrderCount', lastOrderCount);
 
-    // Cancelled orders
     const cancelledNow = ordArr.filter(o=>(o.status||o.STATUS)==='Cancelled').map(o=>o.order_id||o.ORDER_ID);
     cancelledNow.filter(id=>!lastCancelledIds.includes(id)).forEach(id=>{
-      const ord = ordArr.find(o=>(o.order_id||o.ORDER_ID)===id);
+      const ord  = ordArr.find(o=>(o.order_id||o.ORDER_ID)===id);
       const name = ord?(ord.full_name||ord.FULL_NAME||'A buyer'):'A buyer';
-      addNotif('cancel', `${name} cancelled order ORD-${String(id).padStart(4,'0')}`, 'orders.html');
+      addNotif('cancel',`${name} cancelled ORD-${String(id).padStart(4,'0')}`,'orders.html');
     });
     lastCancelledIds = cancelledNow;
     localStorage.setItem('lastCancelledIds', JSON.stringify(lastCancelledIds));
 
-    // ── FIX: new messages now redirect to messages.html ──
     if (lastMsgCount >= 0 && msgArr.length > lastMsgCount) {
       const n = msgArr.length - lastMsgCount;
-      addNotif('msg', `${n} new message${n>1?'s':''} from buyer${n>1?'s':''}!`, 'messages.html');
+      addNotif('msg', `${n} new message${n>1?'s':''} from buyers!`, 'messages.html');
       allMessages = msgArr; renderMessages(); updateUnreadUI();
     }
-    if (lastMsgCount < 0) lastMsgCount = msgArr.length;
-    else lastMsgCount = msgArr.length;
+    lastMsgCount = msgArr.length;
     localStorage.setItem('lastMsgCount', lastMsgCount);
 
   } catch(e) { /* silent */ }
 }
 
-/* ── Init ── */
+/* ── INIT ── */
 document.addEventListener('DOMContentLoaded', async () => {
   const user = Auth.getCurrentUser();
   if (!user || !Auth.isAdmin()) { window.location.href = '../login.html'; return; }
 
   document.getElementById('admin-name').textContent =
-    (user.full_name||user.FULL_NAME||'Admin').split(' ')[0];
+    (user.full_name || user.FULL_NAME || 'Admin').split(' ')[0];
   document.getElementById('current-date').textContent =
     new Date().toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
 
@@ -620,7 +585,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!orders.length) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:#9ca3af;">No orders yet</td></tr>`;
     } else {
-      tbody.innerHTML = orders.slice(0,8).map(o => {
+      tbody.innerHTML = orders.slice(0,8).map(o=>{
         const id=o.order_id||o.ORDER_ID, name=o.full_name||o.FULL_NAME||'—',
               total=parseFloat(o.total||o.TOTAL||0), status=o.status||o.STATUS||'Pending',
               date=o.created_at||o.CREATED_AT;
@@ -636,7 +601,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   } catch(err) {
     document.getElementById('orders-loading').innerHTML =
-      `<p style="color:#dc2626;padding:16px;font-size:13px;">Failed to load. Is the server running?</p>`;
+      `<p style="color:#dc2626;padding:16px;font-size:13px;">Failed to load orders. Is the server running?</p>`;
   }
 
   await pollActivity();

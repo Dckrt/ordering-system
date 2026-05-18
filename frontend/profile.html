@@ -7,196 +7,82 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
   <style>
-    /* ── Notification ── */
     .notif-bell  { position:relative; cursor:pointer; display:flex; align-items:center; }
-    .notif-count {
-      position:absolute; top:-6px; right:-6px;
-      background:#dc2626; color:white; font-size:10px; font-weight:700;
-      width:18px; height:18px; border-radius:50%;
-      display:none; align-items:center; justify-content:center;
-    }
-    .notif-dropdown {
-      position:fixed; top:64px; right:16px; z-index:8000;
-      background:white; border:1px solid #e5e7eb; border-radius:12px;
-      box-shadow:0 8px 24px rgba(0,0,0,.12);
-      min-width:320px; max-height:400px; overflow-y:auto; display:none;
-    }
-    .notif-header { padding:12px 16px; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:center; }
-    .notif-item   { padding:12px 16px; border-bottom:1px solid #f9fafb; font-size:13px; }
+    .notif-count { position:absolute; top:-6px; right:-6px; background:#dc2626; color:white; font-size:10px; font-weight:700; width:18px; height:18px; border-radius:50%; display:none; align-items:center; justify-content:center; }
+    .notif-dropdown { position:fixed; top:64px; right:16px; z-index:8000; background:white; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.12); min-width:300px; max-width:320px; display:none; overflow:hidden; }
+    .notif-header { padding:10px 14px; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:center; }
+    .notif-item   { padding:8px 12px; border-bottom:1px solid #f3f4f6; font-size:12px; cursor:pointer; }
     .notif-item.unread { background:#fff7f7; }
-    .notif-empty  { padding:32px; text-align:center; color:#9ca3af; font-size:13px; }
+    .notif-empty  { padding:20px; text-align:center; color:#9ca3af; font-size:12px; }
 
-    /* ── Profile Dropdown specific ── */
-    .profile-dd {
-      position:fixed; top:64px; right:16px; z-index:8001;
-      background:white; border:1px solid #e5e7eb; border-radius:12px;
-      box-shadow:0 8px 24px rgba(0,0,0,.12);
-      min-width:220px; display:none;
-    }
-    .profile-dd-header {
-      padding:14px 16px 10px; border-bottom:1px solid #f0f0f0;
-    }
+    .profile-dd { position:fixed; top:64px; right:16px; z-index:8001; background:white; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.12); min-width:220px; display:none; }
+    .profile-dd-header { padding:14px 16px 10px; border-bottom:1px solid #f0f0f0; }
     .profile-dd-header p { margin:0; font-size:13px; font-weight:700; color:#111; }
     .profile-dd-header span { font-size:11px; color:#9ca3af; }
-    .profile-dd-item {
-      padding:11px 16px; display:flex; align-items:center; gap:10px;
-      font-size:13px; color:#374151; cursor:pointer;
-      border-bottom:1px solid #f9fafb; transition:background .1s;
-    }
+    .profile-dd-item { padding:11px 16px; display:flex; align-items:center; gap:10px; font-size:13px; color:#374151; cursor:pointer; border-bottom:1px solid #f9fafb; transition:background .1s; }
     .profile-dd-item:last-child { border-bottom:none; border-radius:0 0 12px 12px; }
     .profile-dd-item:hover { background:#f9fafb; }
     .profile-dd-item.danger { color:#dc2626; font-weight:600; }
     .profile-dd-item.danger:hover { background:#fef2f2; }
-    .profile-dd-icon {
-      width:30px; height:30px; border-radius:8px;
-      display:flex; align-items:center; justify-content:center;
-      font-size:13px; flex-shrink:0;
-    }
+    .profile-dd-icon { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
     .pdi-blue   { background:#eff6ff; color:#1d4ed8; }
     .pdi-red    { background:#fef2f2; color:#dc2626; }
     .pdi-orange { background:#fff7ed; color:#c2410c; }
 
-    /* ── Profile layout ── */
-    .profile-wrap {
-      max-width: 860px; margin: 0 auto;
-      display: grid; grid-template-columns: 280px 1fr; gap: 24px;
-      padding: var(--space-8) var(--space-4);
-    }
-    @media (max-width: 700px) {
-      .profile-wrap { grid-template-columns: 1fr; }
-    }
-
-    /* ── Left sidebar card ── */
-    .profile-sidebar {
-      background: white; border-radius: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,.07);
-      padding: 28px 20px; text-align: center;
-      height: fit-content; position: sticky; top: 20px;
-    }
+    .profile-wrap { max-width:860px; margin:0 auto; display:grid; grid-template-columns:280px 1fr; gap:24px; padding:var(--space-8) var(--space-4); }
+    @media(max-width:700px){.profile-wrap{grid-template-columns:1fr;}}
+    .profile-sidebar { background:white; border-radius:20px; box-shadow:0 4px 20px rgba(0,0,0,.07); padding:28px 20px; text-align:center; height:fit-content; position:sticky; top:20px; }
     .profile-avatar-wrap { position:relative; width:110px; height:110px; margin:0 auto 16px; cursor:pointer; }
-    .profile-avatar {
-      width:110px; height:110px; border-radius:50%;
-      background:linear-gradient(135deg,#dc2626,#f97316);
-      display:flex; align-items:center; justify-content:center;
-      font-size:2.8rem; font-weight:800; color:white; overflow:hidden;
-      border:4px solid white; box-shadow:0 4px 20px rgba(220,38,38,.3);
-      transition: transform .2s;
-    }
-    .profile-avatar:hover { transform: scale(1.04); }
-    .profile-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-    .avatar-edit-btn {
-      position:absolute; bottom:4px; right:4px;
-      width:30px; height:30px; border-radius:50%;
-      background:#dc2626; border:3px solid white;
-      color:white; font-size:11px; cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-      box-shadow:0 2px 8px rgba(220,38,38,.4);
-    }
-    .avatar-upload-input { display:none; }
+    .profile-avatar { width:110px; height:110px; border-radius:50%; background:linear-gradient(135deg,#dc2626,#f97316); display:flex; align-items:center; justify-content:center; font-size:2.8rem; font-weight:800; color:white; overflow:hidden; border:4px solid white; box-shadow:0 4px 20px rgba(220,38,38,.3); transition:transform .2s; }
+    .profile-avatar:hover{transform:scale(1.04);}
+    .profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+    .avatar-edit-btn { position:absolute; bottom:4px; right:4px; width:30px; height:30px; border-radius:50%; background:#dc2626; border:3px solid white; color:white; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(220,38,38,.4); }
+    .avatar-upload-input{display:none;}
     .profile-name  { font-size:1.15rem; font-weight:800; color:#111; margin-bottom:4px; }
     .profile-email { font-size:13px; color:#9ca3af; margin-bottom:4px; }
-    .profile-role  {
-      display:inline-flex; align-items:center; gap:5px;
-      background:#fef2f2; color:#dc2626; border:1px solid #fca5a5;
-      border-radius:999px; padding:3px 12px; font-size:12px; font-weight:600; margin-bottom:20px;
-    }
-    .profile-role.admin-role { background:#dbeafe; color:#1d4ed8; border-color:#bfdbfe; }
-
-    /* Stats in sidebar */
-    .sidebar-stats { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
-    .sidebar-stat {
-      display:flex; align-items:center; justify-content:space-between;
-      background:#f9fafb; border-radius:10px; padding:10px 14px;
-      font-size:13px;
-    }
-    .sidebar-stat-label { color:#6b7280; display:flex; align-items:center; gap:6px; }
-    .sidebar-stat-val   { font-weight:700; color:#111; }
-
-    /* Sidebar nav */
-    .sidebar-nav { display:flex; flex-direction:column; gap:4px; }
-    .sidebar-nav-item {
-      display:flex; align-items:center; gap:10px;
-      padding:10px 14px; border-radius:10px;
-      font-size:14px; font-weight:500; color:#6b7280;
-      cursor:pointer; transition:all .15s; text-decoration:none;
-      border:none; background:none; width:100%; text-align:left;
-    }
-    .sidebar-nav-item:hover { background:#f3f4f6; color:#111; }
-    .sidebar-nav-item.active { background:#fef2f2; color:#dc2626; font-weight:700; }
-    .sidebar-nav-item.danger { color:#dc2626; }
-    .sidebar-nav-item.danger:hover { background:#fee2e2; }
-
-    /* ── Main content ── */
-    .profile-main { display:flex; flex-direction:column; gap:20px; }
-
-    .profile-section {
-      background:white; border-radius:20px;
-      box-shadow:0 4px 20px rgba(0,0,0,.07); padding:28px;
-    }
-    .section-title {
-      font-size:1rem; font-weight:700; color:#111;
-      display:flex; align-items:center; gap:8px; margin-bottom:20px;
-      padding-bottom:14px; border-bottom:1px solid #f3f4f6;
-    }
-    .section-title-icon {
-      width:32px; height:32px; border-radius:8px;
-      background:#fef2f2; color:#dc2626;
-      display:flex; align-items:center; justify-content:center; font-size:13px;
-    }
-
-    /* Form fields */
-    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    @media(max-width:500px){ .field-row { grid-template-columns:1fr; } }
-    .form-field { margin-bottom:16px; }
-    .form-field label { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; }
-    .form-field .fi-wrap { position:relative; }
-    .form-field .fi { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:#9ca3af; font-size:14px; pointer-events:none; }
-    .form-field input { width:100%; padding:11px 12px 11px 38px; border:1.5px solid #e5e7eb; border-radius:10px; font-size:14px; color:#111; background:#fafafa; outline:none; transition:all .2s; font-family:inherit; }
-    .form-field input:focus { border-color:#dc2626; background:white; box-shadow:0 0 0 3px rgba(220,38,38,.08); }
-    .form-field input[readonly] { background:#f9fafb; color:#9ca3af; cursor:not-allowed; }
-    .pw-wrap { position:relative; }
-    .pw-wrap input { padding-right:44px; }
-    .pw-toggle { position:absolute; right:13px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#9ca3af; font-size:15px; }
-    .pw-toggle:hover { color:#6b7280; }
-
-    /* Order history cards */
-    .order-card {
-      border:1px solid #f3f4f6; border-radius:12px; padding:14px;
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      transition:border-color .15s;
-    }
-    .order-card:hover { border-color:#fca5a5; }
-    .order-id   { font-weight:700; color:#dc2626; font-size:14px; }
-    .order-date { font-size:12px; color:#9ca3af; margin-top:2px; }
-    .order-items-preview { font-size:12px; color:#6b7280; margin-top:4px; }
-
-    /* Status badges */
-    .status-badge {
-      padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; white-space:nowrap;
-    }
-    .st-pending   { background:#fef3c7; color:#92400e; }
-    .st-confirmed { background:#dbeafe; color:#1e40af; }
-    .st-preparing { background:#ede9fe; color:#5b21b6; }
-    .st-ready     { background:#d1fae5; color:#065f46; }
-    .st-delivered { background:#dcfce7; color:#14532d; }
-    .st-cancelled { background:#fee2e2; color:#7f1d1d; }
-
-    /* Danger zone */
-    .danger-zone { border:1px solid #fca5a5; border-radius:16px; padding:20px; background:#fff5f5; }
-    .danger-title { font-size:.9rem; font-weight:700; color:#dc2626; margin-bottom:6px; }
-    .danger-desc  { font-size:13px; color:#6b7280; margin-bottom:14px; }
-
-    /* Tabs */
-    .tabs { display:flex; gap:4px; margin-bottom:20px; background:#f3f4f6; border-radius:10px; padding:4px; }
-    .tab {
-      flex:1; padding:8px; text-align:center; font-size:13px; font-weight:600;
-      border-radius:7px; cursor:pointer; color:#6b7280; transition:all .15s; border:none; background:none;
-    }
-    .tab.active { background:white; color:#dc2626; box-shadow:0 1px 4px rgba(0,0,0,.08); }
-
-    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes spin   { to{transform:rotate(360deg)} }
-    .anim { animation:fadeIn .25s ease both; }
+    .profile-role  { display:inline-flex; align-items:center; gap:5px; background:#fef2f2; color:#dc2626; border:1px solid #fca5a5; border-radius:999px; padding:3px 12px; font-size:12px; font-weight:600; margin-bottom:20px; }
+    .profile-role.admin-role{background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;}
+    .sidebar-stats{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+    .sidebar-stat{display:flex;align-items:center;justify-content:space-between;background:#f9fafb;border-radius:10px;padding:10px 14px;font-size:13px;}
+    .sidebar-stat-label{color:#6b7280;display:flex;align-items:center;gap:6px;}
+    .sidebar-stat-val{font-weight:700;color:#111;}
+    .sidebar-nav{display:flex;flex-direction:column;gap:4px;}
+    .sidebar-nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:14px;font-weight:500;color:#6b7280;cursor:pointer;transition:all .15s;text-decoration:none;border:none;background:none;width:100%;text-align:left;}
+    .sidebar-nav-item:hover{background:#f3f4f6;color:#111;}
+    .sidebar-nav-item.active{background:#fef2f2;color:#dc2626;font-weight:700;}
+    .sidebar-nav-item.danger{color:#dc2626;}
+    .sidebar-nav-item.danger:hover{background:#fee2e2;}
+    .profile-main{display:flex;flex-direction:column;gap:20px;}
+    .profile-section{background:white;border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,.07);padding:28px;}
+    .section-title{font-size:1rem;font-weight:700;color:#111;display:flex;align-items:center;gap:8px;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #f3f4f6;}
+    .section-title-icon{width:32px;height:32px;border-radius:8px;background:#fef2f2;color:#dc2626;display:flex;align-items:center;justify-content:center;font-size:13px;}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    @media(max-width:500px){.field-row{grid-template-columns:1fr;}}
+    .form-field{margin-bottom:16px;}
+    .form-field label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;}
+    .form-field .fi-wrap{position:relative;}
+    .form-field .fi{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;pointer-events:none;}
+    .form-field input{width:100%;padding:11px 12px 11px 38px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;color:#111;background:#fafafa;outline:none;transition:all .2s;font-family:inherit;}
+    .form-field input:focus{border-color:#dc2626;background:white;box-shadow:0 0 0 3px rgba(220,38,38,.08);}
+    .form-field input[readonly]{background:#f9fafb;color:#9ca3af;cursor:not-allowed;}
+    .pw-wrap{position:relative;} .pw-wrap input{padding-right:44px;}
+    .pw-toggle{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;font-size:15px;}
+    .order-card{border:1px solid #f3f4f6;border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:border-color .15s;}
+    .order-card:hover{border-color:#fca5a5;}
+    .order-id{font-weight:700;color:#dc2626;font-size:14px;}
+    .order-date{font-size:12px;color:#9ca3af;margin-top:2px;}
+    .order-items-preview{font-size:12px;color:#6b7280;margin-top:4px;}
+    .status-badge{padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;}
+    .st-pending{background:#fef3c7;color:#92400e;}.st-confirmed{background:#dbeafe;color:#1e40af;}.st-preparing{background:#ede9fe;color:#5b21b6;}.st-ready{background:#d1fae5;color:#065f46;}.st-delivered{background:#dcfce7;color:#14532d;}.st-cancelled{background:#fee2e2;color:#7f1d1d;}
+    .danger-zone{border:1px solid #fca5a5;border-radius:16px;padding:20px;background:#fff5f5;}
+    .danger-title{font-size:.9rem;font-weight:700;color:#dc2626;margin-bottom:6px;}
+    .danger-desc{font-size:13px;color:#6b7280;margin-bottom:14px;}
+    .tabs{display:flex;gap:4px;margin-bottom:20px;background:#f3f4f6;border-radius:10px;padding:4px;}
+    .tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:600;border-radius:7px;cursor:pointer;color:#6b7280;transition:all .15s;border:none;background:none;}
+    .tab.active{background:white;color:#dc2626;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .anim{animation:fadeIn .25s ease both;}
   </style>
 </head>
 <body>
@@ -205,97 +91,76 @@
     <div class="container header-content">
       <a href="index.html" class="logo">
         <div class="logo-icon"><i class="fas fa-utensils"></i></div>
-        <div>
-          <div class="logo-text">Batangas Premium Naga</div>
-          <div class="logo-subtext">Noona's Food Station</div>
-        </div>
+        <div><div class="logo-text">Batangas Premium Naga</div><div class="logo-subtext">Noona's Food Station</div></div>
       </a>
       <nav class="nav">
-        <a href="index.html"   class="nav-link">Home</a>
-        <a href="menu.html"    class="nav-link">Menu</a>
-        <a href="about.html"   class="nav-link">About</a>
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="menu.html"  class="nav-link">Menu</a>
+        <a href="about.html" class="nav-link">About</a>
         <a href="contact.html" class="nav-link">Contact</a>
 
-        <!-- 🔔 Notification Bell -->
+        <!-- Notification Bell -->
         <div class="notif-bell nav-link" id="notif-bell" onclick="toggleNotifications()">
           <i class="fas fa-bell" style="font-size:18px;"></i>
           <span class="notif-count" id="notif-count">0</span>
         </div>
 
-        <!-- 👤 Profile Icon with Dropdown -->
-        <div class="notif-bell nav-link" id="profile-bell" onclick="toggleProfileDropdown()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-          </svg>
+        <!-- Profile Button — custom for profile page -->
+        <div class="notif-bell nav-link" id="profile-bell" onclick="toggleProfileDropdown()" style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <div style="position:relative;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#16a34a;border-radius:50%;border:1.5px solid white;"></span>
+          </div>
+          <span id="nav-username" style="font-size:13px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
         </div>
 
-        <!-- 🛒 Cart -->
         <a href="cart.html" class="nav-link cart-icon-wrapper">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           <span class="cart-badge">0</span>
         </a>
       </nav>
     </div>
   </header>
 
-  <!-- 🔔 Notification Dropdown -->
+  <!-- Notification Dropdown -->
   <div class="notif-dropdown" id="notif-dropdown">
     <div class="notif-header">
-      <span style="font-size:14px;font-weight:600;">Notifications</span>
-      <button onclick="markAllRead()" style="background:none;border:none;font-size:12px;color:#dc2626;cursor:pointer;font-weight:500;">Mark all read</button>
+      <span style="font-size:13px;font-weight:600;">Notifications</span>
+      <button onclick="markAllRead()" style="background:none;border:none;font-size:11px;color:#dc2626;cursor:pointer;font-weight:500;">Mark all read</button>
     </div>
-    <div id="notif-list">
-      <div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;display:block;"></i>No notifications</div>
-    </div>
+    <div id="notif-list" style="max-height:260px;overflow-y:auto;"><div class="notif-empty">No notifications</div></div>
   </div>
 
-  <!-- 👤 Profile Dropdown -->
-<div class="profile-dd" id="profile-dropdown">
-  <div class="profile-dd-header">
-    <p id="pd-name">My Account</p>
-    <span id="pd-email"></span>
-  </div>
-
-  <!-- Admin Panel — visible to admin only -->
-  <div class="profile-dd-item" id="pd-admin-link" style="display:none;" onclick="window.location.href='admin/dashboard.html'">
-    <div class="profile-dd-icon" style="background:#dbeafe;color:#1d4ed8;">
-      <i class="fas fa-shield-halved"></i>
+  <!-- Profile Dropdown -->
+  <div class="profile-dd" id="profile-dropdown">
+    <div class="profile-dd-header">
+      <p id="pd-name">My Account</p>
+      <span id="pd-email"></span>
     </div>
-    Admin Panel
+    <div class="profile-dd-item" id="pd-admin-link" style="display:none;" onclick="window.location.href='admin/dashboard.html'">
+      <div class="profile-dd-icon" style="background:#dbeafe;color:#1d4ed8;"><i class="fas fa-shield-halved"></i></div>Admin Panel
+    </div>
+    <div class="profile-dd-item" onclick="switchTab('info');closeProfileDropdown()">
+      <div class="profile-dd-icon pdi-blue"><i class="fas fa-user"></i></div>My Profile
+    </div>
+    <div class="profile-dd-item" onclick="switchTab('orders');closeProfileDropdown()">
+      <div class="profile-dd-icon pdi-orange"><i class="fas fa-list-check"></i></div>My Orders
+    </div>
+    <div class="profile-dd-item" onclick="switchTab('pass');closeProfileDropdown()">
+      <div class="profile-dd-icon pdi-red"><i class="fas fa-lock"></i></div>Change Password
+    </div>
+    <div class="profile-dd-item danger" onclick="Auth.logout()">
+      <div class="profile-dd-icon pdi-red"><i class="fas fa-sign-out-alt"></i></div>Sign Out
+    </div>
   </div>
-
-  <div class="profile-dd-item" onclick="switchTab('info'); closeProfileDropdown()">
-    <div class="profile-dd-icon pdi-blue"><i class="fas fa-user"></i></div>
-    My Profile
-  </div>
-  <div class="profile-dd-item" onclick="switchTab('orders'); closeProfileDropdown()">
-    <div class="profile-dd-icon pdi-orange"><i class="fas fa-list-check"></i></div>
-    My Orders
-  </div>
-  <div class="profile-dd-item" onclick="switchTab('pass'); closeProfileDropdown()">
-    <div class="profile-dd-icon pdi-red"><i class="fas fa-lock"></i></div>
-    Change Password
-  </div>
-  <div class="profile-dd-item danger" onclick="Auth.logout()">
-    <div class="profile-dd-icon pdi-red"><i class="fas fa-sign-out-alt"></i></div>
-    Sign Out
-  </div>
-</div>
 
   <section class="hero" style="padding:var(--space-8) 0;">
-    <div class="container">
-      <h1>My Account</h1>
-      <p>Manage your profile, orders and settings</p>
-    </div>
+    <div class="container"><h1>My Account</h1><p>Manage your profile, orders and settings</p></div>
   </section>
 
   <main style="min-height:60vh;background:var(--gray-50);padding-bottom:40px;">
     <div class="profile-wrap">
 
-      <!-- ── LEFT SIDEBAR ── -->
       <aside class="profile-sidebar anim">
         <div class="profile-avatar-wrap" onclick="document.getElementById('avatar-upload').click()" title="Change photo">
           <div class="profile-avatar" id="profile-avatar">?</div>
@@ -303,98 +168,48 @@
         </div>
         <input type="file" id="avatar-upload" class="avatar-upload-input" accept="image/*" onchange="handleAvatarChange(event)">
         <p style="font-size:11px;color:#9ca3af;margin-bottom:12px;">Click to change photo</p>
-
-        <div class="profile-name"  id="sidebar-name">—</div>
+        <div class="profile-name" id="sidebar-name">—</div>
         <div class="profile-email" id="sidebar-email">—</div>
-        <div class="profile-role"  id="sidebar-role"><i class="fas fa-user"></i> Customer</div>
-
+        <div class="profile-role" id="sidebar-role"><i class="fas fa-user"></i> Customer</div>
         <div class="sidebar-stats">
-          <div class="sidebar-stat">
-            <span class="sidebar-stat-label"><i class="fas fa-bag-shopping" style="color:#dc2626;"></i> Total Orders</span>
-            <span class="sidebar-stat-val" id="stat-total">0</span>
-          </div>
-          <div class="sidebar-stat">
-            <span class="sidebar-stat-label"><i class="fas fa-clock" style="color:#f97316;"></i> Pending</span>
-            <span class="sidebar-stat-val" id="stat-pending">0</span>
-          </div>
-          <div class="sidebar-stat">
-            <span class="sidebar-stat-label"><i class="fas fa-circle-check" style="color:#16a34a;"></i> Delivered</span>
-            <span class="sidebar-stat-val" id="stat-delivered">0</span>
-          </div>
-          <div class="sidebar-stat">
-            <span class="sidebar-stat-label"><i class="fas fa-peso-sign" style="color:#dc2626;"></i> Total Spent</span>
-            <span class="sidebar-stat-val" id="stat-spent">₱0</span>
-          </div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label"><i class="fas fa-bag-shopping" style="color:#dc2626;"></i> Total Orders</span><span class="sidebar-stat-val" id="stat-total">0</span></div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label"><i class="fas fa-clock" style="color:#f97316;"></i> Pending</span><span class="sidebar-stat-val" id="stat-pending">0</span></div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label"><i class="fas fa-circle-check" style="color:#16a34a;"></i> Delivered</span><span class="sidebar-stat-val" id="stat-delivered">0</span></div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label"><i class="fas fa-peso-sign" style="color:#dc2626;"></i> Total Spent</span><span class="sidebar-stat-val" id="stat-spent">₱0</span></div>
         </div>
-
         <div class="sidebar-nav">
-          <button class="sidebar-nav-item active" id="tab-info-btn" onclick="switchTab('info')">
-            <i class="fas fa-user"></i> Personal Info
-          </button>
-          <button class="sidebar-nav-item" id="tab-orders-btn" onclick="switchTab('orders')">
-            <i class="fas fa-list-check"></i> My Orders
-          </button>
-          <button class="sidebar-nav-item" id="tab-pass-btn" onclick="switchTab('pass')">
-            <i class="fas fa-lock"></i> Change Password
-          </button>
+          <button class="sidebar-nav-item active" id="tab-info-btn" onclick="switchTab('info')"><i class="fas fa-user"></i> Personal Info</button>
+          <button class="sidebar-nav-item" id="tab-orders-btn" onclick="switchTab('orders')"><i class="fas fa-list-check"></i> My Orders</button>
+          <button class="sidebar-nav-item" id="tab-pass-btn" onclick="switchTab('pass')"><i class="fas fa-lock"></i> Change Password</button>
           <hr style="border:none;border-top:1px solid #f3f4f6;margin:8px 0;">
-          <button class="sidebar-nav-item danger" onclick="Auth.logout()">
-            <i class="fas fa-sign-out-alt"></i> Sign Out
-          </button>
+          <button class="sidebar-nav-item danger" onclick="Auth.logout()"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
         </div>
       </aside>
 
-      <!-- ── MAIN CONTENT ── -->
       <div class="profile-main">
-
         <!-- Personal Info Tab -->
         <div class="profile-section anim" id="tab-info" style="animation-delay:.05s;">
-          <div class="section-title">
-            <div class="section-title-icon"><i class="fas fa-user"></i></div>
-            Personal Information
-          </div>
+          <div class="section-title"><div class="section-title-icon"><i class="fas fa-user"></i></div>Personal Information</div>
           <form id="profile-form">
             <div class="field-row">
-              <div class="form-field">
-                <label>Full Name *</label>
-                <div class="fi-wrap">
-                  <i class="fas fa-user fi"></i>
-                  <input type="text" name="fullName" placeholder="Juan dela Cruz" required>
-                </div>
-              </div>
-              <div class="form-field">
-                <label>Phone Number</label>
-                <div class="fi-wrap">
-                  <i class="fas fa-phone fi"></i>
-                  <input type="tel" name="phone" placeholder="+63 9XX XXX XXXX">
-                </div>
-              </div>
+              <div class="form-field"><label>Full Name *</label><div class="fi-wrap"><i class="fas fa-user fi"></i><input type="text" name="fullName" placeholder="Juan dela Cruz" required></div></div>
+              <div class="form-field"><label>Phone Number</label><div class="fi-wrap"><i class="fas fa-phone fi"></i><input type="tel" name="phone" placeholder="+63 9XX XXX XXXX"></div></div>
             </div>
             <div class="form-field">
               <label>Email Address</label>
-              <div class="fi-wrap">
-                <i class="fas fa-envelope fi"></i>
-                <input type="email" name="email" readonly>
-              </div>
+              <div class="fi-wrap"><i class="fas fa-envelope fi"></i><input type="email" name="email" readonly></div>
               <p style="font-size:12px;color:#9ca3af;margin-top:4px;"><i class="fas fa-lock" style="font-size:10px;margin-right:3px;"></i>Email cannot be changed</p>
             </div>
             <div style="display:flex;gap:12px;flex-wrap:wrap;">
-              <button type="submit" class="btn btn-primary" style="padding:12px 28px;">
-                <i class="fas fa-floppy-disk" style="margin-right:8px;"></i>Save Changes
-              </button>
-              <button type="button" onclick="switchTab('orders')" class="btn btn-outline" style="padding:12px 24px;">
-                <i class="fas fa-list" style="margin-right:8px;"></i>View My Orders
-              </button>
+              <button type="submit" class="btn btn-primary" style="padding:12px 28px;"><i class="fas fa-floppy-disk" style="margin-right:8px;"></i>Save Changes</button>
+              <button type="button" onclick="switchTab('orders')" class="btn btn-outline" style="padding:12px 24px;"><i class="fas fa-list" style="margin-right:8px;"></i>View My Orders</button>
             </div>
           </form>
         </div>
 
         <!-- Orders Tab -->
         <div class="profile-section anim" id="tab-orders" style="display:none;animation-delay:.05s;">
-          <div class="section-title">
-            <div class="section-title-icon"><i class="fas fa-list-check"></i></div>
-            My Orders
-          </div>
+          <div class="section-title"><div class="section-title-icon"><i class="fas fa-list-check"></i></div>My Orders</div>
           <div class="tabs" id="order-tabs">
             <button class="tab active" onclick="filterOrders('all',this)">All</button>
             <button class="tab" onclick="filterOrders('Pending',this)">Pending</button>
@@ -402,54 +217,27 @@
             <button class="tab" onclick="filterOrders('Delivered',this)">Delivered</button>
             <button class="tab" onclick="filterOrders('Cancelled',this)">Cancelled</button>
           </div>
-          <div id="orders-list">
-            <div style="text-align:center;padding:48px;color:#9ca3af;">
-              <div style="width:24px;height:24px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>
-              Loading orders...
-            </div>
-          </div>
+          <div id="orders-list"><div style="text-align:center;padding:48px;color:#9ca3af;"><div style="width:24px;height:24px;border:3px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>Loading orders...</div></div>
         </div>
 
         <!-- Change Password Tab -->
         <div class="profile-section anim" id="tab-pass" style="display:none;animation-delay:.05s;">
-          <div class="section-title">
-            <div class="section-title-icon"><i class="fas fa-lock"></i></div>
-            Change Password
-          </div>
+          <div class="section-title"><div class="section-title-icon"><i class="fas fa-lock"></i></div>Change Password</div>
           <p style="font-size:13px;color:#6b7280;margin-bottom:20px;">Leave blank to keep your current password.</p>
           <form id="pass-form">
-            <div class="form-field">
-              <label>New Password</label>
-              <div class="fi-wrap pw-wrap">
-                <i class="fas fa-lock fi"></i>
-                <input type="password" id="new-pass" placeholder="Min. 6 characters" style="padding-right:44px;">
-                <button type="button" class="pw-toggle" onclick="togglePw('new-pass','eye1')"><i id="eye1" class="fa-regular fa-eye"></i></button>
-              </div>
-            </div>
-            <div class="form-field">
-              <label>Confirm New Password</label>
-              <div class="fi-wrap pw-wrap">
-                <i class="fas fa-lock fi"></i>
-                <input type="password" id="confirm-pass" placeholder="Repeat new password" style="padding-right:44px;">
-                <button type="button" class="pw-toggle" onclick="togglePw('confirm-pass','eye2')"><i id="eye2" class="fa-regular fa-eye"></i></button>
-              </div>
-            </div>
-            <button type="submit" class="btn btn-primary" style="padding:12px 28px;">
-              <i class="fas fa-key" style="margin-right:8px;"></i>Update Password
-            </button>
+            <div class="form-field"><label>New Password</label><div class="fi-wrap pw-wrap"><i class="fas fa-lock fi"></i><input type="password" id="new-pass" placeholder="Min. 6 characters" style="padding-right:44px;"><button type="button" class="pw-toggle" onclick="togglePw('new-pass','eye1')"><i id="eye1" class="fa-regular fa-eye"></i></button></div></div>
+            <div class="form-field"><label>Confirm New Password</label><div class="fi-wrap pw-wrap"><i class="fas fa-lock fi"></i><input type="password" id="confirm-pass" placeholder="Repeat new password" style="padding-right:44px;"><button type="button" class="pw-toggle" onclick="togglePw('confirm-pass','eye2')"><i id="eye2" class="fa-regular fa-eye"></i></button></div></div>
+            <button type="submit" class="btn btn-primary" style="padding:12px 28px;"><i class="fas fa-key" style="margin-right:8px;"></i>Update Password</button>
           </form>
           <hr style="border:none;border-top:1px solid #f3f4f6;margin:28px 0;">
           <div class="danger-zone">
             <div class="danger-title"><i class="fas fa-triangle-exclamation" style="margin-right:6px;"></i>Sign Out</div>
             <div class="danger-desc">You will be signed out of your account on this device.</div>
-            <button onclick="Auth.logout()" class="btn btn-primary" style="background:#dc2626;padding:10px 22px;font-size:14px;">
-              <i class="fas fa-sign-out-alt" style="margin-right:8px;"></i>Sign Out
-            </button>
+            <button onclick="Auth.logout()" class="btn btn-primary" style="background:#dc2626;padding:10px 22px;font-size:14px;"><i class="fas fa-sign-out-alt" style="margin-right:8px;"></i>Sign Out</button>
           </div>
         </div>
-
-      </div><!-- /.profile-main -->
-    </div><!-- /.profile-wrap -->
+      </div>
+    </div>
   </main>
 
   <footer class="footer">
@@ -469,190 +257,121 @@
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
   <script>
-  let newAvatarBase64    = null;
-  let notifOpen          = false;
-  let profileDDOpen      = false;
-  let allOrders          = [];
+  // ✅ Profile page overrides — runs AFTER app.js loads
+  // app.js boot calls NavInit.init() which looks for a[href="login.html"]
+  // — that link doesn't exist here so NavInit.init() skips the user dropdown safely.
+  // We only need to override notifClick so it stays on this page.
 
-  /* ══════════════════════════════════════════
-     TAB SWITCHING
-  ══════════════════════════════════════════ */
+  let newAvatarBase64  = null;
+  let profileDDOpen    = false;
+  let allOrders        = [];
+
+  // ── Override notifClick from app.js ──────────────────────
+  // app.js's version redirects to orders.html; on profile page we switchTab instead
+  window.notifClick = async function(id) {
+    const user = Auth.getCurrentUser();
+    if (user) {
+      try {
+        await fetch(`${SERVER_BASE}/api/orders/notifications/${user.user_id||user.USER_ID}/read`, { method:'PUT' });
+      } catch(e) {}
+    }
+    // Close notif dropdown
+    notifOpen = false;
+    const dd = document.getElementById('notif-dropdown');
+    if (dd) dd.style.display = 'none';
+    const countEl = document.getElementById('notif-count');
+    if (countEl) countEl.style.display = 'none';
+    // ✅ Stay on profile page, just switch to orders tab
+    switchTab('orders');
+  };
+
+  /* ── Tab Switching ── */
   function switchTab(tab) {
     ['info','orders','pass'].forEach(t => {
       document.getElementById('tab-'+t).style.display = t===tab ? 'block' : 'none';
       document.getElementById('tab-'+t+'-btn').classList.toggle('active', t===tab);
     });
     if (tab === 'orders') renderOrders('all');
-    // scroll to top of main content
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top:0, behavior:'smooth' });
   }
 
-  /* ══════════════════════════════════════════
-     PROFILE DROPDOWN
-  ══════════════════════════════════════════ */
- function toggleProfileDropdown() {
-  profileDDOpen = !profileDDOpen;
-  document.getElementById('profile-dropdown').style.display = profileDDOpen ? 'block' : 'none';
-
-  if (profileDDOpen) {
-    // Close notification dropdown if open
-    notifOpen = false;
-    document.getElementById('notif-dropdown').style.display = 'none';
-
-    // Fill user info
-    const user = Auth.getCurrentUser();
-    if (user) {
-      document.getElementById('pd-name').textContent  = user.full_name || user.FULL_NAME || 'My Account';
-      document.getElementById('pd-email').textContent = user.email || user.EMAIL || '';
-
-      // ✅ Show Admin Panel link if admin
-      const role = (user.role || user.ROLE || '').toLowerCase();
-      document.getElementById('pd-admin-link').style.display = role === 'admin' ? 'flex' : 'none';
+  /* ── Profile Dropdown ── */
+  function toggleProfileDropdown() {
+    profileDDOpen = !profileDDOpen;
+    const dd = document.getElementById('profile-dropdown');
+    dd.style.display = profileDDOpen ? 'block' : 'none';
+    if (profileDDOpen) {
+      // Close notif if open
+      notifOpen = false;
+      const nDD = document.getElementById('notif-dropdown');
+      if (nDD) nDD.style.display = 'none';
+      // Populate
+      const user = Auth.getCurrentUser();
+      if (user) {
+        document.getElementById('pd-name').textContent  = user.full_name || user.FULL_NAME || 'My Account';
+        document.getElementById('pd-email').textContent = user.email || user.EMAIL || '';
+        const role = (user.role || user.ROLE || '').toLowerCase();
+        document.getElementById('pd-admin-link').style.display = role === 'admin' ? 'flex' : 'none';
+      }
     }
   }
-}
 
   function closeProfileDropdown() {
     profileDDOpen = false;
     document.getElementById('profile-dropdown').style.display = 'none';
   }
 
-  /* ══════════════════════════════════════════
-     NOTIFICATIONS
-  ══════════════════════════════════════════ */
-  function toggleNotifications() {
-    notifOpen = !notifOpen;
-    document.getElementById('notif-dropdown').style.display = notifOpen ? 'block' : 'none';
-
-    if (notifOpen) {
-      // Close profile dropdown if open
-      profileDDOpen = false;
-      document.getElementById('profile-dropdown').style.display = 'none';
-      loadNotifications();
-    }
-  }
-
-  async function loadNotifications() {
-    const user = Auth.getCurrentUser(); if (!user) return;
-    const userId = user.user_id || user.USER_ID;
-    try {
-      const notifs = await fetch(`http://localhost:3000/api/orders/notifications/${userId}`).then(r => r.json());
-      if (!Array.isArray(notifs)) return;
-      const unread  = notifs.filter(n => !(n.is_read || n.IS_READ));
-      const countEl = document.getElementById('notif-count');
-      if (unread.length > 0) { countEl.textContent = unread.length; countEl.style.display = 'flex'; }
-      else { countEl.style.display = 'none'; }
-      const listEl = document.getElementById('notif-list');
-      if (!notifs.length) {
-        listEl.innerHTML = `<div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;display:block;"></i>No notifications</div>`;
-        return;
-      }
-      listEl.innerHTML = notifs.map(n => {
-        const isRead = n.is_read || n.IS_READ;
-        const msg    = n.message  || n.MESSAGE  || '';
-        const time   = n.created_at || n.CREATED_AT || '';
-        return `<div class="notif-item ${isRead ? '' : 'unread'}">
-          <div style="display:flex;align-items:flex-start;gap:10px;">
-            <div style="width:32px;height:32px;border-radius:50%;background:${isRead?'#f3f4f6':'#fef2f2'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <i class="fas fa-bag-shopping" style="font-size:13px;color:${isRead?'#9ca3af':'#dc2626'};"></i>
-            </div>
-            <div style="flex:1;">
-              <p style="margin:0;font-weight:${isRead?'400':'600'};color:#111;">${msg}</p>
-              <p style="margin:2px 0 0;font-size:11px;color:#9ca3af;">
-                ${time ? new Date(time).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : ''}
-              </p>
-            </div>
-          </div>
-        </div>`;
-      }).join('');
-    } catch(e) {}
-  }
-
-  async function markAllRead() {
-    const user = Auth.getCurrentUser(); if (!user) return;
-    const userId = user.user_id || user.USER_ID;
-    try {
-      await fetch(`http://localhost:3000/api/orders/notifications/${userId}/read`, { method: 'PUT' });
-      document.getElementById('notif-count').style.display = 'none';
-      loadNotifications();
-    } catch(e) {}
-  }
-
-  /* ══════════════════════════════════════════
-     CLICK OUTSIDE — close both dropdowns
-  ══════════════════════════════════════════ */
+  // Close dropdowns on outside click
   document.addEventListener('click', e => {
-    // Notification
     const nBell = document.getElementById('notif-bell');
     const nDD   = document.getElementById('notif-dropdown');
     if (notifOpen && nBell && nDD && !nBell.contains(e.target) && !nDD.contains(e.target)) {
-      notifOpen = false;
-      nDD.style.display = 'none';
+      notifOpen = false; nDD.style.display = 'none';
     }
-    // Profile
     const pBell = document.getElementById('profile-bell');
     const pDD   = document.getElementById('profile-dropdown');
     if (profileDDOpen && pBell && pDD && !pBell.contains(e.target) && !pDD.contains(e.target)) {
-      profileDDOpen = false;
-      pDD.style.display = 'none';
+      profileDDOpen = false; pDD.style.display = 'none';
     }
   });
 
-  /* ══════════════════════════════════════════
-     PASSWORD TOGGLE
-  ══════════════════════════════════════════ */
+  /* ── Password Toggle ── */
   function togglePw(id, iconId) {
-    const el = document.getElementById(id), ic = document.getElementById(iconId);
-    el.type = el.type === 'password' ? 'text' : 'password';
-    ic.className = el.type === 'text' ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+    const el=document.getElementById(id), ic=document.getElementById(iconId);
+    el.type = el.type==='password' ? 'text' : 'password';
+    ic.className = el.type==='text' ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
   }
 
-  /* ══════════════════════════════════════════
-     AVATAR CHANGE
-  ══════════════════════════════════════════ */
+  /* ── Avatar Change ── */
   function handleAvatarChange(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { Utils.showToast('Image must be under 5MB', 'error'); return; }
-    const r = new FileReader();
-    r.onload = ev => {
-      newAvatarBase64 = ev.target.result;
-      document.getElementById('profile-avatar').innerHTML = `<img src="${newAvatarBase64}" alt="Profile">`;
-      const user = Auth.getCurrentUser();
-      if (user) {
-        localStorage.setItem('currentUser', JSON.stringify({
-          ...user, profile_image: newAvatarBase64, PROFILE_IMAGE: newAvatarBase64
-        }));
-      }
-      Utils.showToast('Photo selected. Click Save Changes to update.', 'info');
+    const file=e.target.files[0]; if(!file) return;
+    if(file.size>5*1024*1024){Utils.showToast('Image must be under 5MB','error');return;}
+    const r=new FileReader();
+    r.onload=ev=>{
+      newAvatarBase64=ev.target.result;
+      document.getElementById('profile-avatar').innerHTML=`<img src="${newAvatarBase64}" alt="Profile">`;
+      const user=Auth.getCurrentUser();
+      if(user) localStorage.setItem('currentUser',JSON.stringify({...user,profile_image:newAvatarBase64,PROFILE_IMAGE:newAvatarBase64}));
+      Utils.showToast('Photo selected. Click Save Changes to update.','info');
     };
     r.readAsDataURL(file);
   }
 
-  /* ══════════════════════════════════════════
-     ORDER FILTER & RENDER
-  ══════════════════════════════════════════ */
+  /* ── Orders ── */
   function filterOrders(status, btn) {
-    document.querySelectorAll('#order-tabs .tab').forEach(t => t.classList.remove('active'));
-    if (btn) btn.classList.add('active');
+    document.querySelectorAll('#order-tabs .tab').forEach(t=>t.classList.remove('active'));
+    if(btn) btn.classList.add('active');
     renderOrders(status);
   }
 
   function renderOrders(filter) {
-    const list     = document.getElementById('orders-list');
-    const filtered = filter === 'all' ? allOrders : allOrders.filter(o => (o.status||o.STATUS||'') === filter);
-    const stClass  = { Pending:'st-pending',Confirmed:'st-confirmed',Preparing:'st-preparing',Ready:'st-ready',Delivered:'st-delivered',Cancelled:'st-cancelled' };
-    if (!filtered.length) {
-      list.innerHTML = `<div style="text-align:center;padding:48px;color:#9ca3af;"><i class="fas fa-inbox" style="font-size:36px;display:block;margin-bottom:12px;opacity:.3;"></i>No orders found.</div>`;
-      return;
-    }
-    list.innerHTML = filtered.map(o => {
-      const id      = o.order_id||o.ORDER_ID;
-      const st      = o.status||o.STATUS||'Pending';
-      const total   = parseFloat(o.total||o.TOTAL||0);
-      const date    = o.created_at||o.CREATED_AT;
-      const items   = (o.items||[]);
-      const preview = items.length ? items.slice(0,2).map(i=>i.name).join(', ')+(items.length>2?' …':'') : 'No items';
+    const list=document.getElementById('orders-list');
+    const filtered=filter==='all'?allOrders:allOrders.filter(o=>(o.status||o.STATUS||'')===filter);
+    const stClass={Pending:'st-pending',Confirmed:'st-confirmed',Preparing:'st-preparing',Ready:'st-ready',Delivered:'st-delivered',Cancelled:'st-cancelled'};
+    if(!filtered.length){list.innerHTML=`<div style="text-align:center;padding:48px;color:#9ca3af;"><i class="fas fa-inbox" style="font-size:36px;display:block;margin-bottom:12px;opacity:.3;"></i>No orders found.</div>`;return;}
+    list.innerHTML=filtered.map(o=>{
+      const id=o.order_id||o.ORDER_ID, st=o.status||o.STATUS||'Pending', total=parseFloat(o.total||o.TOTAL||0), date=o.created_at||o.CREATED_AT, items=(o.items||[]);
+      const preview=items.length?items.slice(0,2).map(i=>i.name).join(', ')+(items.length>2?' …':''):'No items';
       return `<div class="order-card" style="margin-bottom:10px;">
         <div style="flex:1;min-width:0;">
           <div class="order-id">ORD-${String(id).padStart(4,'0')}</div>
@@ -668,118 +387,121 @@
     }).join('');
   }
 
-  /* ══════════════════════════════════════════
-     INIT
-  ══════════════════════════════════════════ */
+  /* ── Init ── */
   document.addEventListener('DOMContentLoaded', async () => {
     Cart.updateBadge();
-    NavInit.init();
-    if (!Auth.isLoggedIn()) { goTo('login.html'); return; }
+    // ✅ NavInit.init() is called by app.js boot automatically
+    // It won't break profile page since there's no a[href="login.html"] here
 
-    const user     = Auth.getCurrentUser();
-    const name     = user.full_name  || user.FULL_NAME  || '';
-    const email    = user.email      || user.EMAIL      || '';
-    const role     = (user.role || user.ROLE || 'customer').toLowerCase();
-    const isAdmin  = role === 'admin';
-    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
+    if(!Auth.isLoggedIn()){window.location.href='login.html';return;}
 
-    // Sidebar
-    document.getElementById('sidebar-name').textContent  = name || '—';
+    const user    = Auth.getCurrentUser();
+    const name    = user.full_name||user.FULL_NAME||'';
+    const email   = user.email||user.EMAIL||'';
+    const role    = (user.role||user.ROLE||'customer').toLowerCase();
+    const isAdmin = role==='admin';
+    const initials= name.split(' ').filter(Boolean).map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+
+    // ── Nav username (profile bell label) ──
+    const navName=document.getElementById('nav-username');
+    if(navName) navName.textContent=name.split(' ')[0]||'';
+
+    // ── Sidebar ──
+    document.getElementById('sidebar-name').textContent  = name||'—';
     document.getElementById('sidebar-email').textContent = email;
-    const roleEl = document.getElementById('sidebar-role');
-    if (isAdmin) { roleEl.innerHTML = '<i class="fas fa-shield-halved"></i> Admin'; roleEl.classList.add('admin-role'); }
-    else         { roleEl.innerHTML = '<i class="fas fa-user"></i> Customer'; }
+    const roleEl=document.getElementById('sidebar-role');
+    if(isAdmin){roleEl.innerHTML='<i class="fas fa-shield-halved"></i> Admin';roleEl.classList.add('admin-role');}
+    else{roleEl.innerHTML='<i class="fas fa-user"></i> Customer';}
 
-    // Avatar
-    const avatarEl   = document.getElementById('profile-avatar');
-    const savedImage = user.profile_image || user.PROFILE_IMAGE || null;
-    if (savedImage) { avatarEl.innerHTML = `<img src="${savedImage}" alt="Profile">`; }
-    else            { avatarEl.textContent = initials; }
+    // ── Avatar ──
+    const avatarEl=document.getElementById('profile-avatar');
+    const savedImage=user.profile_image||user.PROFILE_IMAGE||null;
+    if(savedImage){avatarEl.innerHTML=`<img src="${savedImage}" alt="Profile">`;}
+    else{avatarEl.textContent=initials;}
 
-    // Pre-fill form
-    const form = document.getElementById('profile-form');
-    const f = (n, v) => { const el = form.querySelector(`[name="${n}"]`); if (el) el.value = v || ''; };
-    f('fullName', name); f('email', email); f('phone', user.phone || user.PHONE);
+    // ── Form prefill ──
+    const form=document.getElementById('profile-form');
+    const fSet=(n,v)=>{const el=form.querySelector(`[name="${n}"]`);if(el)el.value=v||'';};
+    fSet('fullName',name); fSet('email',email); fSet('phone',user.phone||user.PHONE);
 
-    // ✅ Auto-switch tab if coming from ?tab= (e.g. from admin panel)
-    const urlTab = new URLSearchParams(window.location.search).get('tab');
-    if (urlTab && ['info','orders','pass'].includes(urlTab)) {
-      switchTab(urlTab);
-    }
+    // ── URL tab param ──
+    const urlTab=new URLSearchParams(window.location.search).get('tab');
+    if(urlTab&&['info','orders','pass'].includes(urlTab)) switchTab(urlTab);
 
-    // Load orders
-    const userId = user.user_id || user.USER_ID;
-    if (userId) {
-      try {
-        const orders = await fetch(`http://localhost:3000/api/orders/user/${userId}`).then(r => r.json());
-        if (Array.isArray(orders)) {
-          allOrders = orders;
-          const delivered = orders.filter(o => (o.status||o.STATUS) === 'Delivered');
-          const spent     = delivered.reduce((s,o) => s + parseFloat(o.total||o.TOTAL||0), 0);
-          document.getElementById('stat-total').textContent     = orders.length;
-          document.getElementById('stat-pending').textContent   = orders.filter(o => (o.status||o.STATUS) === 'Pending').length;
-          document.getElementById('stat-delivered').textContent = delivered.length;
-          document.getElementById('stat-spent').textContent     = '₱' + spent.toFixed(0);
+    // ── Load orders & stats ──
+    const userId=user.user_id||user.USER_ID;
+    if(userId){
+      try{
+        const orders=await fetch(`${SERVER_BASE}/api/orders/user/${userId}`).then(r=>r.json());
+        if(Array.isArray(orders)){
+          allOrders=orders;
+          const delivered=orders.filter(o=>(o.status||o.STATUS)==='Delivered');
+          const spent=delivered.reduce((s,o)=>s+parseFloat(o.total||o.TOTAL||0),0);
+          document.getElementById('stat-total').textContent    =orders.length;
+          document.getElementById('stat-pending').textContent  =orders.filter(o=>(o.status||o.STATUS)==='Pending').length;
+          document.getElementById('stat-delivered').textContent=delivered.length;
+          document.getElementById('stat-spent').textContent    ='₱'+spent.toFixed(0);
         }
-      } catch(e) {}
+      }catch(e){}
+
+      // Load notifications using app.js's loadNotifications()
       loadNotifications();
     }
 
-    // Profile form submit
-    form.addEventListener('submit', async e => {
+    // ── Profile form submit ──
+    form.addEventListener('submit',async e=>{
       e.preventDefault();
-      const btn = form.querySelector('button[type=submit]');
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Saving...'; btn.disabled = true;
-      const d = new FormData(form);
-      try {
-        const body = { full_name: d.get('fullName'), phone: d.get('phone') };
-        if (newAvatarBase64) body.profile_image = newAvatarBase64;
-        const res = await fetch(`http://localhost:3000/api/auth/profile/${userId}`, {
-          method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
-        }).then(r => r.json());
-        if (res.success) {
-          const currentStored = Auth.getCurrentUser();
-          const existingImage = currentStored.profile_image || currentStored.PROFILE_IMAGE || null;
-          localStorage.setItem('currentUser', JSON.stringify({
+      const btn=form.querySelector('button[type=submit]');
+      btn.innerHTML='<i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Saving...';btn.disabled=true;
+      const d=new FormData(form);
+      try{
+        const body={full_name:d.get('fullName'),phone:d.get('phone')};
+        if(newAvatarBase64) body.profile_image=newAvatarBase64;
+        const res=await fetch(`${SERVER_BASE}/api/auth/profile/${userId}`,{
+          method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
+        }).then(r=>r.json());
+        if(res.success){
+          const currentStored=Auth.getCurrentUser();
+          const existingImage=currentStored.profile_image||currentStored.PROFILE_IMAGE||null;
+          localStorage.setItem('currentUser',JSON.stringify({
             ...user,
-            full_name: body.full_name, FULL_NAME: body.full_name,
-            phone: body.phone,         PHONE: body.phone,
-            profile_image: newAvatarBase64 || existingImage,
-            PROFILE_IMAGE: newAvatarBase64 || existingImage
+            full_name:body.full_name, FULL_NAME:body.full_name,
+            phone:body.phone,         PHONE:body.phone,
+            profile_image:newAvatarBase64||existingImage,
+            PROFILE_IMAGE:newAvatarBase64||existingImage
           }));
-          document.getElementById('sidebar-name').textContent = body.full_name;
-          Utils.showToast('Profile updated!', 'success');
-          newAvatarBase64 = null;
-        } else { Utils.showToast(res.message || 'Failed', 'error'); }
-      } catch { Utils.showToast('Server error', 'error'); }
-      btn.innerHTML = '<i class="fas fa-floppy-disk" style="margin-right:8px;"></i>Save Changes'; btn.disabled = false;
+          document.getElementById('sidebar-name').textContent=body.full_name;
+          if(navName) navName.textContent=body.full_name.split(' ')[0];
+          Utils.showToast('Profile updated!','success');
+          newAvatarBase64=null;
+        }else{Utils.showToast(res.message||'Failed','error');}
+      }catch{Utils.showToast('Server error','error');}
+      btn.innerHTML='<i class="fas fa-floppy-disk" style="margin-right:8px;"></i>Save Changes';btn.disabled=false;
     });
 
-    // Password form submit
-    document.getElementById('pass-form').addEventListener('submit', async e => {
+    // ── Password form submit ──
+    document.getElementById('pass-form').addEventListener('submit',async e=>{
       e.preventDefault();
-      const newPass = document.getElementById('new-pass').value;
-      const confirm = document.getElementById('confirm-pass').value;
-      if (!newPass || newPass.length < 6) { Utils.showToast('Password must be at least 6 characters', 'error'); return; }
-      if (newPass !== confirm)            { Utils.showToast('Passwords do not match', 'error'); return; }
-      const btn = e.target.querySelector('button[type=submit]');
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Updating...'; btn.disabled = true;
-      try {
-        const currentStored = Auth.getCurrentUser();
-        const existingImage = currentStored.profile_image || currentStored.PROFILE_IMAGE || null;
-        const res = await fetch(`http://localhost:3000/api/auth/profile/${userId}`, {
-          method:'PUT', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ full_name: user.full_name||user.FULL_NAME, phone: user.phone||user.PHONE, password: newPass })
-        }).then(r => r.json());
-        if (res.success) {
-          localStorage.setItem('currentUser', JSON.stringify({
-            ...currentStored, profile_image: existingImage, PROFILE_IMAGE: existingImage
-          }));
-          Utils.showToast('Password updated!', 'success');
+      const newPass=document.getElementById('new-pass').value;
+      const confirm=document.getElementById('confirm-pass').value;
+      if(!newPass||newPass.length<6){Utils.showToast('Password must be at least 6 characters','error');return;}
+      if(newPass!==confirm){Utils.showToast('Passwords do not match','error');return;}
+      const btn=e.target.querySelector('button[type=submit]');
+      btn.innerHTML='<i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Updating...';btn.disabled=true;
+      try{
+        const currentStored=Auth.getCurrentUser();
+        const existingImage=currentStored.profile_image||currentStored.PROFILE_IMAGE||null;
+        const res=await fetch(`${SERVER_BASE}/api/auth/profile/${userId}`,{
+          method:'PUT',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({full_name:user.full_name||user.FULL_NAME,phone:user.phone||user.PHONE,password:newPass})
+        }).then(r=>r.json());
+        if(res.success){
+          localStorage.setItem('currentUser',JSON.stringify({...currentStored,profile_image:existingImage,PROFILE_IMAGE:existingImage}));
+          Utils.showToast('Password updated!','success');
           e.target.reset();
-        } else { Utils.showToast(res.message || 'Failed', 'error'); }
-      } catch { Utils.showToast('Server error', 'error'); }
-      btn.innerHTML = '<i class="fas fa-key" style="margin-right:8px;"></i>Update Password'; btn.disabled = false;
+        }else{Utils.showToast(res.message||'Failed','error');}
+      }catch{Utils.showToast('Server error','error');}
+      btn.innerHTML='<i class="fas fa-key" style="margin-right:8px;"></i>Update Password';btn.disabled=false;
     });
   });
   </script>

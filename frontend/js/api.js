@@ -1,5 +1,10 @@
 // API client — connects frontend to Oracle backend via Express
-const API_BASE = 'http://localhost:3000/api';
+// ⚠️  Change this IP to the IPv4 address of your server computer
+const API_BASE = 'http://172.20.10.3:3000/api';
+
+// NOTE: SERVER_BASE is declared in app.js as:
+//   const SERVER_BASE = API_BASE.replace('/api', '');
+// Do NOT declare SERVER_BASE here — it will cause a duplicate declaration error.
 
 const api = {
 
@@ -40,19 +45,16 @@ const api = {
     fetch(`${API_BASE}/admin/dashboard`)
       .then(r => r.json()),
 
-  // getCustomers — returns non-admin users only (used in customers.html)
   getCustomers: () =>
     fetch(`${API_BASE}/admin/customers`)
       .then(r => r.json())
       .then(data => Array.isArray(data) ? data : []),
 
-  // getAllUsers — returns ALL users including admins (also used in customers.html)
   getAllUsers: () =>
     fetch(`${API_BASE}/admin/all-users`)
       .then(r => r.json())
       .then(data => Array.isArray(data) ? data : []),
 
-  // getReports — ALWAYS returns an array, never throws
   getReports: () =>
     fetch(`${API_BASE}/admin/reports`)
       .then(r => r.json())
@@ -60,28 +62,23 @@ const api = {
       .catch(() => []),
 
   // ── MESSAGES (Contact) ────────────────────────────────────
-
-  // Get all contact messages
   getMessages: () =>
     fetch(`${API_BASE}/contact`)
       .then(r => r.json())
       .then(data => Array.isArray(data) ? data : [])
       .catch(() => []),
 
-  // Mark a message as read
   markMessageRead: (id) =>
     fetch(`${API_BASE}/contact/${id}/read`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' }
     }).then(r => r.json()),
 
-  // Delete a message
   deleteMessage: (id) =>
     fetch(`${API_BASE}/contact/${id}`, {
       method: 'DELETE'
     }).then(r => r.json()),
 
-  // Send a contact message (used by buyer on contact page)
   sendMessage: (data) =>
     fetch(`${API_BASE}/contact`, {
       method: 'POST',
@@ -130,6 +127,21 @@ const api = {
   deleteProduct: (id) =>
     fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' })
       .then(r => r.json()),
+
+  // ── CUSTOMERS (Admin) ─────────────────────────────────────
+  updateCustomerStatus: (id, status, requesterId) =>
+    fetch(`${API_BASE}/admin/customers/${id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, requester_id: requesterId })
+    }).then(r => r.json()),
+
+  deleteCustomer: (id, requesterId) =>
+    fetch(`${API_BASE}/admin/customers/${id}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requester_id: requesterId })
+    }).then(r => r.json()),
 
   // ── AUTH ──────────────────────────────────────────────────
   login: (email, password) =>

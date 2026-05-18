@@ -1,3 +1,6 @@
+// Base URL — derived from api.js. Change the IP in api.js only, everything updates.
+const SERVER_BASE = API_BASE.replace('/api', '');
+
 // ============================================================
 // NAVIGATION HELPER — relative paths, works anywhere
 // ============================================================
@@ -23,7 +26,7 @@ const Auth = {
   },
   register: async (userData) => {
     try {
-      const res = await fetch('http://localhost:3000/api/auth/register', {
+      const res = await fetch(`${SERVER_BASE}/api/auth/register`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userData)
       }).then(r => r.json());
       if (res.success) { localStorage.setItem('currentUser', JSON.stringify(res.user)); return { success: true, user: res.user }; }
@@ -74,7 +77,7 @@ async function loadNotifications() {
   if (!user) return;
   const userId = user.user_id || user.USER_ID;
   try {
-    const notifs = await fetch(`http://localhost:3000/api/orders/notifications/${userId}`).then(r => r.json());
+    const notifs = await fetch(`${SERVER_BASE}/api/orders/notifications/${userId}`).then(r => r.json());
     if (!Array.isArray(notifs)) return;
 
     const unread  = notifs.filter(n => !(n.is_read || n.IS_READ));
@@ -87,7 +90,6 @@ async function loadNotifications() {
     const listEl = document.getElementById('notif-list');
     if (!listEl) return;
 
-    // FIX: cap the list height so it doesn't grow too long
     listEl.style.maxHeight = '260px';
     listEl.style.overflowY = 'auto';
 
@@ -123,22 +125,19 @@ async function loadNotifications() {
   } catch (e) { /* silent fail */ }
 }
 
-// Click a notification → mark all read → go to orders page
 async function notifClick(id) {
   const user = Auth.getCurrentUser();
   if (user) {
     const userId = user.user_id || user.USER_ID;
     try {
-      await fetch(`http://localhost:3000/api/orders/notifications/${userId}/read`, { method: 'PUT' });
+      await fetch(`${SERVER_BASE}/api/orders/notifications/${userId}/read`, { method: 'PUT' });
     } catch(e) {}
   }
-  // Close dropdown
   notifOpen = false;
   const dd = document.getElementById('notif-dropdown');
   if (dd) dd.style.display = 'none';
   const countEl = document.getElementById('notif-count');
   if (countEl) countEl.style.display = 'none';
-  // Navigate to orders page
   goTo('orders.html');
 }
 
@@ -155,14 +154,13 @@ async function markAllRead() {
   if (!user) return;
   const userId = user.user_id || user.USER_ID;
   try {
-    await fetch(`http://localhost:3000/api/orders/notifications/${userId}/read`, { method: 'PUT' });
+    await fetch(`${SERVER_BASE}/api/orders/notifications/${userId}/read`, { method: 'PUT' });
     const countEl = document.getElementById('notif-count');
     if (countEl) countEl.style.display = 'none';
     loadNotifications();
   } catch (e) {}
 }
 
-// Close dropdown when clicking outside
 document.addEventListener('click', (e) => {
   const bell = document.getElementById('notif-bell');
   const dd   = document.getElementById('notif-dropdown');
@@ -221,7 +219,6 @@ const NavInit = {
       });
     }
 
-    // Load notifications on init if logged in
     if (Auth.isLoggedIn()) loadNotifications();
   }
 };
@@ -497,7 +494,7 @@ const PageInit = {
         const userId = user.user_id || user.USER_ID;
         const body = { full_name: d.get('fullName'), phone: d.get('phone') };
         if (newPass) body.password = newPass;
-        const res = await fetch(`http://localhost:3000/api/auth/profile/${userId}`, {
+        const res = await fetch(`${SERVER_BASE}/api/auth/profile/${userId}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
         }).then(r => r.json());
         if (res.success) {
@@ -525,7 +522,7 @@ const PageInit = {
       btn.disabled = true;
       const d = new FormData(e.target);
       try {
-        const res = await fetch('http://localhost:3000/api/contact', {
+        const res = await fetch(`${SERVER_BASE}/api/contact`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -539,7 +536,6 @@ const PageInit = {
         if (res.success) {
           Utils.showToast("Message sent! We'll get back to you soon.", 'success');
           e.target.reset();
-          // Re-fill user data after reset
           const user = Auth.getCurrentUser();
           if (user) {
             const name  = e.target.querySelector('[name="name"]');

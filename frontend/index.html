@@ -209,10 +209,11 @@
 
   async function loadNotifications() {
     const user = Auth.getCurrentUser();
-    if (!user) return; // not logged in — hide bell
+    if (!user) return;
     const userId = user.user_id || user.USER_ID;
     try {
-      const notifs = await fetch(`http://localhost:3000/api/orders/notifications/${userId}`).then(r => r.json());
+      // ✅ UPDATED: uses SERVER_BASE instead of hardcoded localhost
+      const notifs = await fetch(`${SERVER_BASE}/api/orders/notifications/${userId}`).then(r => r.json());
       if (!Array.isArray(notifs)) return;
 
       const unread  = notifs.filter(n => !(n.is_read || n.IS_READ));
@@ -263,13 +264,13 @@
     const user = Auth.getCurrentUser(); if (!user) return;
     const userId = user.user_id || user.USER_ID;
     try {
-      await fetch(`http://localhost:3000/api/orders/notifications/${userId}/read`, { method: 'PUT' });
+      // ✅ UPDATED: uses SERVER_BASE
+      await fetch(`${SERVER_BASE}/api/orders/notifications/${userId}/read`, { method: 'PUT' });
       document.getElementById('notif-count').style.display = 'none';
       loadNotifications();
     } catch (e) {}
   }
 
-  // Close dropdown when clicking outside
   document.addEventListener('click', (e) => {
     const bell = document.getElementById('notif-bell');
     const dd   = document.getElementById('notif-dropdown');
@@ -279,11 +280,9 @@
     }
   });
 
-  // Load on page ready
   document.addEventListener('DOMContentLoaded', () => {
     Cart.updateBadge();
     NavInit.init();
-    // Only load notifications if user is logged in
     if (Auth.isLoggedIn()) loadNotifications();
   });
   </script>

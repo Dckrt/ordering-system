@@ -7,7 +7,8 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://kit.fontawesome.com/2771f4216a.js" crossorigin="anonymous"></script>
   <style>
-    .notif-bell { position:relative; cursor:pointer; display:flex; align-items:center; }
+    /* ── Notification bell ── */
+    .notif-bell  { position:relative; cursor:pointer; display:flex; align-items:center; }
     .notif-count {
       position:absolute; top:-6px; right:-6px;
       background:#dc2626; color:white; font-size:10px; font-weight:700;
@@ -25,10 +26,11 @@
     .notif-item.unread { background:#fff7f7; }
     .notif-empty  { padding:32px; text-align:center; color:#9ca3af; font-size:13px; }
 
-    /* Prefilled field hint */
-    .field-hint {
-      font-size:11px; color:#16a34a; margin-top:3px;
-      display:flex; align-items:center; gap:4px;
+    /* ── User banner ── */
+    .user-banner {
+      display:none; align-items:center; gap:10px;
+      background:#f0fdf4; border:1px solid #86efac; border-radius:10px;
+      padding:10px 14px; margin-bottom:16px; font-size:13px; color:#15803d;
     }
   </style>
 </head>
@@ -47,12 +49,15 @@
         <a href="index.html"   class="nav-link">Home</a>
         <a href="menu.html"    class="nav-link">Menu</a>
         <a href="about.html"   class="nav-link">About</a>
-        <a href="contact.html" class="nav-link">Contact</a>
+        <a href="contact.html" class="nav-link active">Contact</a>
+
+        <!-- Notification Bell — handled by app.js -->
         <div class="notif-bell nav-link" id="notif-bell" onclick="toggleNotifications()">
           <i class="fas fa-bell" style="font-size:18px;"></i>
           <span class="notif-count" id="notif-count">0</span>
         </div>
-        <a href="login.html" class="nav-link">
+
+        <a href="login.html" class="nav-link" id="user-nav-link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
           </svg>
@@ -68,12 +73,15 @@
     </div>
   </header>
 
+  <!-- Notification Dropdown — populated by app.js -->
   <div class="notif-dropdown" id="notif-dropdown">
     <div class="notif-header">
       <span style="font-size:14px;font-weight:600;">Notifications</span>
       <button onclick="markAllRead()" style="background:none;border:none;font-size:12px;color:#dc2626;cursor:pointer;font-weight:500;">Mark all read</button>
     </div>
-    <div id="notif-list"><div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;display:block;"></i>No notifications</div></div>
+    <div id="notif-list">
+      <div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;display:block;"></i>No notifications</div>
+    </div>
   </div>
 
   <section class="hero">
@@ -83,40 +91,44 @@
     </div>
   </section>
 
-  <main style="padding: var(--space-16) 0;">
+  <main style="padding:var(--space-16) 0;">
     <div class="container">
       <div class="grid grid-cols-3">
 
         <!-- Contact Form -->
-        <div style="grid-column: span 2;">
+        <div style="grid-column:span 2;">
           <div class="card">
             <div class="card-content">
               <h2 class="mb-4">Send us a Message</h2>
 
-              
+              <!-- Auto-fill banner (shown when logged in) -->
+              <div class="user-banner" id="user-banner">
+                <i class="fas fa-circle-check" style="font-size:16px;flex-shrink:0;"></i>
+                <span id="user-banner-text">Your details have been filled in automatically.</span>
+              </div>
 
               <form id="contact-form">
                 <div class="grid grid-cols-2">
                   <div class="form-group">
                     <label class="form-label">Name *</label>
-                    <input type="text" name="name" id="field-name" class="form-input" required>
+                    <input type="text" name="name" id="field-name" class="form-input" required placeholder="Juan dela Cruz">
                   </div>
                   <div class="form-group">
                     <label class="form-label">Phone Number</label>
-                    <input type="tel" name="phone" id="field-phone" class="form-input">
+                    <input type="tel" name="phone" id="field-phone" class="form-input" placeholder="+63 9XX XXX XXXX">
                   </div>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Email Address *</label>
-                  <input type="email" name="email" id="field-email" class="form-input" required>
+                  <input type="email" name="email" id="field-email" class="form-input" required placeholder="you@email.com">
                 </div>
                 <div class="form-group">
                   <label class="form-label">Subject *</label>
-                  <input type="text" name="subject" id="field-subject" class="form-input" required>
+                  <input type="text" name="subject" id="field-subject" class="form-input" required placeholder="What is your message about?">
                 </div>
                 <div class="form-group">
                   <label class="form-label">Message *</label>
-                  <textarea name="message" class="form-textarea" rows="6" required></textarea>
+                  <textarea name="message" class="form-textarea" rows="6" required placeholder="Write your message here..."></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">
                   <i class="fas fa-paper-plane" style="margin-right:8px;"></i>Send Message
@@ -187,136 +199,78 @@
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      Cart.updateBadge();
-      NavInit.init();
+  document.addEventListener('DOMContentLoaded', () => {
+    Cart.updateBadge();
+    NavInit.init();
+    // loadNotifications() is called by NavInit.init() from app.js automatically
 
-      // ── Auto-fill user details if logged in
-      const user = Auth.getCurrentUser();
-      if (user) {
-        const name  = user.full_name || user.FULL_NAME || '';
-        const email = user.email     || user.EMAIL     || '';
-        const phone = user.phone     || user.PHONE     || '';
+    // ── Auto-fill user details if logged in
+    const user = Auth.getCurrentUser();
+    if (user) {
+      const name  = user.full_name || user.FULL_NAME || '';
+      const email = user.email     || user.EMAIL     || '';
+      const phone = user.phone     || user.PHONE     || '';
 
-        if (name)  document.getElementById('field-name').value  = name;
-        if (email) document.getElementById('field-email').value = email;
-        if (phone) document.getElementById('field-phone').value = phone;
+      if (name)  document.getElementById('field-name').value  = name;
+      if (email) document.getElementById('field-email').value = email;
+      if (phone) document.getElementById('field-phone').value = phone;
 
-        // Show green banner
-        const banner = document.getElementById('user-banner');
+      // Show green banner
+      const banner = document.getElementById('user-banner');
+      if (banner) {
         banner.style.display = 'flex';
         document.getElementById('user-banner-text').textContent =
           `Logged in as ${name} — your details have been filled in automatically.`;
       }
+    }
 
-      // Load notification count
-      loadNotifications();
-    });
-
-    // ── Contact form submit
+    // ── Contact form submit ──────────────────────────────────
     document.getElementById('contact-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = e.target.querySelector('button[type=submit]');
       btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Sending...';
-      btn.disabled = true;
+      btn.disabled  = true;
 
-      // Simulate send (replace with real API call if needed)
       const formData = new FormData(e.target);
+      try {
+        // ✅ Uses api.sendMessage() which uses API_BASE from api.js
+        // Works for both localhost AND LAN IP (192.168.x.x)
+        const res = await api.sendMessage({
+          full_name: formData.get('name'),
+          email:     formData.get('email'),
+          phone:     formData.get('phone') || null,
+          subject:   formData.get('subject'),
+          message:   formData.get('message'),
+        });
 
-      const res = await api.sendMessage({
-        full_name: formData.get('name'),
-        email:     formData.get('email'),
-        phone:     formData.get('phone') || null,
-        subject:   formData.get('subject'),
-        message:   formData.get('message')
-      });
+        if (res.success) {
+          Utils.showToast("Message sent! We'll get back to you soon.", 'success');
+          e.target.reset();
 
-      if (res.success || res.id || res.message_id) {
-        Utils.showToast("Message sent! We'll get back to you soon.", 'success');
-        e.target.reset();
-
-        // Re-fill user data after reset
-        const user = Auth.getCurrentUser();
-        if (user) {
-          if (user.full_name || user.FULL_NAME) document.getElementById('field-name').value  = user.full_name  || user.FULL_NAME;
-          if (user.email     || user.EMAIL)     document.getElementById('field-email').value = user.email      || user.EMAIL;
-          if (user.phone     || user.PHONE)     document.getElementById('field-phone').value = user.phone      || user.PHONE;
+          // Re-fill user data after reset
+          const u = Auth.getCurrentUser();
+          if (u) {
+            if (u.full_name||u.FULL_NAME) document.getElementById('field-name').value  = u.full_name  ||u.FULL_NAME;
+            if (u.email    ||u.EMAIL)     document.getElementById('field-email').value = u.email      ||u.EMAIL;
+            if (u.phone    ||u.PHONE)     document.getElementById('field-phone').value = u.phone      ||u.PHONE;
+          }
+        } else {
+          Utils.showToast(res.message || 'Failed to send. Please try again.', 'error');
         }
-      } else {
-        Utils.showToast(res.message || 'Failed to send. Please try again.', 'error');
-      }
-
-      // Re-fill user data after reset
-      const user = Auth.getCurrentUser();
-      if (user) {
-        if (user.full_name || user.FULL_NAME) document.getElementById('field-name').value  = user.full_name || user.FULL_NAME;
-        if (user.email     || user.EMAIL)     document.getElementById('field-email').value = user.email     || user.EMAIL;
-        if (user.phone     || user.PHONE)     document.getElementById('field-phone').value = user.phone     || user.PHONE;
+      } catch {
+        Utils.showToast('Server error. Please try again.', 'error');
       }
 
       btn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right:8px;"></i>Send Message';
-      btn.disabled = false;
+      btn.disabled  = false;
     });
+  });
 
-    // ── Notifications
-    let notifOpen = false;
-
-    async function loadNotifications() {
-      const user = Auth.getCurrentUser();
-      if (!user) return;
-      const userId = user.user_id || user.USER_ID;
-      try {
-        const notifs = await fetch(`http://localhost:3000/api/orders/notifications/${userId}`).then(r => r.json());
-        if (!Array.isArray(notifs)) return;
-        const unread = notifs.filter(n => !(n.is_read || n.IS_READ));
-        const countEl = document.getElementById('notif-count');
-        if (unread.length > 0) { countEl.textContent = unread.length; countEl.style.display = 'flex'; }
-        else { countEl.style.display = 'none'; }
-        const listEl = document.getElementById('notif-list');
-        if (!notifs.length) {
-          listEl.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;display:block;"></i>No notifications</div>';
-          return;
-        }
-        listEl.innerHTML = notifs.map(n => {
-          const isRead = n.is_read || n.IS_READ;
-          return `<div class="notif-item ${isRead ? '' : 'unread'}">
-            <div style="display:flex;align-items:flex-start;gap:10px;">
-              <div style="width:32px;height:32px;border-radius:50%;background:${isRead?'#f3f4f6':'#fef2f2'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <i class="fas fa-bag-shopping" style="font-size:13px;color:${isRead?'#9ca3af':'#dc2626'};"></i>
-              </div>
-              <div style="flex:1;">
-                <p style="margin:0;font-weight:${isRead?'400':'600'};color:#111;">${n.message||''}</p>
-                <p style="margin:2px 0 0;font-size:11px;color:#9ca3af;">${n.created_at?new Date(n.created_at).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}</p>
-              </div>
-            </div>
-          </div>`;
-        }).join('');
-      } catch (e) {}
-    }
-
-    function toggleNotifications() {
-      const dd = document.getElementById('notif-dropdown');
-      notifOpen = !notifOpen;
-      dd.style.display = notifOpen ? 'block' : 'none';
-      if (notifOpen) loadNotifications();
-    }
-
-    async function markAllRead() {
-      const user = Auth.getCurrentUser(); if (!user) return;
-      const userId = user.user_id || user.USER_ID;
-      try {
-        await fetch(`http://localhost:3000/api/orders/notifications/${userId}/read`, { method: 'PUT' });
-        document.getElementById('notif-count').style.display = 'none';
-        loadNotifications();
-      } catch (e) {}
-    }
-
-    document.addEventListener('click', (e) => {
-      const bell = document.getElementById('notif-bell'), dd = document.getElementById('notif-dropdown');
-      if (notifOpen && bell && dd && !bell.contains(e.target) && !dd.contains(e.target)) {
-        notifOpen = false; dd.style.display = 'none';
-      }
-    });
+  // ── Notification functions ───────────────────────────────────
+  // NOTE: toggleNotifications(), markAllRead(), and loadNotifications()
+  // are already defined in app.js — NO need to redefine them here.
+  // They use SERVER_BASE which is derived from API_BASE in api.js.
+  // So changing the IP in api.js automatically updates everything.
   </script>
 </body>
 </html>

@@ -307,8 +307,6 @@
           <button type="submit" class="btn-red"><i class="fas fa-right-to-bracket"></i> Sign In</button>
         </form>
 
-        
-
         <div class="toggle-row">Don't have an account? <button onclick="showReg()">Sign Up</button></div>
       </div>
 
@@ -478,7 +476,8 @@
 <script src="js/app.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-const API = 'http://localhost:3000/api';
+// SERVER_BASE is defined in app.js (derived from API_BASE in api.js)
+// Change the IP only in api.js — everything here updates automatically
 let regData = null, otpTimer = null, resendTimeout = null;
 
 // ── Panel switching ──────────────────────────────────────────
@@ -503,24 +502,17 @@ function backToForm() {
 document.addEventListener('DOMContentLoaded', () => {
   Cart.updateBadge();
 
-  // Redirect if already logged in
   if (Auth.isLoggedIn()) {
     const r = sessionStorage.getItem('redirectAfterLogin') || 'index.html';
     sessionStorage.removeItem('redirectAfterLogin');
     goTo(Auth.isAdmin() ? 'admin/dashboard.html' : r); return;
   }
 
-  // Remember me
   const saved = localStorage.getItem('rememberedEmail');
   if (saved) { document.getElementById('login-email').value = saved; document.getElementById('remember-me').checked = true; }
 
-  // Login submit
   document.getElementById('login-form').addEventListener('submit', handleLogin);
-
-  // Register submit
   document.getElementById('reg-form').addEventListener('submit', handleRegStep1);
-
-  // OTP cells
   setupOTP();
 });
 
@@ -559,20 +551,19 @@ async function handleRegStep1(e) {
   const pass    = document.getElementById('rg-pass').value;
   const confirm = document.getElementById('rg-confirm').value;
 
-  // Clear errors
   ['e-name','e-email','e-pass','e-confirm'].forEach(id => document.getElementById(id).classList.remove('show'));
 
-  if (!name)                                          { showErr('e-name');    ok = false; }
+  if (!name)                                               { showErr('e-name');    ok = false; }
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('e-email'); ok = false; }
-  if (pass.length < 8)                                { showErr('e-pass');    ok = false; }
-  if (pass !== confirm)                               { showErr('e-confirm'); ok = false; }
+  if (pass.length < 8)                                     { showErr('e-pass');    ok = false; }
+  if (pass !== confirm)                                    { showErr('e-confirm'); ok = false; }
   if (!ok) return;
 
   const btn = document.getElementById('send-otp-btn');
   setBtn(btn, true, 'Sending verification code…');
 
   try {
-    const res  = await fetch(`${API}/otp/send`, {
+    const res  = await fetch(`${SERVER_BASE}/api/otp/send`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     });
@@ -593,7 +584,7 @@ async function handleRegStep1(e) {
     toast('Cannot connect to server. Is the backend running?', 'error');
   }
 
-  setBtn(btn, false, '<i class="fas fa-envelope-circle-check"></i> Continue with Email Verification');
+  setBtn(btn, false, 'Create Account <i class="fas fa-arrow-right"></i>');
 }
 
 // ── REGISTER STEP 2 — verify OTP → create account ───────────
@@ -607,8 +598,7 @@ async function verifyAndRegister() {
   setBtn(btn, true, 'Verifying…');
 
   try {
-    // A: Verify OTP
-    const vRes  = await fetch(`${API}/otp/verify`, {
+    const vRes  = await fetch(`${SERVER_BASE}/api/otp/verify`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: regData.email, otp }),
     });
@@ -621,14 +611,12 @@ async function verifyAndRegister() {
       return;
     }
 
-    // Flash green
     for (let i = 0; i < 6; i++) {
       const c = document.getElementById('oc'+i);
       c.className = 'otp-cell ok';
     }
 
-    // B: Register account
-    const rRes  = await fetch(`${API}/auth/register`, {
+    const rRes  = await fetch(`${SERVER_BASE}/api/auth/register`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...regData, skip_otp_check: true }),
     });
@@ -659,7 +647,7 @@ async function resendOTP() {
   clearOTP(); hideErr('otp-err');
 
   try {
-    const res  = await fetch(`${API}/otp/send`, {
+    const res  = await fetch(`${SERVER_BASE}/api/otp/send`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: regData.email }),
     });
@@ -791,7 +779,7 @@ function submitForgot(){const email=document.getElementById('forgot-email').valu
 
 // Google Sign-In
 function signInWithGoogle(){if(typeof google==='undefined'||!google.accounts){toast('Google Sign-In: Set your Client ID first.','info');return;}google.accounts.id.initialize({client_id:'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',callback:handleGoogleResponse});google.accounts.id.prompt();}
-async function handleGoogleResponse(cr){try{const p=JSON.parse(atob(cr.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));const res=await fetch(`${API}/auth/google`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:p.email,full_name:p.name})}).then(r=>r.json());if(res.success){localStorage.setItem('currentUser',JSON.stringify(res.user));toast('Signed in with Google!','success');setTimeout(()=>goTo(Auth.isAdmin()?'admin/dashboard.html':'index.html'),800);}else{toast(res.message||'Failed','error');}}catch{toast('Google sign-in error','error');}}
+async function handleGoogleResponse(cr){try{const p=JSON.parse(atob(cr.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));const res=await fetch(`${SERVER_BASE}/api/auth/google`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:p.email,full_name:p.name})}).then(r=>r.json());if(res.success){localStorage.setItem('currentUser',JSON.stringify(res.user));toast('Signed in with Google!','success');setTimeout(()=>goTo(Auth.isAdmin()?'admin/dashboard.html':'index.html'),800);}else{toast(res.message||'Failed','error');}}catch{toast('Google sign-in error','error');}}
 </script>
 </body>
 </html>
