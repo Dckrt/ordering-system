@@ -1,9 +1,7 @@
 /* ============================================================
    nav-mobile.css — hamburger + slide-in mobile nav
-   Include in every HTML page AFTER style.css
    ============================================================ */
 
-/* Hamburger button — hidden on desktop */
 .nav-hamburger {
   display: none;
   background: none;
@@ -18,13 +16,11 @@
 }
 .nav-hamburger:hover { background: var(--gray-100); }
 
-/* ── Mobile fixes ── */
 @media (max-width: 768px) {
 
-  /* Show hamburger */
   .nav-hamburger { display: flex; align-items: center; justify-content: center; }
 
-  /* Prevent logo from wrapping to two lines */
+  /* Prevent logo wrap */
   .logo { flex-shrink: 0; }
   .logo-text {
     font-size: 0.9rem;
@@ -35,27 +31,23 @@
   }
   .logo-subtext { display: none; }
 
-  /* Header single row, no wrap */
-  .header-content {
-    flex-wrap: nowrap;
-    padding: 10px var(--space-4);
-  }
+  .header-content { flex-wrap: nowrap; padding: 10px var(--space-4); }
 
-  /* Nav: compact gap */
   .nav { gap: 6px; flex-shrink: 0; }
 
-  /* Hide text nav links (Home, Menu, About, Contact) */
-  .nav > a.nav-link:not(.cart-icon-wrapper) { display: none; }
+  /* Hide all nav links except bell and cart */
+  .nav > a.nav-link:not(.cart-icon-wrapper) { display: none !important; }
 
-  /* Hide user name text next to profile icon */
+  /* Hide profile icon/button entirely on mobile — it's in hamburger menu */
+  .nav > div:not(#notif-bell) { display: none !important; }
   #nav-username { display: none !important; }
 
-  /* Keep bell + cart icons tight */
-  .notif-bell { padding: 2px 4px; }
+  /* Keep bell + cart tight */
+  #notif-bell { padding: 2px 4px; }
   .cart-icon-wrapper { padding: 2px 4px; }
 }
 
-/* Mobile nav overlay (full screen backdrop) */
+/* ── Overlay ── */
 .nav-mobile {
   position: fixed;
   inset: 0;
@@ -70,7 +62,7 @@
   pointer-events: all;
 }
 
-/* Slide-in panel from right */
+/* ── Slide-in panel ── */
 .nav-mobile-panel {
   position: absolute;
   top: 0; right: 0;
@@ -84,11 +76,8 @@
   transition: transform .28s cubic-bezier(.4,0,.2,1);
   overflow-y: auto;
 }
-.nav-mobile.open .nav-mobile-panel {
-  transform: translateX(0);
-}
+.nav-mobile.open .nav-mobile-panel { transform: translateX(0); }
 
-/* Panel header */
 .nav-mobile-header {
   display: flex;
   align-items: center;
@@ -113,7 +102,6 @@
 }
 .nav-mobile-close:hover { background: rgba(255,255,255,.35); }
 
-/* Nav links inside panel */
 .nav-mobile-links {
   flex: 1;
   padding: 8px 12px;
