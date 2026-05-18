@@ -221,10 +221,30 @@
       btn.disabled = true;
 
       // Simulate send (replace with real API call if needed)
-      await new Promise(r => setTimeout(r, 800));
+      const formData = new FormData(e.target);
 
-      Utils.showToast("Message sent! We'll get back to you soon.", 'success');
-      e.target.reset();
+      const res = await api.sendMessage({
+        full_name: formData.get('name'),
+        email:     formData.get('email'),
+        phone:     formData.get('phone') || null,
+        subject:   formData.get('subject'),
+        message:   formData.get('message')
+      });
+
+      if (res.success || res.id || res.message_id) {
+        Utils.showToast("Message sent! We'll get back to you soon.", 'success');
+        e.target.reset();
+
+        // Re-fill user data after reset
+        const user = Auth.getCurrentUser();
+        if (user) {
+          if (user.full_name || user.FULL_NAME) document.getElementById('field-name').value  = user.full_name  || user.FULL_NAME;
+          if (user.email     || user.EMAIL)     document.getElementById('field-email').value = user.email      || user.EMAIL;
+          if (user.phone     || user.PHONE)     document.getElementById('field-phone').value = user.phone      || user.PHONE;
+        }
+      } else {
+        Utils.showToast(res.message || 'Failed to send. Please try again.', 'error');
+      }
 
       // Re-fill user data after reset
       const user = Auth.getCurrentUser();

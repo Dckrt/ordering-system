@@ -65,16 +65,122 @@ const Utils = {
 };
 
 // ============================================================
+// NOTIFICATIONS — shared across all pages
+// ============================================================
+let notifOpen = false;
+
+async function loadNotifications() {
+  const user = Auth.getCurrentUser();
+  if (!user) return;
+  const userId = user.user_id || user.USER_ID;
+  try {
+    const notifs = await fetch(`http://localhost:3000/api/orders/notifications/${userId}`).then(r => r.json());
+    if (!Array.isArray(notifs)) return;
+
+    const unread  = notifs.filter(n => !(n.is_read || n.IS_READ));
+    const countEl = document.getElementById('notif-count');
+    if (countEl) {
+      if (unread.length > 0) { countEl.textContent = unread.length; countEl.style.display = 'flex'; }
+      else { countEl.style.display = 'none'; }
+    }
+
+    const listEl = document.getElementById('notif-list');
+    if (!listEl) return;
+
+    // FIX: cap the list height so it doesn't grow too long
+    listEl.style.maxHeight = '260px';
+    listEl.style.overflowY = 'auto';
+
+    if (!notifs.length) {
+      listEl.innerHTML = `<div style="padding:16px;text-align:center;color:#9ca3af;font-size:12px;"><i class="fas fa-bell-slash" style="font-size:18px;margin-bottom:6px;display:block;"></i>No notifications</div>`;
+      return;
+    }
+
+    listEl.innerHTML = notifs.map(n => {
+      const isRead = n.is_read || n.IS_READ;
+      const msg    = n.message || n.MESSAGE || '';
+      const time   = n.created_at || n.CREATED_AT || '';
+      const nid    = n.id || n.notification_id || 0;
+      return `<div class="notif-item ${isRead ? '' : 'unread'}"
+        onclick="notifClick(${nid})"
+        style="padding:8px 12px;cursor:pointer;transition:background .15s;background:${isRead?'':'#fff7f7'};border-bottom:1px solid #f3f4f6;"
+        onmouseover="this.style.background='#f9fafb'"
+        onmouseout="this.style.background='${isRead ? '' : '#fff7f7'}'">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:${isRead?'#f3f4f6':'#fef2f2'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas fa-bag-shopping" style="font-size:11px;color:${isRead?'#9ca3af':'#dc2626'};"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <p style="margin:0;font-weight:${isRead?'400':'600'};color:#111;font-size:12px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${msg}</p>
+            <p style="margin:1px 0 0;font-size:10px;color:#9ca3af;">
+              ${time ? new Date(time).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : ''}
+            </p>
+          </div>
+          ${!isRead ? `<div style="width:7px;height:7px;border-radius:50%;background:#dc2626;flex-shrink:0;"></div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) { /* silent fail */ }
+}
+
+// Click a notification → mark all read → go to orders page
+async function notifClick(id) {
+  const user = Auth.getCurrentUser();
+  if (user) {
+    const userId = user.user_id || user.USER_ID;
+    try {
+      await fetch(`http://localhost:3000/api/orders/notifications/${userId}/read`, { method: 'PUT' });
+    } catch(e) {}
+  }
+  // Close dropdown
+  notifOpen = false;
+  const dd = document.getElementById('notif-dropdown');
+  if (dd) dd.style.display = 'none';
+  const countEl = document.getElementById('notif-count');
+  if (countEl) countEl.style.display = 'none';
+  // Navigate to orders page
+  goTo('orders.html');
+}
+
+function toggleNotifications() {
+  const dd = document.getElementById('notif-dropdown');
+  if (!dd) return;
+  notifOpen = !notifOpen;
+  dd.style.display = notifOpen ? 'block' : 'none';
+  if (notifOpen) loadNotifications();
+}
+
+async function markAllRead() {
+  const user = Auth.getCurrentUser();
+  if (!user) return;
+  const userId = user.user_id || user.USER_ID;
+  try {
+    await fetch(`http://localhost:3000/api/orders/notifications/${userId}/read`, { method: 'PUT' });
+    const countEl = document.getElementById('notif-count');
+    if (countEl) countEl.style.display = 'none';
+    loadNotifications();
+  } catch (e) {}
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const bell = document.getElementById('notif-bell');
+  const dd   = document.getElementById('notif-dropdown');
+  if (notifOpen && bell && dd && !bell.contains(e.target) && !dd.contains(e.target)) {
+    notifOpen = false;
+    dd.style.display = 'none';
+  }
+});
+
+// ============================================================
 // NAV — active state + user dropdown + LOGO FIX
 // ============================================================
 const NavInit = {
   init: () => {
-    // ── Fix logo icon (fa-utensils might not render if FA not loaded yet)
     document.querySelectorAll('.logo-icon i').forEach(i => {
       if (!i.classList.contains('fas')) { i.className = 'fas fa-utensils'; }
     });
 
-    // ── Active nav link based on current page
     const page = window.location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('.nav-link').forEach(link => {
       const href = link.getAttribute('href') || '';
@@ -84,7 +190,6 @@ const NavInit = {
       }
     });
 
-    // ── User dropdown
     const user = Auth.getCurrentUser();
     const userLink = document.querySelector('a[href="login.html"].nav-link');
     if (!userLink) return;
@@ -106,8 +211,8 @@ const NavInit = {
           <p style="font-size:13px;font-weight:600;color:#111;margin-bottom:1px;">${name}</p>
           <p style="font-size:11px;color:#888;">${user.email || user.EMAIL || ''}</p></div>
           ${Auth.isAdmin() ? `<a href="javascript:void(0)" onclick="goTo('admin/dashboard.html');document.getElementById('user-dd')?.remove();" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">⚙ Admin Panel</a>` : ''}
-          <a href="javascript:void(0)" onclick="goTo('orders.html');document.getElementById('user-dd')?.remove();" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">${ ['📦 My Orders']}</a>
-          <a href="javascript:void(0)" onclick="goTo('profile.html');document.getElementById('user-dd')?.remove();" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">${ ['👤 Edit Profile']}</a>
+          <a href="javascript:void(0)" onclick="goTo('orders.html');document.getElementById('user-dd')?.remove();" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">📦 My Orders</a>
+          <a href="javascript:void(0)" onclick="goTo('profile.html');document.getElementById('user-dd')?.remove();" style="display:block;padding:10px 16px;font-size:13px;color:#374151;text-decoration:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">👤 Edit Profile</a>
           <button onclick="Auth.logout()" style="display:block;width:100%;text-align:left;padding:10px 16px;font-size:13px;color:#dc2626;background:none;border:none;border-top:1px solid #f0f0f0;cursor:pointer;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background=''">Sign Out</button>`;
         document.body.appendChild(dd);
         setTimeout(() => document.addEventListener('click', function h(ev) {
@@ -115,6 +220,9 @@ const NavInit = {
         }), 50);
       });
     }
+
+    // Load notifications on init if logged in
+    if (Auth.isLoggedIn()) loadNotifications();
   }
 };
 
@@ -123,7 +231,6 @@ const NavInit = {
 // ============================================================
 const PageInit = {
 
-  // INDEX
   index: async () => {
     const grid = document.getElementById('featured-products');
     if (!grid) return;
@@ -136,7 +243,6 @@ const PageInit = {
     }
   },
 
-  // MENU
   menu: async () => {
     let selectedCategory = 'All';
     const grid = document.getElementById('products-grid');
@@ -165,11 +271,9 @@ const PageInit = {
     await renderProducts();
   },
 
-  // CHECKOUT
   checkout: () => {
     if (!Auth.isLoggedIn()) { sessionStorage.setItem('redirectAfterLogin', 'checkout.html'); goTo('login.html'); return; }
     const buyNow = JSON.parse(sessionStorage.getItem('buyNowItem') || 'null');
-    // checkedItems: array of ids selected from cart, or null = use buyNow
     const checkedStr = sessionStorage.getItem('checkedItems');
     let items;
     if (buyNow) {
@@ -252,7 +356,6 @@ const PageInit = {
     });
   },
 
-  // CONFIRMATION
   confirmation: () => {
     const raw = sessionStorage.getItem('lastOrder') || localStorage.getItem('lastOrder') || 'null';
     const order = JSON.parse(raw);
@@ -279,7 +382,6 @@ const PageInit = {
     }
   },
 
-  // ORDERS
   orders: async () => {
     if (!Auth.isLoggedIn()) { sessionStorage.setItem('redirectAfterLogin', 'orders.html'); goTo('login.html'); return; }
     const user = Auth.getCurrentUser();
@@ -332,7 +434,6 @@ const PageInit = {
     }
   },
 
-  // LOGIN
   login: () => {
     if (Auth.isLoggedIn()) {
       const redirect = sessionStorage.getItem('redirectAfterLogin') || 'index.html';
@@ -375,7 +476,6 @@ const PageInit = {
     });
   },
 
-  // PROFILE
   profile: () => {
     if (!Auth.isLoggedIn()) { goTo('login.html'); return; }
     const user = Auth.getCurrentUser();
@@ -401,7 +501,14 @@ const PageInit = {
           method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
         }).then(r => r.json());
         if (res.success) {
-          const updated = { ...user, full_name: body.full_name, phone: body.phone, FULL_NAME: body.full_name, PHONE: body.phone };
+          const currentStored = Auth.getCurrentUser();
+          const existingImage = currentStored.profile_image || currentStored.PROFILE_IMAGE || null;
+          const updated = {
+            ...user,
+            full_name: body.full_name, phone: body.phone,
+            FULL_NAME: body.full_name, PHONE: body.phone,
+            profile_image: existingImage, PROFILE_IMAGE: existingImage
+          };
           localStorage.setItem('currentUser', JSON.stringify(updated));
           Utils.showToast('Profile updated!', 'success');
         } else { Utils.showToast(res.message || 'Failed to update', 'error'); }
@@ -411,8 +518,45 @@ const PageInit = {
   },
 
   contact: () => {
-    document.getElementById('contact-form')?.addEventListener('submit', (e) => {
-      e.preventDefault(); Utils.showToast("Message sent! We'll get back to you soon.", 'success'); e.target.reset();
+    document.getElementById('contact-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Sending...';
+      btn.disabled = true;
+      const d = new FormData(e.target);
+      try {
+        const res = await fetch('http://localhost:3000/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            full_name: d.get('name'),
+            email:     d.get('email'),
+            phone:     d.get('phone'),
+            subject:   d.get('subject'),
+            message:   d.get('message')
+          })
+        }).then(r => r.json());
+        if (res.success) {
+          Utils.showToast("Message sent! We'll get back to you soon.", 'success');
+          e.target.reset();
+          // Re-fill user data after reset
+          const user = Auth.getCurrentUser();
+          if (user) {
+            const name  = e.target.querySelector('[name="name"]');
+            const email = e.target.querySelector('[name="email"]');
+            const phone = e.target.querySelector('[name="phone"]');
+            if (name)  name.value  = user.full_name || user.FULL_NAME || '';
+            if (email) email.value = user.email     || user.EMAIL     || '';
+            if (phone) phone.value = user.phone     || user.PHONE     || '';
+          }
+        } else {
+          Utils.showToast(res.message || 'Failed to send message', 'error');
+        }
+      } catch {
+        Utils.showToast('Server error. Please try again.', 'error');
+      }
+      btn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right:8px;"></i>Send Message';
+      btn.disabled = false;
     });
   },
 };

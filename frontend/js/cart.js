@@ -30,14 +30,20 @@ const Cart = {
   },
 
   clearCart: () => { localStorage.setItem('cart', JSON.stringify([])); Cart.updateBadge(); },
-  getTotalItems: () => Cart.getCart().reduce((t, i) => t + i.quantity, 0),
+
+  // Total quantity (e.g. 3 pcs of chicken + 2 pcs of pork = 5) — used for price calculations
+  getTotalQuantity: () => Cart.getCart().reduce((t, i) => t + i.quantity, 0),
+
+  // Number of distinct products — used for the cart badge
+  getTotalItems: () => Cart.getCart().length,
+
   getTotalPrice: () => Cart.getCart().reduce((t, i) => t + (i.price * i.quantity), 0),
 
   updateBadge: () => {
-    const total = Cart.getTotalItems();
+    const count = Cart.getTotalItems(); // distinct products
     document.querySelectorAll('.cart-badge').forEach(el => {
-      el.textContent = total;
-      el.style.display = total > 0 ? 'flex' : 'none';
+      el.textContent = count;
+      el.style.display = count > 0 ? 'flex' : 'none';
     });
   },
 };

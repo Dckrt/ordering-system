@@ -251,11 +251,14 @@ async function changeStatus(id, status) {
   try {
     const res = await api.updateOrderStatus(id, status);
     if (res.success) {
-      try { await fetch(`http://localhost:3000/api/orders/${id}/notify`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})}); } catch(e){}
-      Utils.showToast('Status → '+status, 'success');
+      Utils.showToast('Status updated to ' + status, 'success');
       await loadOrders();
-    } else { Utils.showToast(res.message||'Failed','error'); }
-  } catch { Utils.showToast('Server error','error'); }
+    } else {
+      Utils.showToast(res.message || 'Failed to update', 'error');
+    }
+  } catch {
+    Utils.showToast('Server error', 'error');
+  }
 }
 
 function viewOrder(id) {

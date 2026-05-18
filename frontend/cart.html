@@ -81,32 +81,32 @@
     .checkout-btn-main:disabled { opacity: .4; cursor: not-allowed; }
 
     /* Select-all row */
+    .sel-all-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; background: white; border-radius: 12px;
+      border: 1px solid #f3f4f6; margin-bottom: 16px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.04);
+    }
 
-  .sel-all-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 16px; background: white; border-radius: 12px;
-    border: 1px solid #f3f4f6; margin-bottom: 16px;
-    box-shadow: 0 1px 6px rgba(0,0,0,.04);
-  }   ← SARILING CLOSING BRACE
-
-  /* Notification bell */
-  .notif-bell { position: relative; cursor: pointer; display: flex; align-items: center; }
-  .notif-count {
-    position: absolute; top: -6px; right: -6px;
-    background: #dc2626; color: white; font-size: 10px; font-weight: 700;
-    width: 18px; height: 18px; border-radius: 50%;
-    display: none; align-items: center; justify-content: center;
-  }
-  .notif-dropdown {
-    position: fixed; top: 64px; right: 16px; z-index: 8000;
-    background: white; border: 1px solid #e5e7eb; border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,.12);
-    min-width: 320px; max-height: 400px; overflow-y: auto; display: none;
-  }
-  .notif-header { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
-  .notif-item   { padding: 12px 16px; border-bottom: 1px solid #f9fafb; font-size: 13px; }
-  .notif-item.unread { background: #fff7f7; }
-  .notif-empty  { padding: 32px; text-align: center; color: #9ca3af; font-size: 13px; }
+    /* Notification bell */
+    .notif-bell { position: relative; cursor: pointer; display: flex; align-items: center; }
+    .notif-count {
+      position: absolute; top: -6px; right: -6px;
+      background: #dc2626; color: white; font-size: 10px; font-weight: 700;
+      width: 18px; height: 18px; border-radius: 50%;
+      display: none; align-items: center; justify-content: center;
+    }
+    .notif-dropdown {
+      position: fixed; top: 64px; right: 16px; z-index: 8000;
+      background: white; border: 1px solid #e5e7eb; border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      min-width: 300px; max-width: 320px; display: none;
+      overflow: hidden;
+    }
+    .notif-header { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+    .notif-item   { padding: 8px 12px; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
+    .notif-item.unread { background: #fff7f7; }
+    .notif-empty  { padding: 20px; text-align: center; color: #9ca3af; font-size: 12px; }
 
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   </style>
@@ -146,13 +146,13 @@
     </div>
   </header>
 
-  <!-- Notification dropdown -->
+  <!-- Notification dropdown — populated by app.js loadNotifications() -->
   <div class="notif-dropdown" id="notif-dropdown">
     <div class="notif-header">
-      <span style="font-size:14px;font-weight:600;">Notifications</span>
-      <button onclick="markAllRead()" style="background:none;border:none;font-size:12px;color:#dc2626;cursor:pointer;font-weight:500;">Mark all read</button>
+      <span style="font-size:13px;font-weight:600;">Notifications</span>
+      <button onclick="markAllRead()" style="background:none;border:none;font-size:11px;color:#dc2626;cursor:pointer;font-weight:500;">Mark all read</button>
     </div>
-    <div id="notif-list"><div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;display:block;"></i>No notifications</div></div>
+    <div id="notif-list"><div class="notif-empty">No notifications</div></div>
   </div>
 
   <section class="hero">
@@ -246,7 +246,6 @@
   let checkedIds = new Set();
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Pre-check all on load
     Cart.getItems().forEach(i => checkedIds.add(i.id));
     renderCart();
   });
@@ -268,7 +267,6 @@
     emptyEl.classList.add('hidden');
     contentEl.style.display = 'block';
 
-    // Remove stale checked IDs
     const existingIds = new Set(items.map(i => i.id));
     checkedIds.forEach(id => { if (!existingIds.has(id)) checkedIds.delete(id); });
 
@@ -277,24 +275,17 @@
       const isChecked = checkedIds.has(item.id);
       return `
         <div class="cart-item ${isChecked ? 'selected' : ''}" id="ci-${item.id}" style="animation-delay:${idx*.05}s;padding-right:40px;">
-          <!-- Checkbox -->
           <div class="item-check ${isChecked ? 'checked' : ''}" id="chk-${item.id}"
             onclick="toggleCheck(${item.id})"></div>
-
-          <!-- Remove -->
           <button class="remove-btn" onclick="doRemove(${item.id})" title="Remove">✕</button>
-
-          <!-- Image -->
           <img src="${item.image||'https://via.placeholder.com/80'}" onerror="this.src='https://via.placeholder.com/80'" alt="${item.name}">
-
-          <!-- Details -->
           <div class="item-body">
             <p class="item-cat">${item.category||''}</p>
             <p class="item-name">${item.name}</p>
             <p class="item-unit">₱${parseFloat(item.price).toFixed(2)} each</p>
             <div class="item-row">
               <div class="qty-ctrl">
-                <button class="qty-btn ${atMin?'qty-dis':''}" ${atMin?'':''} onclick="${atMin?'':(`doQty(${item.id},-1)`)}"
+                <button class="qty-btn ${atMin?'qty-dis':''}" onclick="${atMin?'':(`doQty(${item.id},-1)`)}"
                   ${atMin?'disabled':''}>−</button>
                 <span class="qty-val">${item.quantity}</span>
                 <button class="qty-btn" onclick="doQty(${item.id},1)">+</button>
@@ -372,63 +363,6 @@
     sessionStorage.setItem('checkedItems', JSON.stringify([...checkedIds]));
     goTo('checkout.html');
   }
-
-  // ── Notifications
-  let notifOpen = false;
-
-  async function loadNotifications() {
-    const user = Auth.getCurrentUser();
-    if (!user) return;
-    const userId = user.user_id || user.USER_ID;
-    try {
-      const notifs = await fetch(`http://localhost:3000/api/orders/notifications/${userId}`).then(r=>r.json());
-      const unread = notifs.filter(n => !n.is_read);
-      const countEl = document.getElementById('notif-count');
-      if (unread.length > 0) { countEl.textContent = unread.length; countEl.style.display = 'flex'; }
-      else { countEl.style.display = 'none'; }
-
-      const listEl = document.getElementById('notif-list');
-      if (!notifs.length) {
-        listEl.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;display:block;"></i>No notifications</div>';
-        return;
-      }
-      listEl.innerHTML = notifs.map(n => `
-        <div class="notif-item ${n.is_read ? '' : 'unread'}">
-          <div style="display:flex;align-items:flex-start;gap:10px;">
-            <div style="width:32px;height:32px;border-radius:50%;background:${n.is_read?'#f3f4f6':'#fef2f2'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <i class="fas fa-bag-shopping" style="font-size:13px;color:${n.is_read?'#9ca3af':'#dc2626'};"></i>
-            </div>
-            <div style="flex:1;">
-              <p style="margin:0;font-weight:${n.is_read?'400':'600'};">${n.message}</p>
-              <p style="margin:2px 0 0;font-size:11px;color:#9ca3af;">${new Date(n.created_at).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</p>
-            </div>
-          </div>
-        </div>`).join('');
-    } catch (e) { /* Silent fail */ }
-  }
-
-  function toggleNotifications() {
-    const dd = document.getElementById('notif-dropdown');
-    notifOpen = !notifOpen;
-    dd.style.display = notifOpen ? 'block' : 'none';
-    if (notifOpen) loadNotifications();
-  }
-
-  async function markAllRead() {
-    const user = Auth.getCurrentUser(); if (!user) return;
-    const userId = user.user_id || user.USER_ID;
-    await fetch(`http://localhost:3000/api/orders/notifications/${userId}/read`, { method: 'PUT' });
-    document.getElementById('notif-count').style.display = 'none';
-    loadNotifications();
-  }
-
-  // Close notification dropdown on outside click
-  document.addEventListener('click', (e) => {
-    const bell = document.getElementById('notif-bell'), dd = document.getElementById('notif-dropdown');
-    if (notifOpen && !bell.contains(e.target) && !dd.contains(e.target)) {
-      notifOpen = false; dd.style.display = 'none';
-    }
-  });
   </script>
 </body>
 </html>
